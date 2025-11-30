@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>For instruktører - TrAMS</title>
+
+  <!-- Google Fonts: Nunito Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@200;400;600;700;800&display=swap" rel="stylesheet"/>
+
+  <style>
+    :root {
+      --font-family: 'Nunito Sans', sans-serif;
+      --color-primary: #ED1E24;
+      --color-secondary: #FFD670;
+      --color-bg: #FFFFFF;
+      --color-text: #231E20;
+      --color-light: #FFFFFF;
+    }
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: var(--font-family);
+      background: var(--color-bg);
+      color: var(--color-text);
+      scroll-behavior: smooth;
+    }
+    .hero {
+      position: relative;
+      height: 25vh;
+      background: url('https://i.imgur.com/rKhkGGT.jpg') center/cover no-repeat;
+      color: var(--color-light);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 3rem 1rem;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+    }
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      z-index: 1;
+    }
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      max-width: 800px;
+    }
+    .hero-content h1 {
+      font-size: 2.2rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+    }
+    .hero-content p {
+      font-size: 1.1rem;
+      line-height: 1.5;
+      margin-bottom: 1rem;
+    }
+    .container {
+      max-width: 60%;
+      margin: 0 auto;
+      padding: 2rem 1rem;
+    }
+    .info-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2rem;
+      margin-top: 2rem;
+      justify-content: center;
+    }
+    .info-box {
+      flex: 1 1 300px;
+      background: var(--color-light);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      border-radius: 8px;
+      padding: 1.5rem;
+      text-align: center;
+      max-width: 350px;
+    }
+    .info-box h3 {
+      margin-top: 0;
+      margin-bottom: 0.5rem;
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+    .info-box p {
+      margin-bottom: 1rem;
+      font-size: 0.9rem;
+      line-height: 1.4;
+    }
+    .info-box .btn {
+      display: inline-block;
+      background: var(--color-primary);
+      color: var(--color-light);
+      padding: 0.6rem 1.2rem;
+      text-decoration: none;
+      border-radius: 4px;
+      transition: background 0.3s ease;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+    .info-box .btn:hover {
+      background: var(--color-secondary);
+      color: black;
+    }
+    .instruktor-intro {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2rem;
+      align-items: flex-start;
+      margin-top: 3rem;
+    }
+    .intro-text {
+      flex: 1 1 300px;
+      line-height: 1.5;
+    }
+    .intro-text h2 {
+      font-size: 1.8rem;
+      margin-top: 0;
+      margin-bottom: 1rem;
+      font-weight: 700;
+      text-align: center;
+    }
+    .intro-text p {
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+    .intro-text a {
+      color: var(--color-primary);
+      text-decoration: underline;
+    }
+    .ferdighet-section {
+      margin-top: 2rem;
+      text-align: center;
+    }
+    .ferdighet-section h2 {
+      font-size: 1.6rem;
+      margin-bottom: 1rem;
+      font-weight: 700;
+    }
+    .ferdighet-section p {
+      line-height: 1.5;
+      margin-bottom: 1rem;
+      font-size: 0.95rem;
+    }
+    /* FOOTER */
+    footer {
+        background: var(--color-secondary);
+        color: black;
+        padding: 2rem;
+        font-size: 0.9rem;
+        margin-top: 0;
+      }
+      .footer-wrapper {
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 2rem;
+      }
+      .footer-left,
+      .footer-right {
+        flex: 1 1 250px;
+      }
+      .footer-logo-container {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+      }
+      .footer-logo {
+        width: 60px;
+      }
+      .footer-name span {
+        display: block;
+        line-height: 1.2;
+        color: black;
+        font-weight: bold;
+      }
+      .footer-contact p {
+        margin: 0.2rem 0;
+        color: black;
+      }
+      .footer-contact a {
+        color: black;
+        text-decoration: none;
+      }
+      .footer-contact a:hover {
+        color: var(--color-primary);
+      }
+      .footer-right h3 {
+        margin-top: 0;
+        font-weight: 700;
+      }
+      .social-links {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+      .social-links li {
+        margin: 0.3rem 0;
+      }
+      .social-links a {
+        text-decoration: none;
+        color: black;
+        transition: color 0.3s ease;
+      }
+      .social-links a:hover {
+        color: var(--color-primary);
+      }
+      .footer-bottom {
+        text-align: center;
+        margin-top: 1rem;
+        font-size: 0.8rem;
+        color: black;
+      }
+  
+      @media (max-width: 768px) {
+      .hero {
+        height: 30vh;
+      }
+      .hero-content h1 {
+        font-size: 1.8rem;
+      }
+      .hero-content p {
+        font-size: 1rem;
+      }
+      .container {
+        max-width: 90%;
+      }
+      .intro-img {
+        order: -1;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<section class="hero">
+  <div class="hero-content">
+    <h1>For instruktører</h1>
+    <p>
+      Her kan du lese mer om medlemskap i TrAMS, våre kurs 
+      og aktiviteter som er spesielt rettet mot instruktører.
+    </p>
+  </div>
+</section>
+
+<main class="container">
+  <section class="info-grid">
+    <div class="info-box">
+      <h3>INSTRUKTØRPORTAL</h3>
+      <p>
+        Her ligger all faglig og praktisk informasjon du trenger som instruktør på eksternt kurs. 
+        Fagressurser og oppsett for eksternt kurs er revidert i 2023.
+      </p>
+      <a href="https://drive.google.com/drive/folders/13Pq0o4ny5VwaNNTV2KWlGRICceZHA0s-?usp=share_link" class="btn">
+        Ekstern - instruktørmappe
+      </a>
+    </div>
+    <div class="info-box">
+      <h3>MINSO-PORTAL</h3>
+      <p>
+        For ansatte i MINSO: her ligger påmelding til kurs og diverse informasjon 
+        som du bør sette deg inn i for å holde førstehjelpskurs for MINSO.
+      </p>
+      <a href="https://drive.google.com/drive/folders/1m79a1k9CBG3r5BFr_IXC0LH07qS8EP7N?usp=drive_link" class="btn">
+        MINSO - instruktørmappe
+      </a>
+    </div>
+    <div class="info-box">
+      <h3>REFUSJONSSKJEMA</h3>
+      <p>
+        Har du lagt ut for noe i forbindelse med TrAMS-oppdrag? 
+        Fyll ut refusjonsskjemaet under for tilbakebetaling.
+      </p>
+      <a href="https://docs.google.com/forms/d/1Bni5xcs6YIJebPnfgNID-M74PZArlkIDKaSQqmZ7ZZw/edit" class="btn">
+        Gå til refusjonsskjema
+      </a>
+    </div>
+    <div class="info-box">
+      <h3>LØNNSSKJEMA</h3>
+      <p>
+        Etter utført oppdrag må du registrere deg i lønnsskjemaet for å få utbetalt honorar.
+      </p>
+      <a href="https://docs.google.com/forms/u/2/d/1vHKHaTXlpCt2qlrfyLIQ6TTbItxqjBb7_-kchdt0eLo/edit?usp=drive_web" class="btn">
+        Gå til lønnsskjema
+      </a>
+    </div>
+    <div class="info-box">
+      <h3>CASEBANK OG TRIGGERE</h3>
+      <p>
+        Her finner du caser og triggertemaer som instruktører kan benytte i undervisningssammenheng.
+      </p>
+      <a href="https://www.trams.no/instrukt%C3%B8rer/casebank" class="btn">
+        Gå til casebank og triggere
+      </a>
+    </div>
+  </section>
+
+  <section class="instruktor-intro">
+    <div class="intro-text">
+      <h2>Bli instruktør!</h2>
+      <p>
+        Som instruktør får du muligheten til å lære bort akuttmedisin på 
+        både eksterne og interne kurs. I tillegg blir man prioritert på noen 
+        av TrAMS sine antallsbegrensede arrangementer. Som instruktør 
+        får man ta del i et sosialt og hyggelig instruktørmiljø!
+      </p>
+      <p>
+        For å kunne søke om å bli instruktør må du være 
+        <a href="https://www.trams.no/for-medisinstudenter">medlem</a> i TrAMS. 
+        Opptaket er søknadsbasert. Likevel kan engasjement i foreningen utover det som 
+        fremgår av søknaden, tas i betraktning.
+      </p>
+      <p>
+        TrAMS tar opp nye eksterne instruktører høsten 2025.
+      </p>
+      <p>
+        Eventuelle spørsmål sendes til 
+        <a href="mailto:instruktoransvarlig@trams.no">instruktoransvarlig@trams.no</a>.
+      </p>
+    </div>
+  </section>
+
+  <section class="ferdighet-section">
+    <h2>Ferdighetsinstruktør</h2>
+    <p>
+      Gjennom året utdanner TrAMS instruktører som holder kurs for andre medisinstudenter 
+      i perifer venekanylering (PVK), sutur og ultralyd, blant annet. 
+      På eldre kull vil man også få muligheten til å være instruktør på akuttmedisinkursene 
+      TrAMS arrangerer på studiet i samarbeid med NTNU og St. Olavs hospital.
+      <br><br>
+      De gangene vi tar opp instruktører til internundervisning vil det komme 
+      informasjon om dette på mail.
+    </p>
+  </section>
+</main>
+
+<!-- FOOTER -->
+<footer>
+    <div class="footer-wrapper">
+      <div class="footer-left">
+        <div class="footer-logo-container">
+          <img src="https://i.imgur.com/jZBTHbd.png" alt="TrAMS logo" class="footer-logo">
+          <div class="footer-name">
+            <span>Trondheim</span>
+            <span>Akuttmedisinske</span>
+            <span>Studentforening</span>
+          </div>
+        </div>
+        <div class="footer-contact">
+          <p><strong>Adresse:</strong> Fred Kavli-bygget, 1. et ved varemottak St. Olavs Hospital 7491 Trondheim</p>
+          <p><strong>Org.nr:</strong> 994089358</p>
+          <p><strong>E-post:</strong> 
+            <a href="mailto:[Email address]">web@trams.no</a>
+          </p>
+        </div>
+      </div>
+      <div class="footer-right">
+        <h3>Sosiale medier</h3>
+        <ul class="social-links">
+          <li><a href="https://www.instagram.com/trondheimams/" target="_blank" rel="noopener noreferrer">Instagram</a></li>
+          <li><a href="https://www.facebook.com/trondheimams/" target="_blank" rel="noopener noreferrer">Facebook</a></li>
+          <!--<li><a href="#" target="_blank" rel="noopener noreferrer">YouTube</a></li>-->
+          <!--<li><a href="#" target="_blank" rel="noopener noreferrer">LinkedIn</a></li>-->
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2024 Trondheim Akuttmedisinske Studentforening</p>
+    </div>
+  </footer>  
+</body>
+</html>

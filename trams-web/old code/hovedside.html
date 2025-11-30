@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/> 
+    <title>TrAMS - Hovedside</title>
+    <!-- Google Fonts: Nunito Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link 
+      href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@200;400;600;700;800&display=swap" 
+      rel="stylesheet"
+    />
+
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-HWNKL25325"></script>
+    <script>
+         window.dataLayer = window.dataLayer || [];
+         function gtag(){dataLayer.push(arguments);}
+         gtag('js', new Date());
+
+        gtag('config', 'G-HWNKL25325');
+    </script>
+    
+    
+    
+
+    <style>
+        /* ===========
+           Common variables
+           =========== */
+        :root {
+            --font-family: 'Nunito Sans', sans-serif;
+
+            /* Updated colorpalett */
+            --color-primary: #ED1E24;    /* Pirmary */
+            --color-secondary: #FFD670;  /* Secondary */
+            --color-bg: #FFFFFF;         /* Backround */
+            --color-altBg: #F5F5F5;      /* Alternative backround */
+            --color-alternate: #FFBF1F;  /* Extra */
+            --color-text: #231E20;       /* Text-color */
+            --color-light: #FFFFFF;      /* White */
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+        html, body {
+            margin: 0;
+            padding: 0;
+            font-family: var(--font-family);
+            background: var(--color-bg);
+            color: var(--color-text);
+            overflow-x: hidden;
+        }
+
+        /* ===========
+           Common classes
+           =========== */
+        .box-shadow {
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .carousel-arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0,0,0,0.5);
+            color: #fff;
+            border: none;
+            padding: 0.5rem;
+            font-size: 2rem;
+            cursor: pointer;
+            z-index: 10;
+            transition: background 0.3s ease;
+        }
+        .carousel-arrow:hover {
+            background: rgba(0,0,0,0.8);
+        }
+
+        /* ===========
+           Container
+           =========== */
+        .container {
+            max-width: 60%;
+            margin: 0 auto;
+        }
+
+        /* ===========
+           HERO-SEKSJON: Fullbredde-bildekarusell
+           =========== */
+        .hero {
+            position: relative;
+            overflow: hidden;
+            min-height: 25vh; 
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 0; 
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        }
+        .carousel {
+            position: relative;
+            width: 100%;
+            height: 50vh;
+            min-height: 25vh;
+        }
+        .slides {
+            display: flex;
+            transition: transform 0.8s ease-in-out;
+            height: 100%;
+        }
+        .slide {
+            position: relative;
+            min-width: 100%;
+            height: 100%;
+            background-size: cover;       
+            background-position: center;  
+            background-repeat: no-repeat; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        /* Dark overlay on image */
+        .slide::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1;
+            pointer-events: none;
+        }
+        .slide a {
+            position: absolute;
+            inset: 0;
+            z-index: 2;
+            text-decoration: none;
+            color: inherit;
+        }
+        .slide-content {
+            position: relative;
+            z-index: 3;
+            text-align: center;
+            padding: 20px;
+            margin: 0;
+        }
+        .slide-content h1 {
+            margin-bottom: 0.5rem;
+            font-size: 2.5rem;
+            color: var(--color-light);
+            line-height: 1.2;
+        }
+        .slide-content h1::after {
+            content: "";
+            display: block;
+            width: 250px;
+            height: 4px;
+            background: var(--color-primary);
+            margin: 0.5rem auto 0 auto;
+            border-radius: 2px;
+        }
+        .slide-content p {
+            font-size: 1rem;
+            color: var(--color-light);
+            margin: 0;
+            margin-bottom: 1rem;
+            line-height: 1.3;    
+        }
+
+        /* Arrows */
+        .prev {
+            left: 1rem;
+        }
+        .next {
+            right: 1rem;
+        }
+
+        /* Dots */
+        .dots {
+            position: absolute;
+            bottom: 1rem;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            z-index: 10;
+        }
+        .dot {
+            width: 12px;
+            height: 12px;
+            background: #888;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        .dot.active,
+        .dot:hover {
+            background: #333;
+        }
+
+        /* ===========
+           HERO COURSES (Boxes under karusell)
+           =========== */
+        .hero-courses {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+        .course-tile {
+            background: var(--color-light);
+            padding: 2rem; 
+            border-radius: 8px;
+            width: 300px; 
+            text-align: center;
+            font-size: 1.1rem;
+            display: block;
+            color: inherit;
+            text-decoration: none;
+            transition: transform 0.3s ease;
+        }
+        .course-tile:hover {
+            transform: translateY(-15px);
+            background-color: var(--color-secondary);
+        }
+        .course-tile h2 {
+            position: relative;
+            margin-top: 0;
+            margin-bottom: 1rem;
+            color: black;
+            padding-bottom: 0.5rem;
+        }
+        .course-tile h2::after {
+            content: "";
+            display: block;
+            width: 80px;
+            height: 4px;
+            background: var(--color-primary);
+            margin: 0.5rem auto 0 auto;
+            border-radius: 2px;
+        }
+        .course-tile p {
+            font-size: 1rem;
+            color: black;
+        }
+
+        /* ===========
+           Buttons (genaral layout)
+           =========== */
+        .btn {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: var(--color-primary);
+            color: var(--color-light);
+            text-decoration: none;
+            border-radius: 4px;
+            margin-top: 1rem;
+            transition: background 0.3s ease, box-shadow 0.3s ease;
+        }
+        .btn:hover {
+            box-shadow: 0 0 25px rgba(0,0,0,0.3);
+        }
+
+        /* ===========
+           Info-section (About and calander)
+           =========== */
+        .info-sections {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-start;
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 2rem auto; 
+            background: var(--color-altBg);
+            padding: 1rem;
+            border-radius: 8px;
+        }
+        .info-sections .btn{
+            text-align: center;
+            display: block;
+        }
+        .info-sections .btn:hover {
+            background: var(--color-secondary);
+            color: black;
+        }
+        .about-section,
+        .calendar-section {
+            flex: 1 1 400px;
+            min-width: 300px;
+            background: var(--color-light); 
+            border-radius: 8px;
+            padding: 1rem;
+        }
+        .about-section h2 {
+            text-align: center;
+            margin-bottom: 1rem;
+            position: relative;
+            color: black !important;
+            padding-bottom: 0.5rem;
+        }
+        .about-section h2::after {
+            content: "";
+            display: block;
+            width: 80px;
+            height: 4px;
+            background: var(--color-primary);
+            margin: 0.5rem auto 0 auto;
+            border-radius: 2px;
+        }
+        .content {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+        .about-text {
+            flex: 1 1 300px;
+        }
+        .calendar-section {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .calendar-wrapper {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        .calendar-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            min-width: 200px;
+        }
+        .date-display {
+            background: var(--color-secondary);
+            color: black;
+            padding: 0.5rem;
+            border-radius: 4px;
+            text-align: center;
+            margin-bottom: 0.5rem;
+        }
+        .date-display .day {
+            font-size: 1.5rem;
+            display: block;
+            font-weight: bold;
+        }
+        .date-display .month-year {
+            font-size: 0.9rem;
+        }
+        .date-display p {
+            font-size: 0.7rem;
+            margin: 0;
+            text-align: left;
+        }
+        .calendar-container {
+            flex: 2;
+            background: var(--color-light);
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+            min-width: 300px;
+        }
+        .calendar-container::before {
+            content: "";
+            display: block;
+            background: var(--color-primary);
+            height: 5px;
+            width: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        .calendar-embed {
+            border: none;
+            height: 400px;
+            width: 100%;
+        }
+
+        /* ===========
+           Join us section (join-section)
+           =========== */
+        .join-section {
+            margin: 2rem auto;
+            border-radius: 25px;
+            text-align: center;
+            padding: 2rem; 
+            background: var(--color-primary);
+            color: var(--color-light);
+            max-width: 1200px;
+        }
+        .join-section .btn {
+            background: var(--color-secondary);
+            color: black;
+        }
+        .join-section .btn:hover {
+            background: var(--color-alternate);
+            color: black;
+        }
+
+        /* ===========
+           Cooperation partners
+           =========== */
+        .partners-section {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .partners-section h2 {
+            position: relative;
+            color: black;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        .partners-section h2::after {
+            content: "";
+            display: block;
+            width: 120px;
+            height: 4px;
+            background: var(--color-primary);
+            margin: 0.5rem auto 0 auto;
+            border-radius: 2px;
+        }
+        .partners-logos,
+        .partners-logos2 {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+            justify-content: center;
+            align-items: center;
+        }
+        .partners-logos img {
+            max-height: 80px;
+            object-fit: contain;
+        }
+        .partners-logos2 img {
+            max-height: 150px;
+            object-fit: contain;
+        }
+
+        /* ===========
+           FOOTER
+           =========== */
+        footer {
+            background: var(--color-secondary);
+            color: black;
+            padding: 2rem;
+            font-size: 0.9rem;
+        }
+        .footer-wrapper {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 2rem;
+        }
+        .footer-left, .footer-right {
+            flex: 1 1 200px;
+        }
+        .footer-logo-container {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .footer-logo {
+            width: 60px;
+        }
+        .footer-name span {
+            display: block;
+            line-height: 1.2;
+            color: black;
+            font-weight: bold;
+        }
+        .footer-contact p {
+            margin: 0.2rem 0;
+            color: black;
+        }
+        .footer-contact a {
+            color: black;
+            text-decoration: none;
+        }
+        .footer-contact a:hover {
+            color: var(--color-primary);
+        }
+        .footer-right h3 {
+            margin-top: 0;
+        }
+        .social-links {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .social-links li {
+            margin: 0.3rem 0;
+        }
+        .social-links a {
+            text-decoration: none;
+            color: black;
+        }
+        .social-links a:hover {
+            color: var(--color-primary);
+        }
+        .footer-bottom {
+            text-align: center;
+            margin-top: 1rem;
+            font-size: 0.8rem;
+            color: black;
+        }
+
+        /* ===========
+           Intructors section
+           =========== */
+        .instructors-section {
+            background: #fff;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            padding: 2rem;
+        }
+        .instructors-section h2 {
+            text-align: center;
+            margin-bottom: 2rem;
+            color: black !important;
+            font-weight: 700;
+            position: relative;
+            padding-bottom: 0.5rem;
+        }
+        .instructors-section h2::after {
+            content: "";
+            display: block;
+            width: 80px;
+            height: 4px;
+            background: var(--color-primary);
+            margin: 0.5rem auto 0 auto;
+            border-radius: 2px;
+        }
+        .instructor-list {
+            display: flex;
+            gap: 2rem;
+            overflow-x: auto; 
+            padding-bottom: 2rem;
+            padding-top: 2rem;
+            scroll-snap-type: x mandatory;
+            -webkit-overflow-scrolling: touch;
+        }
+        .instructor {
+            background: var(--color-light);
+            border-radius: 8px;
+            padding: 1rem;
+            width: 200px;
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            flex: 0 0 auto;
+            scroll-snap-align: start;
+        }
+        .instructor:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 15px rgba(0,0,0,0.2);
+        }
+        .instructor img {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 50%;
+            margin-bottom: 0.5rem;
+        }
+        .instructor h3 {
+            margin: 0;
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+        .instructor p {
+            margin: 0;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        /* =============
+           Mobile responsive
+           =============
+        */
+        @media (max-width: 768px) {
+            .container {
+                max-width: 90%;
+            }
+            .slide-content {
+                min-height: 250px;
+            }
+            .slide-content h1 {
+                font-size: 1.25rem;
+            }
+            .slide-content p {
+                font-size: 0.65rem;
+            }
+            .hero-courses {
+                flex-direction: column;
+            }
+            .course-tile {
+                width: 100%;
+            }
+
+            .info-sections {
+                flex-direction: column;
+            }
+
+            .partners-logos,
+            .partners-logos2 {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            .partners-logos img,
+            .partners-logos2 img {
+                max-height: 60px;
+            }
+
+            .instructor-list {
+                gap: 1rem;
+            }
+            .instructor {
+                width: 160px;
+            }
+        }
+    </style>
+</head>
+<body>
+    
+    <!-- HERO -->
+    <section class="hero" id="hovedside">
+        <div class="carousel">
+            <div class="slides">
+                <!-- Slide 1 -->
+                <div class="slide" style="background-image: url('https://imgur.com/rKhkGGT.jpg');">
+                    <a class = "slide1">
+                        <div class="slide-content">
+                            <h1>TrAMS, Trondheim Akuttmedisinske Studentforening</h1>
+                            <p style="margin-left: 10%; width: 75%;">
+                                Vi er en ideell organisasjon, av og for medisinstudenter i Trondheim, basert på frivillighet.
+                                Foreningens hovedformål er å tydeliggjøre viktigheten av faglig kompetanse innenfor akuttmedisin, 
+                                både for kommende leger og andre.
+                            </p>
+                            <p style="background-color: var(--color-primary); color: var(--color-bg); padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; transition: background-color 0.3s ease, color 0.3s ease; width: 50%; margin-left: 24%"
+                                onmouseover="this.style.backgroundColor='var(--color-secondary)'; this.style.color='var(--color-text)';"
+                                onmouseout="this.style.backgroundColor='var(--color-primary)'; this.style.color='var(--color-bg)';">Klikk for å lese mer om oss!</p>
+                        </div>
+                    </a>
+                </div>
+                <!-- Slide 2 -->
+                <div class="slide" style="background-image: url('https://i.imgur.com/521F3ik.jpg');">
+                    <a href="https://www.trams.no/for-medisinstudenter" target="_blank" rel="noopener noreferrer">
+                        <div class="slide-content">
+                            <h1>Ny medisinstudent i Trondheim</h1>
+                            <p style="margin-left: 10%; width: 75%;"> TrAMS er studentforeningen for medisinstudenter ved NTNU som er interesserte 
+                                i akuttmedisin! Som medlem kan du blant annet delta på TrAMS-arrangementer forbeholdt medlemmer, du får gratis ferdighetskurs
+                                og muligheten til å delta på vår generalforsamling.</p>
+                            <p style="background-color: var(--color-primary); color: var(--color-bg); padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; transition: background-color 0.3s ease, color 0.3s ease; width: 50%; margin-left: 24%"
+                                onmouseover="this.style.backgroundColor='var(--color-secondary)'; this.style.color='var(--color-text)';"
+                                onmouseout="this.style.backgroundColor='var(--color-primary)'; this.style.color='var(--color-bg)';"> Klikk her for å bli medlem </p>
+                        </div>
+                    </a>
+                </div>
+                <div class="slide" style="background-image: url('https://imgur.com/FCUWJQ8.jpg');">
+                    <a href="https://www.trams.no/for-instrukt%C3%B8rer" target="_blank" rel="noopener noreferrer">
+                        <div class="slide-content">
+                            <h1>Ønsker du å bli Instruktør-</h1>
+                            <p style="margin-left: 10%; width: 75%;">Som instruktør får du muligheten til å lære bort akuttmedisin på 
+                                både eksterne og interne kurs. I tillegg blir man prioritert på 
+                                noen av TrAMS sine antallsbegrensede arrangementer. Som instruktør 
+                                får man ta del i et sosialt og hyggelig instruktørmiljø!</p>
+                            <p style="background-color: var(--color-primary); color: var(--color-bg); padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; transition: background-color 0.3s ease, color 0.3s ease; width: 50%; margin-left: 24%"
+                            onmouseover="this.style.backgroundColor='var(--color-secondary)'; this.style.color='var(--color-text)';"
+                            onmouseout="this.style.backgroundColor='var(--color-primary)'; this.style.color='var(--color-bg)';">Klikk her for å lese om hvordan man kan bli instruktør i TrAMS</p>
+
+                        </div>
+                    </a>
+                </div>
+            </div>
+            
+            <button class="carousel-arrow prev" aria-label="Previous Slide">&#10094;</button>
+            <button class="carousel-arrow next" aria-label="Next Slide">&#10095;</button>
+            <div class="dots">
+                <span class="dot active" data-index="0"></span>
+                <span class="dot" data-index="1"></span>
+                 <span class="dot" data-index="2"></span>
+            </div>
+        </div>
+    </section>
+
+    <!-- HERO-COURSES -->
+    <div class="hero-courses">
+        <a class="course-tile box-shadow" id="forstehjelpskurs" href="https://www.trams.no/f%C3%B8rstehjelpskurs">
+            <h2>Book førstehjelpskurs</h2>
+            <p>For bedrift eller forening</p>
+        </a>
+        <a class="course-tile box-shadow" id="for-medisinstudenter" href="https://www.trams.no/for-medisinstudenter">
+            <h2>Internkurs for studenter</h2>
+            <p>For medisinstudenter</p>
+        </a>
+    </div>
+
+    <!-- Info-section: about + calender -->
+    <div class="container">
+        <section class="info-sections">
+            <section class="about-section box-shadow" id="om-oss">
+                <h2>Trondheim Akuttmedisinske Studentforening</h2>
+                <div class="content">
+                    <div class="about-text">
+                        <!-- Logo -->
+                        <p>
+                            <span style="float: right; margin-left: 1rem;">
+                                <img 
+                                    src="https://imgur.com/jZBTHbd.png" 
+                                    alt="TrAMS logo" 
+                                    style="max-width: 100px;"
+                                />
+                            </span>
+                            Trondheim akuttmedisinske studentforening (TrAMS), stiftet 7. mai 2009, er en ideell 
+                            organisasjon av og for medisinstudenter i Trondheim, basert på frivillighet.
+                        </p>
+                        <p>
+                            Vi legger vekt på faglig kompetanse innen akuttmedisin for både kommende leger og lekfolk. 
+                            Vårt mål er å skape trygghet rundt håndtering av akuttmedisinske situasjoner ved å fremme 
+                            interesse, engasjement og styrke kunnskapen gjennom kvalitetssikrede kurs og ferdighetstrening.
+                        </p>
+                        <p>
+                            Foreningen deltar aktivt i det norske og skandinaviske studentmiljøet innen akuttmedisin 
+                            gjennom NAMS - Norsk Akuttmedisinsk Studentforum.
+                        </p>
+                        <a href="https://docs.google.com/document/d/1_7nyWf8L9BqeWGN4BpRjt4MkJSTiws3RvJJrkYDMQwo/edit?tab=t.0" class="btn">Vedtekter</a>
+                    </div>
+                </div>
+            </section>
+
+            <section class="calendar-section box-shadow">
+                <div class="calendar-wrapper">
+                    <div class="calendar-info">
+                        <div class="date-display">
+                            <span class="day" id="day-display"></span>
+                            <span class="month-year" id="month-year-display"></span>
+                            <p>Studentkalender</p>
+                        </div>
+                    </div>
+                    <div class="calendar-container box-shadow">
+                        <iframe 
+                          class="calendar-embed"
+                          src="https://calendar.google.com/calendar/embed?src=c_e561ac20ed81465fce5b8050b5e77c2deae77ebd486c10c45c53092d146bd83d%40group.calendar.google.com&ctz=Europe%2FOslo&mode=MONTH" 
+                          frameborder="0" 
+                          scrolling="no">
+                        </iframe>
+                    </div>
+                </div>
+            </section>
+        </section>
+
+        <!-- Cooperation partners -->
+        <section class="partners-section">
+            <h2>Samarbeidspartnere og søsterforeninger</h2>
+            <div class="partners-logos">
+                <img src="https://i.imgur.com/6gLu8ff.jpg" alt="Partner 1 logo">
+                <img src="https://i.imgur.com/nzYXh3a.jpg" alt="Partner 2 logo">
+                <img src="https://i.imgur.com/7LEQQKV.jpg" alt="Partner 3 logo">
+                <img src="https://i.imgur.com/kJ1FDvn.jpg" alt="Partner 4 logo">
+                <img src="https://i.imgur.com/2WaPh9I.jpg" alt="Partner 5 logo">
+                <img src="https://i.imgur.com/lfoK4RR.jpg" alt="Partner 6 logo">
+            </div>
+            <section class="partners-section" id="sosterforeninger">
+                <div class="partners-logos2">
+                    <img src="https://imgur.com/Zu9ERQR.jpg" alt="Søsterforening 1">
+                    <img src="https://imgur.com/QAgRYfg.jpg" alt="Søsterforening 2">
+                    <img src="https://imgur.com/WtxQ0lI.jpg" alt="Søsterforening 3">
+                    <img src="https://imgur.com/1BDV2P9.jpg" alt="Søsterforening 4">
+                </div>
+            </section>
+        </section>
+
+        <!-- Join us sectionn -->
+        <section class="join-section">
+            <h2>Bli med på laget som samarbeidspartner</h2>
+            <p>
+                Vi er alltid på jakt etter støtte eller nye samarbeidspartnere. 
+                Kjenner du noen som er interessert i å bli bedre kjent med oss?
+                <br><br>
+                I Trondheim har foreningen en solid plassering i studentmiljøet. 
+                Vi samarbeider tett med Fakultet for medisin og helsevitenskap ved NTNU 
+                om å gjennomføre kurs for nye studenter i basal akuttmedisin. 
+                I tillegg samarbeider vi med bl.a. anestesiavdelingen ved St. Olavs hospital 
+                om å tilby det som på studiet kalles frivillig uketjeneste, en lærerik hospiteringsordning.
+                Leger ved luftambulansen i Trondheim har også stilt opp for å holde foredrag o.l. for studenter ved flere anledninger.
+                Vi har gjennomført arrangementer der vi har koordinert øvelser sammen med Redningstjenesten 330 skvadron, 
+                Redningsselskapet, Trøndelag brann- og redningstjeneste, Trøndelag politidistrikt.
+                Sist, men ikke minst, har Sør-Trøndelag ambulansetjeneste vært en kjempemessig støttespiller for oss.
+                <br><br>
+                Vi ønsker å takke alle som bidrar til å hjelpe oss i arbeidet for å fremme interesse og kunnskap rundt akuttmedisin! 
+                Ønsker du å støtte arbeidet vårt? Ta kontakt med 
+                <a href="mailto:sponsoransvarlig@trams.no" style="color:var(--color-secondary);text-decoration:underline;">sponsoransvarlig@trams.no</a>.
+            </p>
+            <a href="https://www.trams.no/hjem/trams-i-media" class="btn">
+                Ønsker du å vite mer om hva vi har gjort? Trykk for å se oss i media
+            </a>
+        </section>
+        
+        <!-- Instructor-/board-section -->
+        <section class="instructors-section">
+            <h2>Styret i TrAMS</h2>
+            <div class="instructor-list">
+                <a href="https://www.trams.no/hjem/Leder" class="instructor box-shadow" style="text-decoration: none; color: inherit;">
+                    <img src="https://imgur.com/fHeRmAi.jpg" alt="Styremedlem 1">
+                    <h3>Celestin Alfonso</h3>
+                    <p>Styreleder</p>
+                </a>
+                <a href="https://www.trams.no/hjem/fagansvarlig" class="instructor box-shadow" style="text-decoration: none; color: inherit;">
+                    <img src="https://imgur.com/sHv5zlA.jpg" alt="Styremedlem 2">
+                    <h3>Thea Glende</h3>
+                    <p>Fagansvarlig</p>
+                </a>
+                <a href="https://www.trams.no/hjem/internsjef" class="instructor box-shadow" style="text-decoration: none; color: inherit;">
+                    <img src="https://imgur.com/td3X62G.jpg" alt="Styremedlem 3">
+                    <h3>Oskar Brennersted</h3>
+                    <p>Internsjef</p>
+                </a>
+                <a href="https://www.trams.no/hjem/eksternsjef" class="instructor box-shadow" style="text-decoration: none; color: inherit;">
+                    <img src="https://imgur.com/6XMjF0s.jpg" alt="Styremedlem 4">
+                    <h3>Didrik Monstad-Thorvaldsen</h3>
+                    <p>Eksternsjef</p>
+                </a>
+                <a href="https://www.trams.no/hjem/komiteansvarlig" class="instructor box-shadow" style="text-decoration: none; color: inherit;">
+                    <img src="https://imgur.com/mikgv4t.jpg" alt="Styremedlem 5">
+                    <h3>Ruiyi Li</h3>
+                    <p>Komiteansvarlig</p>
+                </a>
+                <a href="https://www.trams.no/hjem/instruktøransvarlig" class="instructor box-shadow" style="text-decoration: none; color: inherit;">
+                    <img src="https://imgur.com/IcS6SFq.jpg" alt="Styremedlem 6">
+                    <h3>Ronald Dadzie</h3>
+                    <p>Instruktøransvarlig</p>
+                </a>
+                <a href="https://www.trams.no/hjem/økonomiansvarlig" class="instructor box-shadow" style="text-decoration: none; color: inherit;">
+                    <img src="https://imgur.com/m16O0aZ.jpg" alt="Styremedlem 7">
+                    <h3>Mari Ravlo-Caspersen</h3>
+                    <p>Økonomiansvarlig</p>
+                </a>
+                <a href="https://www.trams.no/hjem/internkoordinator" class="instructor box-shadow" style="text-decoration: none; color: inherit;">
+                    <img src="https://imgur.com/E55D1Vf.jpg" alt="Styremedlem 8">
+                    <h3>Magnus Heier Skauby</h3>
+                    <p>Internkordinator</p>
+                </a>
+                <a href="https://www.trams.no/hjem/eksternkoordinator" class="instructor box-shadow" style="text-decoration: none; color: inherit;">
+                    <img src="https://imgur.com/NsqHN1H.jpg" alt="Styremedlem 9">
+                    <h3>Eirik Vikan Trettenes</h3>
+                    <p>Eksternkordinator</p>
+                </a>
+                <a href="https://www.trams.no/hjem/markøransvarlig" class="instructor box-shadow" style="text-decoration: none; color: inherit;">
+                    <img src="https://imgur.com/qgkaR0a.jpg" alt="Styremedlem 10">
+                    <h3>Anna Eker Christoffersen</h3>
+                    <p>Markøransvarlig</p>
+                </a>
+                <a href="https://www.trams.no/hjem/markedsføringsansvarlig" class="instructor box-shadow" style="text-decoration: none; color: inherit;">
+                    <img src="https://imgur.com/gMnTyAG.jpg" alt="Styremedlem 11">
+                    <h3>Emilie Nora Einvik</h3>
+                    <p>Markedsføringsansvarlig</p>
+                </a>
+                <a href="https://www.trams.no/hjem/sponsoransvarlig" class="instructor box-shadow" style="text-decoration: none; color: inherit;">
+                    <img src="https://imgur.com/UCjJjrX.jpg" alt="Styremedlem 12">
+                    <h3>Martin Larsen</h3>
+                    <p>Sponsoransvarlig</p>
+                </a>
+                <a href="https://www.trams.no/hjem/utstyrsansvarlig" class="instructor box-shadow" style="text-decoration: none; color: inherit;">
+                    <img src="https://imgur.com/u61QQ1x.jpg" alt="Styremedlem 13">
+                    <h3>Brage Leiner</h3>
+                    <p>Utstyransvarlig</p>
+                </a>
+                <a href="https://www.trams.no/hjem/sekretær" class="instructor box-shadow" style="text-decoration: none; color: inherit;">
+                    <img src="https://imgur.com/yumfv1D.jpg" alt="Styremedlem 14">
+                    <h3>Markus Helbæk</h3>
+                    <p>Sekretær</p>
+                </a>
+                <a href="https://www.trams.no/hjem/mentorgruppen" class="instructor box-shadow" style="text-decoration: none; color: inherit;">
+                    <img src="https://imgur.com/CnvLhZf.jpg" alt="Styremedlem 15">
+                    <h3>Bergitte Vedøy</h3>
+                    <p>Mentorleder</p>
+                </a>
+            </div>
+        </section>
+    </div> <!-- /.container -->
+
+    <!-- FOOTER -->
+    <footer>
+        <div class="footer-wrapper">
+            <div class="footer-left">
+                <div class="footer-logo-container">
+                    <img src="https://i.imgur.com/jZBTHbd.png" alt="TrAMS logo" class="footer-logo">
+                    <div class="footer-name">
+                        <span>Trondheim</span>
+                        <span>Akuttmedisinske</span>
+                        <span>Studentforening</span>
+                    </div>
+                </div>
+                <div class="footer-contact">
+                    <p><strong>Adresse:</strong> Fred Kavli-bygget, 1. et ved varemottak St. Olavs Hospital 7491 Trondheim</p>
+                    <p><strong>Org.nr:</strong> 994089358</p>
+                    <p><strong>E-post:</strong> <a href="mailto:[Email address]"> web@trams.no</a></p>
+                </div>
+            </div>
+            <div class="footer-right">
+                <h3>Sosiale medier</h3>
+                <ul class="social-links">
+                    <li><a href="https://www.instagram.com/trondheimams/" target="_blank" rel="noopener noreferrer">Instagram</a></li>
+                    <li><a href="https://www.facebook.com/trondheimams/" target="_blank" rel="noopener noreferrer">Facebook</a></li>
+                    <!--<li><a href="#" target="_blank" rel="noopener noreferrer">YouTube</a></li>-->
+                    <!--<li><a href="#" target="_blank" rel="noopener noreferrer">LinkedIn</a></li>-->
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 Trondheim Akuttmedisinske Studentforening</p>
+        </div>
+    </footer>
+
+    <!-- ===========
+         Script-section
+         =========== -->
+    <script>
+        // ----------- Image carousel -----------
+        const slidesContainer = document.querySelector('.slides');
+        const slides = document.querySelectorAll('.slide');
+        const dots = document.querySelectorAll('.dot');
+        const prevBtn = document.querySelector('.prev');
+        const nextBtn = document.querySelector('.next');
+
+        let currentSlide = 0;
+        let autoSlideInterval = 5000; // 5s
+        let slideInterval;
+
+        function showSlide(index) {
+            if (index < 0) index = slides.length - 1;
+            if (index >= slides.length) index = 0;
+            currentSlide = index;
+            slidesContainer.style.transform = `translateX(-${index * 100}%)`;
+            dots.forEach((dot, i) => dot.classList.toggle('active', i === currentSlide));
+        }
+
+        function nextSlide() {
+            showSlide(currentSlide + 1);
+        }
+        function prevSlideFunction() {
+            showSlide(currentSlide - 1);
+        }
+        function startAutoSlide() {
+            slideInterval = setInterval(nextSlide, autoSlideInterval);
+        }
+        function stopAutoSlide() {
+            clearInterval(slideInterval);
+        }
+
+        nextBtn.addEventListener('click', () => {
+            nextSlide();
+            stopAutoSlide();
+        });
+        prevBtn.addEventListener('click', () => {
+            prevSlideFunction();
+            stopAutoSlide();
+        });
+        dots.forEach(dot => {
+            dot.addEventListener('click', () => {
+                const index = parseInt(dot.getAttribute('data-index'));
+                showSlide(index);
+                stopAutoSlide();
+            });
+        });
+
+        showSlide(currentSlide);
+        startAutoSlide();
+
+        // ----------- Dynamic date (calender) -----------
+        const dayDisplay = document.getElementById('day-display');
+        const monthYearDisplay = document.getElementById('month-year-display');
+        if (dayDisplay && monthYearDisplay) {
+            const today = new Date();
+            const day = today.getDate();
+            const monthNames = ["Jan", "Feb", "Mar", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Des"];
+            const month = monthNames[today.getMonth()];
+            const year = today.getFullYear();
+            dayDisplay.textContent = day;
+            monthYearDisplay.textContent = `${month} ${year}`;
+        };
+
+        const slide1Link = document.querySelector('.slide1');
+
+        if (slide1Link) {
+            slide1Link.addEventListener('click', function () {
+            const target = document.getElementById('om-oss');
+        if (target) {
+            target.scrollIntoView({ behavior: 'smooth' });
+        }
+        console.log('Slide1 clicked!'); // Debug log to confirm click event
+    });
+}
+</script>
+</body>
+</html>

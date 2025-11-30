@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>For Medisinstudenter – TrAMS</title>
+
+  <!-- Google Fonts: Nunito Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link 
+    href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@200;400;600;700;800&display=swap" 
+    rel="stylesheet"
+  />
+
+  <style>
+    :root {
+      --font-family: 'Nunito Sans', sans-serif;
+      --color-primary: #ED1E24;
+      --color-secondary: #FFD670;
+      --color-bg: #FFFFFF;
+      --color-altBg: #F5F5F5;
+      --color-alternate: #FFBF1F;
+      --color-text: #231E20;
+      --color-light: #FFFFFF;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: var(--font-family);
+      background: var(--color-bg);
+      color: var(--color-text);
+      scroll-behavior: smooth;
+    }
+
+    .container {
+      max-width: 60%;
+      margin: 0 auto;
+      padding: 0 1rem;
+    }
+
+    /* Button layout */
+    .btn-base {
+      background: var(--color-primary);
+      color: var(--color-light);
+      font-weight: 700;
+      border: none;
+      text-decoration: none;
+      display: inline-block;
+      font-size: 1rem;
+      padding: 0.6rem 1.2rem;
+      border-radius: 4px;
+      transition: background 0.3s ease;
+      cursor: pointer;
+    }
+    .btn-base:hover {
+      background: var(--color-secondary);
+      color: black;
+    }
+
+    /* HERO */
+    .hero {
+      position: relative;
+      height: 25vh;
+      background: url('https://i.imgur.com/521F3ik.jpg') center/cover no-repeat;
+      color: var(--color-light);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 3rem 1rem;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+    }
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      z-index: 1;
+    }
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      max-width: 800px;
+    }
+    .hero-content h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+    }
+    .hero-content p {
+      font-size: 1.2rem;
+      line-height: 1.6;
+      margin-bottom: 1rem;
+    }
+
+    .section-title {
+      text-align: center;
+      font-size: 2rem;
+      font-weight: 700;
+      position: relative;
+      margin: 2rem 0 1.5rem 0;
+      padding-bottom: 0.5rem;
+    }
+    .section-title::after {
+      content: "";
+      display: block;
+      width: 80px;
+      height: 4px;
+      background: var(--color-primary);
+      margin: 0.5rem auto 0 auto;
+    }
+
+    /* MEMBERSHIP SECTION */
+    .membership-hero {
+      background: var(--color-altBg);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+      padding: 2rem;
+      border-radius: 8px;
+    }
+    .membership-inner {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2rem;
+    }
+    .membership-left,
+    .membership-right {
+      flex: 1 1 300px;
+      padding: 1rem;
+    }
+    .divider {
+      width: 2px;
+      background: #ccc;
+      margin: 0 1rem;
+    }
+    .membership-left h1 {
+      margin-top: 0;
+      font-size: 2rem;
+      margin-bottom: 1rem;
+    }
+    .membership-left p {
+      margin-bottom: 1rem;
+      line-height: 1.5;
+    }
+    .membership-right .btn {
+      margin-top: 1rem;
+    }
+
+    /* COURSE CARDS */
+    .course-cards {
+      display: flex;
+      gap: 2rem;
+      overflow-x: auto;
+      margin: 3rem 0;
+      padding: 0 1rem;
+      scroll-behavior: smooth;
+    }
+    .course-cards::-webkit-scrollbar {
+      height: 8px;
+    }
+    .course-cards::-webkit-scrollbar-track {
+      background: #f1f1f1;
+    }
+    .course-cards::-webkit-scrollbar-thumb {
+      background: #bbb;
+      border-radius: 4px;
+    }
+    .course-card {
+      flex: 0 0 auto;
+      width: 300px;
+      background: #fff;
+      border-radius: 8px;
+      text-align: center;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .course-card img {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+    }
+    .course-card h3 {
+      margin: 1rem 0 0.5rem;
+      font-size: 1.4rem;
+      font-weight: 700;
+    }
+    .course-card p {
+      flex: 1;
+      margin: 0 1rem 1rem;
+      line-height: 1.4;
+    }
+    .course-card .btn {
+      margin: 1rem auto 2rem auto;
+      width: 80%;
+      max-width: 200px;
+      text-align: center;
+    }
+
+    /* COMMITTEES SECTION */
+    .committees-section {
+      margin: 4rem 0;
+    }
+    .committees-section p {
+      max-width: 800px;
+      margin: 0 auto 3rem auto;
+      line-height: 1.5;
+      text-align: center;
+    }
+    .committee-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2rem;
+      justify-content: center;
+    }
+    .committee-card {
+      flex: 1 1 250px;
+      max-width: 250px;
+      text-align: center;
+      background: #fff;
+      border-radius: 8px;
+      padding: 1rem;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    .committee-card img {
+      max-width: 150px;
+      margin-bottom: 1rem;
+    }
+    .committee-card h3 {
+      margin-bottom: 0.5rem;
+      font-size: 1.2rem;
+      font-weight: 700;
+    }
+    .committee-card p {
+      margin-bottom: 1rem;
+      font-size: 0.9rem;
+    }
+
+    /* COMMITTEES button */
+    .committeebutton {
+      display: inline-block;
+      padding: 0.4rem 0.8rem;
+    }
+
+    /* FOOTER */
+    footer {
+      background: var(--color-secondary);
+      color: black;
+      padding: 2rem;
+      font-size: 0.9rem;
+      margin-top: 0;
+    }
+    .footer-wrapper {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 2rem;
+    }
+    .footer-left,
+    .footer-right {
+      flex: 1 1 250px;
+    }
+    .footer-logo-container {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .footer-logo {
+      width: 60px;
+    }
+    .footer-name span {
+      display: block;
+      line-height: 1.2;
+      color: black;
+      font-weight: bold;
+    }
+    .footer-contact p {
+      margin: 0.2rem 0;
+      color: black;
+    }
+    .footer-contact a {
+      color: black;
+      text-decoration: none;
+    }
+    .footer-contact a:hover {
+      color: var(--color-primary);
+    }
+    .footer-right h3 {
+      margin-top: 0;
+      font-weight: 700;
+    }
+    .social-links {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .social-links li {
+      margin: 0.3rem 0;
+    }
+    .social-links a {
+      text-decoration: none;
+      color: black;
+      transition: color 0.3s ease;
+    }
+    .social-links a:hover {
+      color: var(--color-primary);
+    }
+    .footer-bottom {
+      text-align: center;
+      margin-top: 1rem;
+      font-size: 0.8rem;
+      color: black;
+    }
+    .centered-text {
+      text-align: center;
+      max-width: 800px;
+      margin: 0 auto 2rem auto;
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 768px) {
+      .container {
+        max-width: 90%;
+      }
+      .hero {
+        min-height: 30vh;
+      }
+      .hero-content h1 {
+        font-size: 2rem;
+      }
+      .hero-content p {
+        font-size: 1rem;
+      }
+      .footer-content {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .membership-inner {
+        flex-direction: column;
+      }
+      .divider {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-content">
+    <h1>For Medisinstudenter</h1>
+    <p>
+      Her kan du lese mer om medlemskap i TrAMS, våre kurs og aktiviteter 
+      som er spesielt rettet mot medisinstudenter.
+    </p>
+  </div>
+</section>
+
+<!-- MEMBERSHIP SECTION -->
+<section class="membership-hero">
+  <div class="membership-inner">
+    <div class="membership-left">
+      <h1>Bli medlem!</h1>
+      <p>
+        TrAMS er studentforeningen for medisinstudenter ved NTNU som er interesserte i akuttmedisin! 
+        Som medlem kan du blant annet delta på TrAMS-arrangementer forbeholdt medlemmer, du får gratis 
+        ferdighetskurs og muligheten til å delta på vår generalforsamling.
+      </p>
+      <p>
+        Du kan også engasjere deg ytterligere i foreningen ved å bli instruktør 
+        eller bli med i foreningens komiteer.
+      </p>
+      <p>
+        TrAMS-medlemskapet er et livstidsmedlemskap med kontingent på 250 kr. 
+        For å bli medlem må du være medisinstudent ved NTNU, tidligere medisinstudent ved NTNU, 
+        eller lege ved St. Olavs Hospital.
+      </p>
+    </div>
+    <div class="divider"></div>
+    <div class="membership-right">
+      <h3>Meld deg inn nå!</h3>
+      <p>
+        Ønsker du å engasjere deg i akuttmedisin, lære nye ferdigheter og 
+        bli en del av et engasjert studentmiljø?
+        <p><strong>Bli medlem i dag ved å klikke på knappen!</strong></p>
+      </p>
+      <a href="https://forms.gle/GDLsAZTeVvTKmCqw9" class="btn-base btn">Bli medlem!</a>
+    </div>
+  </div>
+</section>
+
+<!-- OUR OFFERS -->
+<div class="container">
+  <h2 class="section-title">Våre tilbud</h2>
+  <p class="centered-text">
+    TrAMS arrangerer en rekke kurs, foredrag, skillskvelder og annet moro i løpet av et semester. 
+    Klikk deg inn under for å lese mer om de ulike tilbudene. 
+    Noen tilbud er åpne for alle medisinstudenter, mens andre er kun for medlemmer. 
+    I tillegg kan du som medlem søke om å bli instruktør i TrAMS eller 
+    bli med i en av komiteene våre!
+  </p>
+
+  <!-- COURSE-CARDS SCROLL -->
+  <div class="course-cards">
+    <div class="course-card">
+      <img src="https://imgur.com/vnWYSpG.jpg" alt="Kursbilde 1" />
+      <h3>TrAMS I - Kurs i basal akkuttmedisin</h3>
+      <p>
+        I samarbeid med fakultetet for medisin og helsevitenskap ved Norges Teknisk-Naturvitenskapelige Universitet (NTNU) arrangerer TrAMS kurs i basal akuttmedisin. Kurset er på 12 timer og fordeles over 3 dager, som en del av timeplanen i semester IA. 
+        <br>
+        Kurset innebærer teoretisk gjennomgang av ABC-drillen, en TBL-seanse og virkelighetsnær casetrening. Deltakerne trenes i basal hjerte-lungeredning, sikring av frie luftveier og enkle strategier for blødningskontroll og overvåkning av sirkulasjonsstatus. I tillegg gjennomgås vurdering av bevissthetsnivå etter AVPU-skalaen.
+      </p>
+    </div>
+    <div class="course-card">
+      <img src="https://imgur.com/FCUWJQ8.jpg" alt="Kursbilde 2" />
+      <h3>TrAMS II - Kurs i prehospital akkuttmedisin</h3>
+      <p>
+        TrAMS II kurset er et kurs i prehospital akuttmedisin for medisinstudenter på stadium II. I 2021 ble kurset for første gang timeplanfestet for medisinstudenter i 3. klasse.
+        <br>
+        Kurset omfatter diagnostikk og behandling av akutt respirasjonssvikt, sirkulasjonssvikt og nedsatt bevissthet, monitorering ved akutt kritisk sykdom, samt basal håndtering av traumepasienter. 
+        <br>
+        Kurset organiseres i en ferdighetskveld og en ringløype med realistiske caser.
+      </p>
+    </div>
+    <div class="course-card">
+      <img src="https://imgur.com/t5LRW8B.jpg" alt="Kursbilde 3" />
+      <h3>TrAMS III - Kurs i akutt mottaksmedisin</h3>
+      <p>
+        TrAMS III er et kurs i akutt mottaksmedisin for medisinstudenter på stadium III. 
+        <br>
+        Kurset omfatter undersøkelse, diagnostikk, monitorering og behandling av kritisk og akutt syke pasienter i akuttmottak. 
+        <br>
+        Kurset innebærer praktisk trening i ringløype.
+      </p>
+    </div>
+    <div class="course-card">
+      <img src="https://imgur.com/8BhcrjG.jpg" alt="Kursbilde 4" />
+      <h3>Suturkurs</h3>
+      <p>
+        Suturkursene arrangeres av KirKom. 
+        <br>
+        Vi tilbyr både basale suturkurs for nybegynnere og mer avanserte kurs for viderekomne. 
+      </p>
+    </div>
+    <div class="course-card">
+      <img src="https://imgur.com/MiTCD8m.jpg" alt="Kursbilde 5" />
+      <h3>Gipsekurs</h3>
+      <p>
+        Kurset omfatter teoretisk gjennomgang og praktisk øving i å legge radiuslaske og ankelgips.
+      </p>
+    </div>
+    <div class="course-card">
+      <img src="https://imgur.com/Q0N4CF1.jpg" alt="Kursbilde 6" />
+      <h3>PVK-kurs</h3>
+      <p>
+        Kurset omfatter en gjennomgang av standard prosedyre for perifer venekanylering, samt praktisk trening i mindre grupper med instruktører.
+      </p>
+    </div>
+    <div class="course-card">
+      <img src="https://imgur.com/0UGQZtp.jpg" alt="Kursbilde 7" />
+      <h3>Ultralyd-kurs: eFAST</h3>
+      <p>
+        En akuttmedisinsk ultralyd-undersøkelse, som brukes i traumesammenheng for å oppdage fritt blod rundt hjertet og i buken.
+        <br>
+        Som deltaker vil du få opplæring i selve undersøkelsen, deretter vil du få god tid til praktisk trening under veiledning av instruktører. 
+      </p>
+    </div>
+    <div class="course-card">
+      <img src="https://imgur.com/TK4qFvk.jpg" alt="Kursbilde 8" />
+      <h3>Ultralyd-kurs: RUSH</h3>
+      <p>
+        Står for Rapid Ultrasound in Shock and Hypotension. Også en akuttmedisinsk ultralyd-protokoll, som er veldig relevant for LIS1!
+        <br>
+        Som deltaker vil du få opplæring i selve undersøkelsen, deretter vil du få god tid til praktisk trening under veiledning av instruktører. 
+        <br>
+        For størst mulig utbytte anbefaler vi sterkt å delta på eFAST før RUSH.
+      </p>
+    </div>
+    <div class="course-card">
+      <img src="https://imgur.com/B94No1w.jpg" alt="Kursbilde 9" />
+      <h3>Pediatrisk ringløype</h3>
+      <p>
+        TBA
+      </p>
+    </div>
+    <div class="course-card">
+      <img src="https://imgur.com/6WJZ7ZM.jpg" alt="Kursbilde 10" />
+      <h3>Frivillig uketjeneste i akuttmedisin</h3>
+      <p>
+        Frivillig uketjeneste i akuttmedisin er et tilbud for alle som har deltatt på informasjonsmøte i regi av TrAMS i samarbeid med anestesiavdelingen ved St. Olavs hospital.
+        <br>
+        Dette krever at man studerer medisin på NTNU ved stadium II eller III. Du trenger ikke å være medlem for å benytte deg av tilbudet.
+      </p>
+      <a href="https://www.trams.no/for-medisinstudenter/akuttcalling" class="btn-base btn">Les mer</a>
+    </div>
+    <div class="course-card">
+      <img src="https://imgur.com/ugfrz3s.jpg" alt="Kursbilde 11" />
+      <h3>Markøroppdrag</h3>
+      <p>
+        Markører er nødvendige for å gjennomføre akuttmedisinske kurs. Som markør spiller man syk eller skadd i en medisinsk simulering.
+        <br>
+        Gjennom året har vi behov for markører til mange av våre egne kurs, deriblant TrAMS II - og TrAMS III - kursene. I tillegg får vi flere spennende forespørsler fra andre aktører, blant annet har vi hatt markøroppdrag for Forsvaret, Politiet, Ambulansen og avdelinger på St.Olavs hospital.
+      </p>
+      <a href="https://www.trams.no/for-medisinstudenter/mark%C3%B8rer" class="btn-base btn">Les mer</a>
+    </div>
+    <div class="course-card">
+      <img src="https://imgur.com/eWdPbng.jpg" alt="Kursbilde 12" />
+      <h3>Foredrag</h3>
+      <p>
+        TrAMS arrangerer også diverse foredrag gjennom et semester med akuttmedisinsk relevans. Foredragene har ulik tematikk og skal sørge for faglig påfyll og inspirasjon. 
+      </p>
+      <a href="https://www.trams.no/for-medisinstudenter/%C3%A5pne-foredrag" class="btn-base btn">Les mer</a>
+    </div>
+    <div class="course-card">
+      <img src="https://imgur.com/jZBTHbd.jpg" alt="Kursbilde 13" />
+      <h3>Andre arrangementer</h3>
+      <p>
+        TrAMS arrangerer en rekke andre aktiviteter gjennom skoleåret.
+        <br>
+        Juleverksted og påskeverksted er populære ettermiddagstilbud med ferdighetstrening og hygge før høytidene. 
+        <br>
+        Før eksamen arrangerer vi også eksamensøving for å friske opp ferdighetene før OSKE.
+      </p>
+    </div>
+  </div>
+
+    <!-- COMMITTEES SECTION -->
+    <section class="committees-section">
+    <h2 class="section-title">Komitéer</h2>
+    <p>
+        Er du interessert i å fordype deg innenfor TrAMS? Som medlem i en av TrAMS sine komitéer kan du bli med å utvikle caser, nye kurs, eller innhold til skillskvelder. Som komitémedlem får involvere deg masse i TrAMS og du vil få lære mye om både fag og organisering. Det skal være gøy å være med i en komité og derfor legger man opp aktiviteten etter hva komiteen selv ønsker. Klikk inn på hver komité under for å lese mer om dem!
+        <br><br>
+        Har du spørsmål om TrAMS sine komitéer, eller en idé om å stifte en ny komité?
+        Ta kontakt med <a href="mailto:komiteansvarlig@trams.no" style="color:var(--color-primary);text-decoration:underline;">komiteansvarlig@trams.no</a> 
+        eller kontakt komitéen direkte.
+    </p>
+
+    <div class="committee-grid">
+        <div class="committee-card">
+        <img src="https://imgur.com/56Uvds1.png" alt="Placeholder KirKom logo">
+        <h3>KirKom - Traume og kirurgisk komité</h3>
+        <p><a href="mailto:kirkom@trams.no" style="color:black;text-decoration:underline;">kirkom@trams.no</a></p>
+        <a href="https://www.trams.no/for-medisinstudenter/kirkom" class="btn-base committeebutton">Les mer</a>
+        </div>
+        <div class="committee-card">
+        <img src="https://imgur.com/GOmZ3mx.png" alt="Placeholder RadKom logo">
+        <h3>RadKom - Radiologisk komité</h3>
+        <p><a href="mailto:radkom@trams.no" style="color:black;text-decoration:underline;">radkom@trams.no</a></p>
+        <a href="https://www.trams.no/for-medisinstudenter/radkom" class="btn-base committeebutton">Les mer</a>
+        </div>
+        <div class="committee-card">
+        <img src="https://imgur.com/doKxS3V.png" alt="Placeholder FjellKom logo">
+        <h3>FjellKom - Fjellmedisinsk komité</h3>
+        <p><a href="mailto:fjellkom@trams.no" style="color:black;text-decoration:underline;">fjellkom@trams.no</a></p>
+        <a href="https://www.trams.no/for-medisinstudenter/fjellkom" class="btn-base committeebutton">Les mer</a>
+        </div>
+        <div class="committee-card">
+        <img src="https://imgur.com/5gHES5V.png" alt="Placeholder PedKom logo">
+        <h3>PedKom - Pediatrisk komité</h3>
+        <p><a href="mailto:pedkom@trams.no" style="color:black;text-decoration:underline;">pedkom@trams.no</a></p>
+        <a href="https://www.trams.no/for-medisinstudenter/pedkom" class="btn-base committeebutton">Les mer</a>
+        </div>
+        <div class="committee-card">
+        <img src="https://imgur.com/evhbL2E.png" alt="Placeholder SosKom logo">
+        <h3>SosKom - Sosialkomitéen</h3>
+        <p><a href="mailto:soskom@trams.no" style="color:black;text-decoration:underline;">soskom@trams.no</a></p>
+        <a href="https://www.trams.no/for-medisinstudenter/soskom" class="btn-base committeebutton">Les mer</a>
+        </div>
+        <div class="committee-card">
+        <img src="https://imgur.com/vUl3eqv.png" alt="Placeholder TrAMS Levanger logo">
+        <h3>TrAMS Levanger</h3>
+        <p><a href="mailto:levanger@trams.no" style="color:black;text-decoration:underline;">levanger@trams.no</a></p>
+        <a href="https://www.trams.no/for-medisinstudenter/trams-levanger" class="btn-base committeebutton">Les mer</a>
+        </div>
+    </div>
+    </section>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-wrapper">
+    <div class="footer-left">
+      <div class="footer-logo-container">
+        <img src="https://i.imgur.com/jZBTHbd.png" alt="TrAMS logo" class="footer-logo">
+        <div class="footer-name">
+          <span>Trondheim</span>
+          <span>Akuttmedisinske</span>
+          <span>Studentforening</span>
+        </div>
+      </div>
+      <div class="footer-contact">
+        <p><strong>Adresse:</strong> Fred Kavli-bygget, 1. et ved varemottak St. Olavs Hospital 7491 Trondheim</p>
+        <p><strong>Org.nr:</strong> 994089358</p>
+        <p><strong>E-post:</strong> 
+          <a href="mailto:[Email address]">web@trams.no</a>
+        </p>
+      </div>
+    </div>
+    <div class="footer-right">
+      <h3>Sosiale medier</h3>
+      <ul class="social-links">
+        <li><a href="https://www.instagram.com/trondheimams/" target="_blank" rel="noopener noreferrer">Instagram</a></li>
+        <li><a href="https://www.facebook.com/trondheimams/" target="_blank" rel="noopener noreferrer">Facebook</a></li>
+        <!--<li><a href="#" target="_blank" rel="noopener noreferrer">YouTube</a></li>-->
+        <!--<li><a href="#" target="_blank" rel="noopener noreferrer">LinkedIn</a></li>-->
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>&copy; 2024 Trondheim Akuttmedisinske Studentforening</p>
+  </div>
+</footer>
+
+</body>
+</html>
