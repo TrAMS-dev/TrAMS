@@ -11,9 +11,13 @@ const nextConfig: NextConfig = {
         hostname: "i.imgur.com",
       },
       {
-        protocol:"https",
+        protocol: "https",
         hostname: "imgur.com"
       },
+      {
+        protocol: "https",
+        hostname: "cdn.sanity.io"
+      }
     ],
   },
 };

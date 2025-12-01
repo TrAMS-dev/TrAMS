@@ -11,18 +11,27 @@
   "dependencies": {
     "@chakra-ui/react": "^3.30.0",
     "@emotion/react": "^11.14.0",
+    "@portabletext/react": "^5.0.0",
+    "@sanity/client": "^7.13.1",
+    "@sanity/image-url": "^1.2.0",
+    "@sanity/vision": "4",
     "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.86.0",
+    "@tailwindcss/typography": "^0.5.19",
     "lucide-react": "^0.555.0",
     "next": "16.0.5",
+    "next-sanity": "^11.6.10",
     "react": "19.2.0",
-    "react-dom": "19.2.0"
+    "react-dom": "19.2.0",
+    "sanity": "^4.19.0",
+    "styled-components": "6"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "baseline-browser-mapping": "^2.8.32",
     "eslint": "^9",
     "eslint-config-next": "16.0.5",
     "tailwindcss": "^4",

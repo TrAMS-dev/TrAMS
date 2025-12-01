@@ -169,3 +169,85 @@ export function CenteredText({
   );
 }
 
+import type { PortableTextComponents } from 'next-sanity';
+
+/**
+ * Custom components for rendering Sanity PortableText content
+ * Uses predefined Typography components for consistency
+ * Use this with: <PortableText value={content} components={portableTextComponents} />
+ */
+export const portableTextComponents: PortableTextComponents = {
+  block: {
+    h1: ({ children }) => <PageHeading mb={6}>{children}</PageHeading>,
+    h2: ({ children }) => (
+      <SubsectionHeading as="h2" fontSize="1.5rem" mt={6} mb={3}>
+        {children}
+      </SubsectionHeading>
+    ),
+    h3: ({ children }) => <SubsectionHeading mt={5} mb={2}>{children}</SubsectionHeading>,
+    h4: ({ children }) => (
+      <SubsectionHeading as="h4" fontSize="1.1rem" mt={4} mb={2}>
+        {children}
+      </SubsectionHeading>
+    ),
+    normal: ({ children }) => <BodyText>{children}</BodyText>,
+    blockquote: ({ children }) => (
+      <Box
+        as="blockquote"
+        borderLeftWidth="4px"
+        borderLeftColor="gray.300"
+        pl={4}
+        fontStyle="italic"
+        my={4}
+      >
+        {children}
+      </Box>
+    ),
+  },
+  list: {
+    bullet: ({ children }) => (
+      <Box as="ul" listStyleType="disc" listStylePosition="inside" mb={4} css={{ '& > li': { marginTop: '0.5rem' } }}>
+        {children}
+      </Box>
+    ),
+    number: ({ children }) => (
+      <Box as="ol" listStyleType="decimal" listStylePosition="inside" mb={4} css={{ '& > li': { marginTop: '0.5rem' } }}>
+        {children}
+      </Box>
+    ),
+  },
+  listItem: {
+    bullet: ({ children }) => <Box as="li" ml={4}>{children}</Box>,
+    number: ({ children }) => <Box as="li" ml={4}>{children}</Box>,
+  },
+  marks: {
+    strong: ({ children }) => <Text as="strong" fontWeight="bold">{children}</Text>,
+    em: ({ children }) => <Text as="em" fontStyle="italic">{children}</Text>,
+    code: ({ children }) => (
+      <Text
+        as="code"
+        bg="gray.100"
+        borderRadius="md"
+        px={1}
+        py={0.5}
+        fontSize="sm"
+        fontFamily="mono"
+      >
+        {children}
+      </Text>
+    ),
+    link: ({ children, value }) => (
+      <a
+        href={value?.href}
+        target="_blank"
+        rel="noopener noreferrer"
+        style={{
+          color: '#2563eb',
+          textDecoration: 'underline',
+        }}
+      >
+        {children}
+      </a>
+    ),
+  },
+};
