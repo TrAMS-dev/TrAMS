@@ -1,4 +1,6 @@
 import { defineField, defineType } from 'sanity'
+import { slugify } from '../lib/slugify'
+
 
 export const boardMemberType = defineType({
     name: 'boardMember',
@@ -18,16 +20,9 @@ export const boardMemberType = defineType({
             options: {
                 source: 'name',
                 maxLength: 96,
-                slugify: (input: string) => input
-                    .toLowerCase()
-                    .replace(/\s+/g, '-')
-                    .replace(/[^\w\-]+/g, '')
-                    .replace(/\-\-+/g, '-')
-                    .replace(/^\-+/, '')
-                    .replace(/\-+$/, '')
+                slugify: slugify,
             },
             validation: (rule) => rule.required(),
-            hidden: true,
         }),
         defineField({
             name: 'role',
