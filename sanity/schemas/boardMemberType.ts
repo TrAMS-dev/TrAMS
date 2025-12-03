@@ -2,7 +2,7 @@ import { defineField, defineType } from 'sanity'
 
 export const boardMemberType = defineType({
     name: 'boardMember',
-    title: 'Board Member',
+    title: 'Styremedlem',
     type: 'document',
     fields: [
         defineField({
@@ -16,10 +16,11 @@ export const boardMemberType = defineType({
             title: 'Slug',
             type: 'slug',
             options: {
-                source: 'role',
+                source: 'name',
                 maxLength: 96,
             },
             validation: (rule) => rule.required(),
+            hidden: true,
         }),
         defineField({
             name: 'role',
@@ -32,6 +33,18 @@ export const boardMemberType = defineType({
             title: 'Email',
             type: 'string',
             validation: (rule) => rule.email(),
+        }),
+        defineField({
+            name: 'activeFrom',
+            title: 'Active from',
+            type: 'date',
+            validation: (rule) => rule.required(),
+        }),
+        defineField({
+            name: 'activeTo',
+            title: 'Active to',
+            type: 'date',
+            validation: (rule) => rule.required(),
         }),
         defineField({
             name: 'age',
@@ -69,7 +82,6 @@ export const boardMemberType = defineType({
             name: 'order',
             title: 'Display Order',
             type: 'number',
-            validation: (rule) => rule.required().min(0),
         }),
     ],
     preview: {

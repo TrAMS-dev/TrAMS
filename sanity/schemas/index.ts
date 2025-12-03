@@ -1,4 +1,4 @@
-import { postType } from './postType'
 import { boardMemberType } from './boardMemberType'
+import { carouselSlideType } from './carouselSlideType'
 
-export const schemaTypes = [postType, boardMemberType]
+export const schemaTypes = [boardMemberType, carouselSlideType]

@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import { Box, Flex, VStack, Link, Text } from '@chakra-ui/react';
+import { Facebook, Instagram, Github } from 'lucide-react';
 
 export default function Footer() {
   return (
@@ -57,36 +58,54 @@ export default function Footer() {
           <Text as="h3" mt={0} fontWeight={700} mb={2}>
             Sosiale medier
           </Text>
-          <VStack as="ul" align="start" gap={1} listStyleType="none" p={0} m={0}>
-            <Box as="li">
-              <Link
-                href="https://www.instagram.com/trondheimams/"
-                target="_blank"
-                rel="noopener noreferrer"
-                textDecoration="none"
-                color="black"
-                _hover={{ color: 'var(--color-primary)' }}
-              >
-                Instagram
-              </Link>
-            </Box>
-            <Box as="li">
-              <Link
-                href="https://www.facebook.com/trondheimams/"
-                target="_blank"
-                rel="noopener noreferrer"
-                textDecoration="none"
-                color="black"
-                _hover={{ color: 'var(--color-primary)' }}
-              >
-                Facebook
-              </Link>
-            </Box>
-          </VStack>
+          <Flex gap={4}>
+            <Link
+              href="https://www.instagram.com/trondheimams/"
+              target="_blank"
+              rel="noopener noreferrer"
+              color="black"
+              _hover={{ color: 'var(--color-primary)' }}
+              aria-label="Instagram"
+            >
+              <Instagram size={24} />
+            </Link>
+            <Link
+              href="https://www.facebook.com/trondheimams/"
+              target="_blank"
+              rel="noopener noreferrer"
+              color="black"
+              _hover={{ color: 'var(--color-primary)' }}
+              aria-label="Facebook"
+            >
+              <Facebook size={24} />
+            </Link>
+            <Link
+              href="https://github.com/trondheimams"
+              target="_blank"
+              rel="noopener noreferrer"
+              color="black"
+              _hover={{ color: 'var(--color-primary)' }}
+              aria-label="GitHub"
+            >
+              <Github size={24} />
+            </Link>
+          </Flex>
         </Box>
       </Flex>
       <Box textAlign="center" mt={4} fontSize="0.8rem" color="black">
         <Text m={0}>&copy; 2024 Trondheim Akuttmedisinske Studentforening</Text>
+        <Link
+          href="/studio"
+          color="gray.500"
+          textDecoration="none"
+          _hover={{ color: 'var(--color-primary)', opacity: 1 }}
+          fontSize="0.7rem"
+          mt={2}
+          display="inline-block"
+          opacity={0.5}
+        >
+          Endre innhold på nettsiden
+        </Link>
       </Box>
     </Box>
   );

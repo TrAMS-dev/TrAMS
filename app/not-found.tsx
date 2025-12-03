@@ -22,13 +22,7 @@ export default function NotFound() {
               </Button>
             </ChakraLink>
 
-            <ChakraLink as={NextLink} href="/arrangementer" _hover={{ textDecoration: 'none' }}>
-              <Button variant="outline" borderColor="var(--color-primary)" color="var(--color-text)">
-                Se arrangementer
-              </Button>
-            </ChakraLink>
-
-            <ChakraLink href="mailto:web@trams.no"  _hover={{ textDecoration: 'none' }}>
+            <ChakraLink href="mailto:web@trams.no" _hover={{ textDecoration: 'none' }}>
               <Button variant="ghost" color="var(--color-text)">Kontakt oss</Button>
             </ChakraLink>
           </HStack>

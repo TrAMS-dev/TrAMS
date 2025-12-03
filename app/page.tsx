@@ -5,51 +5,27 @@ import Link from 'next/link';
 import Image from 'next/image';
 import Carousel from '@/components/Carousel';
 import { Box, Flex, Heading, Text, Container, Button, Link as ChakraLink, HStack } from '@chakra-ui/react';
-import { getAllBoardMembers } from '@/utils/sanity/boardMembers';
+import { BOARD_MEMBERS_QUERY, CAROUSEL_SLIDES_QUERY } from '@/sanity/lib/queries'
 import { urlFor } from '@/sanity/lib/image';
 import ClientCalendar from '@/components/ClientCalendar';
-import { BoardMember } from '@/types/sanity.types';
+import { BoardMember, CarouselSlide } from '@/types/sanity.types';
+import { client } from '@/sanity/lib/client';
 
 export default function Home() {
   const [boardMembers, setBoardMembers] = useState<BoardMember[]>([]);
+  const [carouselSlides, setCarouselSlides] = useState<CarouselSlide[]>([]);
+
 
   useEffect(() => {
-    getAllBoardMembers().then((boardMembers) => setBoardMembers(boardMembers));
+    client.fetch<BoardMember[]>(BOARD_MEMBERS_QUERY)
+      .then((boardMembers) => setBoardMembers(boardMembers));
   }, []);
 
-  const scrollToAbout = () => {
-    const target = document.getElementById('om-oss');
-    if (target) {
-      target.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
 
-  const carouselSlides = [
-    {
-      backgroundImage: 'https://imgur.com/rKhkGGT.jpg',
-      title: 'TrAMS, Trondheim Akuttmedisinske Studentforening',
-      description:
-        'Vi er en ideell organisasjon, av og for medisinstudenter i Trondheim, basert på frivillighet. Foreningens hovedformål er å tydeliggjøre viktigheten av faglig kompetanse innenfor akuttmedisin, både for kommende leger og andre.',
-      buttonText: 'Klikk for å lese mer om oss!',
-      onClick: scrollToAbout,
-    },
-    {
-      backgroundImage: 'https://i.imgur.com/521F3ik.jpg',
-      title: 'Ny medisinstudent i Trondheim',
-      description:
-        'TrAMS er studentforeningen for medisinstudenter ved NTNU som er interesserte i akuttmedisin! Som medlem kan du blant annet delta på TrAMS-arrangementer forbeholdt medlemmer, du får gratis ferdighetskurs og muligheten til å delta på vår generalforsamling.',
-      buttonText: 'Klikk her for å bli medlem',
-      link: '/for-medisinstudenter',
-    },
-    {
-      backgroundImage: 'https://imgur.com/FCUWJQ8.jpg',
-      title: 'Ønsker du å bli Instruktør?',
-      description:
-        'Som instruktør får du muligheten til å lære bort akuttmedisin på både eksterne og interne kurs. I tillegg blir man prioritert på noen av TrAMS sine antallsbegrensede arrangementer. Som instruktør får man ta del i et sosialt og hyggelig instruktørmiljø!',
-      buttonText: 'Klikk her for å lese om hvordan man kan bli instruktør i TrAMS',
-      link: '/instruktorer',
-    },
-  ];
+  useEffect(() => {
+    client.fetch<CarouselSlide[]>(CAROUSEL_SLIDES_QUERY)
+      .then((carouselSlides) => setCarouselSlides(carouselSlides));
+  }, []);
 
 
 
@@ -83,7 +59,7 @@ export default function Home() {
       </Flex>
 
       {/* Info-section: about + calendar */}
-      <Container maxW={{ base: "95%", md: "60%" }} p={0}>
+      <Container maxW={{ base: "95%", md: "60%" }} p={0} id='about'>
         <Flex flexDirection="column" align="flex-start" gap={{ base: 4, md: 8 }} maxW="1200px" mx="auto" my={{ base: 4, md: 8 }} bg="var(--color-altBg)" p={{ base: 4, md: 4 }} borderRadius="8px">
           <Box
             id="om-oss"

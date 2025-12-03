@@ -3,18 +3,11 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Box, Button, HStack, Heading, Text } from '@chakra-ui/react';
-
-interface Slide {
-  backgroundImage: string;
-  title: string;
-  description: string;
-  buttonText: string;
-  link?: string;
-  onClick?: () => void;
-}
+import { CarouselSlide } from '@/types/sanity.types';
+import { urlFor } from '@/sanity/lib/image';
 
 interface CarouselProps {
-  slides: Slide[];
+  slides: CarouselSlide[];
 }
 
 export default function Carousel({ slides }: CarouselProps) {
@@ -39,7 +32,7 @@ export default function Carousel({ slides }: CarouselProps) {
   const nextSlide = () => showSlide(currentSlide + 1);
   const prevSlide = () => showSlide(currentSlide - 1);
 
-  const SlideContent = ({ slide }: { slide: Slide }) => (
+  const SlideContent = ({ slide }: { slide: CarouselSlide }) => (
     <Box position="relative" zIndex={3} textAlign="center" p={5} m={0}>
       <Heading
         as="h1"
@@ -109,53 +102,58 @@ export default function Carousel({ slides }: CarouselProps) {
           h="100%"
           style={{ transform: `translateX(-${currentSlide * 100}%)` }}
         >
-          {slides.map((slide, index) => (
-            <Box
-              key={index}
-              position="relative"
-              minW="100%"
-              h="100%"
-              style={{
-                backgroundImage: `url(${slide.backgroundImage})`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                backgroundRepeat: 'no-repeat',
-              }}
-              display="flex"
-              alignItems="center"
-              justifyContent="center"
-            >
+          {slides.map((slide, index) => {
+            const imageUrl = slide.backgroundImage
+              ? urlFor(slide.backgroundImage).width(1920).height(1080).url()
+              : null;
+
+            return (
               <Box
-                position="absolute"
-                inset={0}
-                bg="rgba(0, 0, 0, 0.6)"
-                zIndex={1}
-                pointerEvents="none"
-              />
-              {slide.link ? (
-                <Link
-                  href={slide.link}
-                  target={slide.link.startsWith('http') ? '_blank' : undefined}
-                  rel={slide.link.startsWith('http') ? 'noopener noreferrer' : undefined}
-                  className="absolute inset-0 z-2 no-underline text-inherit"
-                >
-                  <SlideContent slide={slide} />
-                </Link>
-              ) : (
+                key={index}
+                position="relative"
+                minW="100%"
+                h="100%"
+                style={{
+                  backgroundImage: imageUrl ? `url(${imageUrl})` : undefined,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                  backgroundRepeat: 'no-repeat',
+                }}
+                display="flex"
+                alignItems="center"
+                justifyContent="center"
+              >
                 <Box
-                  onClick={slide.onClick}
                   position="absolute"
                   inset={0}
-                  zIndex={2}
-                  textDecoration="none"
-                  color="inherit"
-                  cursor="pointer"
-                >
-                  <SlideContent slide={slide} />
-                </Box>
-              )}
-            </Box>
-          ))}
+                  bg="rgba(0, 0, 0, 0.6)"
+                  zIndex={1}
+                  pointerEvents="none"
+                />
+                {slide.buttonLink ? (
+                  <Link
+                    href={slide.buttonLink}
+                    target={slide.buttonLink.startsWith('http') ? '_blank' : undefined}
+                    rel={slide.buttonLink.startsWith('http') ? 'noopener noreferrer' : undefined}
+                    className="absolute inset-0 z-2 no-underline text-inherit"
+                  >
+                    <SlideContent slide={slide} />
+                  </Link>
+                ) : (
+                  <Box
+                    position="absolute"
+                    inset={0}
+                    zIndex={2}
+                    textDecoration="none"
+                    color="inherit"
+                    cursor="pointer"
+                  >
+                    <SlideContent slide={slide} />
+                  </Box>
+                )}
+              </Box>
+            );
+          })}
         </Box>
 
         <Button

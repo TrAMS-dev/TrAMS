@@ -13,6 +13,46 @@
  */
 
 // Source: schema.json
+export type CarouselSlide = {
+  _id: string;
+  _type: "carouselSlide";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  backgroundImage: {
+    asset?: {
+      _ref: string;
+      _type: "reference";
+      _weak?: boolean;
+      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+    };
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+  };
+  title: string;
+  description: string;
+  buttonText: string;
+  buttonLink: string;
+};
+
+export type SanityImageCrop = {
+  _type: "sanity.imageCrop";
+  top: number;
+  bottom: number;
+  left: number;
+  right: number;
+};
+
+export type SanityImageHotspot = {
+  _type: "sanity.imageHotspot";
+  x: number;
+  y: number;
+  height: number;
+  width: number;
+};
+
 export type BoardMember = {
   _id: string;
   _type: "boardMember";
@@ -23,6 +63,8 @@ export type BoardMember = {
   slug: Slug;
   role: string;
   email?: string;
+  activeFrom: string;
+  activeTo: string;
   age?: number;
   hometown?: string;
   profileImage: {
@@ -67,71 +109,13 @@ export type BoardMember = {
     _type: "block";
     _key: string;
   }>;
-  order: number;
-};
-
-export type SanityImageCrop = {
-  _type: "sanity.imageCrop";
-  top: number;
-  bottom: number;
-  left: number;
-  right: number;
-};
-
-export type SanityImageHotspot = {
-  _type: "sanity.imageHotspot";
-  x: number;
-  y: number;
-  height: number;
-  width: number;
+  order?: number;
 };
 
 export type Slug = {
   _type: "slug";
   current: string;
   source?: string;
-};
-
-export type Post = {
-  _id: string;
-  _type: "post";
-  _createdAt: string;
-  _updatedAt: string;
-  _rev: string;
-  title: string;
-  slug: Slug;
-  author: string;
-  publishedAt: string;
-  headerImage: {
-    asset?: {
-      _ref: string;
-      _type: "reference";
-      _weak?: boolean;
-      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
-    };
-    media?: unknown;
-    hotspot?: SanityImageHotspot;
-    crop?: SanityImageCrop;
-    _type: "image";
-  };
-  content: Array<{
-    children?: Array<{
-      marks?: Array<string>;
-      text?: string;
-      _type: "span";
-      _key: string;
-    }>;
-    style?: "normal" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "blockquote";
-    listItem?: "bullet" | "number";
-    markDefs?: Array<{
-      href?: string;
-      _type: "link";
-      _key: string;
-    }>;
-    level?: number;
-    _type: "block";
-    _key: string;
-  }>;
 };
 
 export type SanityImagePaletteSwatch = {
@@ -230,29 +214,127 @@ export type Geopoint = {
   alt?: number;
 };
 
-export type AllSanitySchemaTypes = BoardMember | SanityImageCrop | SanityImageHotspot | Slug | Post | SanityImagePaletteSwatch | SanityImagePalette | SanityImageDimensions | SanityImageMetadata | SanityFileAsset | SanityAssetSourceData | SanityImageAsset | Geopoint;
+export type AllSanitySchemaTypes = CarouselSlide | SanityImageCrop | SanityImageHotspot | BoardMember | Slug | SanityImagePaletteSwatch | SanityImagePalette | SanityImageDimensions | SanityImageMetadata | SanityFileAsset | SanityAssetSourceData | SanityImageAsset | Geopoint;
 export declare const internalGroqTypeReferenceTo: unique symbol;
 // Source: sanity/lib/queries.ts
-// Variable: POSTS_QUERY
-// Query: *[_type == "post" && defined(slug.current)][0...12]{  _id, title, slug}
-export type POSTS_QUERYResult = Array<{
+// Variable: BOARD_MEMBERS_QUERY
+// Query: *[_type == "boardMember"] | order(order asc) {  _id,  name,  slug,  role,  email,  age,  hometown,  profileImage,  PersonalImage,  bio,  order,  activeFrom,  activeTo}
+export type BOARD_MEMBERS_QUERYResult = Array<{
   _id: string;
-  title: string;
+  name: string;
   slug: Slug;
+  role: string;
+  email: string | null;
+  age: number | null;
+  hometown: string | null;
+  profileImage: {
+    asset?: {
+      _ref: string;
+      _type: "reference";
+      _weak?: boolean;
+      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+    };
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+  };
+  PersonalImage: {
+    asset?: {
+      _ref: string;
+      _type: "reference";
+      _weak?: boolean;
+      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+    };
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+  };
+  bio: Array<{
+    children?: Array<{
+      marks?: Array<string>;
+      text?: string;
+      _type: "span";
+      _key: string;
+    }>;
+    style?: "blockquote" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "normal";
+    listItem?: "bullet" | "number";
+    markDefs?: Array<{
+      href?: string;
+      _type: "link";
+      _key: string;
+    }>;
+    level?: number;
+    _type: "block";
+    _key: string;
+  }>;
+  order: number | null;
+  activeFrom: string;
+  activeTo: string;
 }>;
-// Variable: POST_QUERY
-// Query: *[_type == "post" && slug.current == $slug][0]{  title, body, mainImage}
-export type POST_QUERYResult = {
-  title: string;
-  body: null;
-  mainImage: null;
+// Variable: BOARD_MEMBER_QUERY
+// Query: *[_type == "boardMember" && slug.current == $slug][0] {  _id,  name,  slug,  role,  email,  age,  hometown,  profileImage,  PersonalImage,  bio,  order,  activeFrom,  activeTo}
+export type BOARD_MEMBER_QUERYResult = {
+  _id: string;
+  name: string;
+  slug: Slug;
+  role: string;
+  email: string | null;
+  age: number | null;
+  hometown: string | null;
+  profileImage: {
+    asset?: {
+      _ref: string;
+      _type: "reference";
+      _weak?: boolean;
+      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+    };
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+  };
+  PersonalImage: {
+    asset?: {
+      _ref: string;
+      _type: "reference";
+      _weak?: boolean;
+      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+    };
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+  };
+  bio: Array<{
+    children?: Array<{
+      marks?: Array<string>;
+      text?: string;
+      _type: "span";
+      _key: string;
+    }>;
+    style?: "blockquote" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "normal";
+    listItem?: "bullet" | "number";
+    markDefs?: Array<{
+      href?: string;
+      _type: "link";
+      _key: string;
+    }>;
+    level?: number;
+    _type: "block";
+    _key: string;
+  }>;
+  order: number | null;
+  activeFrom: string;
+  activeTo: string;
 } | null;
 
 // Query TypeMap
 import "@sanity/client";
 declare module "@sanity/client" {
   interface SanityQueries {
-    "*[_type == \"post\" && defined(slug.current)][0...12]{\n  _id, title, slug\n}": POSTS_QUERYResult;
-    "*[_type == \"post\" && slug.current == $slug][0]{\n  title, body, mainImage\n}": POST_QUERYResult;
+    "*[_type == \"boardMember\"] | order(order asc) {\n  _id,\n  name,\n  slug,\n  role,\n  email,\n  age,\n  hometown,\n  profileImage,\n  PersonalImage,\n  bio,\n  order,\n  activeFrom,\n  activeTo\n}": BOARD_MEMBERS_QUERYResult;
+    "*[_type == \"boardMember\" && slug.current == $slug][0] {\n  _id,\n  name,\n  slug,\n  role,\n  email,\n  age,\n  hometown,\n  profileImage,\n  PersonalImage,\n  bio,\n  order,\n  activeFrom,\n  activeTo\n}": BOARD_MEMBER_QUERYResult;
   }
 }

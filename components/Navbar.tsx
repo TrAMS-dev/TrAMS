@@ -28,7 +28,6 @@ export default function Navbar() {
 
   const navLinks = [
     { href: '/', label: 'Hjem' },
-    { href: '/arrangementer', label: 'Arrangementer' },
     { href: '/forstehjelpskurs', label: 'Førstehjelpskurs' },
     { href: '/for-medisinstudenter', label: 'For medisinstudenter' },
     { href: '/instruktorer', label: 'For instruktører' },
@@ -100,17 +99,6 @@ export default function Navbar() {
               )}
             </Link>
           ))}
-          <Link href="/users">
-            <IconButton
-              aria-label="Brukere"
-              variant="ghost"
-              color="var(--color-text)"
-              _hover={{ bg: 'var(--color-altBg)', color: 'var(--color-primary)' }}
-              rounded="full"
-            >
-              <User size={20} />
-            </IconButton>
-          </Link>
         </HStack>
 
         {/* Mobile Menu Button */}
@@ -169,20 +157,6 @@ export default function Navbar() {
               {link.label}
             </Link>
           ))}
-          <Box px={4} pb={4}>
-            <Link href="/users" onClick={() => setIsMobileMenuOpen(false)}>
-              <Button
-                w="full"
-                variant="ghost"
-                justifyContent="flex-start"
-                color="var(--color-text)"
-                _hover={{ bg: 'var(--color-altBg)', color: 'var(--color-primary)' }}
-              >
-                <User size={20} style={{ marginRight: '8px' }} />
-                Brukere
-              </Button>
-            </Link>
-          </Box>
         </Box>
       )}
     </Box>
