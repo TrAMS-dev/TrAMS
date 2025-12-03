@@ -18,6 +18,13 @@ export const boardMemberType = defineType({
             options: {
                 source: 'name',
                 maxLength: 96,
+                slugify: (input: string) => input
+                    .toLowerCase()
+                    .replace(/\s+/g, '-')
+                    .replace(/[^\w\-]+/g, '')
+                    .replace(/\-\-+/g, '-')
+                    .replace(/^\-+/, '')
+                    .replace(/\-+$/, '')
             },
             validation: (rule) => rule.required(),
             hidden: true,
