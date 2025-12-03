@@ -13,8 +13,9 @@ export async function generateStaticParams() {
     }))
 }
 
-export async function generateMetadata({ params }: { params: { slug: string } }) {
-    const boardMember = await getBoardMemberBySlug(params.slug)
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+    const { slug } = await params
+    const boardMember = await getBoardMemberBySlug(slug)
 
     if (!boardMember) {
         return {
@@ -28,8 +29,9 @@ export async function generateMetadata({ params }: { params: { slug: string } })
     }
 }
 
-export default async function BoardMemberPage({ params }: { params: { slug: string } }) {
-    const boardMember = await getBoardMemberBySlug(params.slug)
+export default async function BoardMemberPage({ params }: { params: Promise<{ slug: string }> }) {
+    const { slug } = await params
+    const boardMember = await getBoardMemberBySlug(slug)
 
     if (!boardMember) {
         notFound()
