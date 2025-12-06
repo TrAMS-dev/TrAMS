@@ -28,6 +28,25 @@ export const boardMemberType = defineType({
             name: 'role',
             title: 'Role',
             type: 'string',
+            options: {
+                list: [
+                    { title: 'Styreleder', value: 'boardLeader' },
+                    { title: 'Fagansvarlig', value: 'subjectLeader' },
+                    { title: 'Internsjef', value: 'internalLeader' },
+                    { title: 'Eksternsjef', value: 'externalLeader' },
+                    { title: 'Internkoordinator', value: 'internalCoordinator' },
+                    { title: 'Eksternkoordinator', value: 'externalCoordinator' },
+                    { title: 'Komiteansvarlig', value: 'comitteeLeader' },
+                    { title: 'Instruktøransvarlig', value: 'instructorLeader' },
+                    { title: 'Økonomiansvarlig', value: 'financialLeader' },
+                    { title: 'Markøransvarlig', value: 'extraLeader' },
+                    { title: 'Markedsføringsansvarlig', value: 'marketingLeader' },
+                    { title: 'Sponsoransvarlig', value: 'sponsorLeader' },
+                    { title: 'Utstyransvarlig', value: 'equipmentLeader' },
+                    { title: 'Sekretær', value: 'secretary' },
+                    { title: 'Mentorleder', value: 'mentorLeader' },
+                ],
+            },
             validation: (rule) => rule.required(),
         }),
         defineField({
@@ -49,16 +68,6 @@ export const boardMemberType = defineType({
             validation: (rule) => rule.required(),
         }),
         defineField({
-            name: 'age',
-            title: 'Age',
-            type: 'number',
-        }),
-        defineField({
-            name: 'hometown',
-            title: 'Hometown',
-            type: 'string',
-        }),
-        defineField({
             name: 'profileImage',
             title: 'Profile Image',
             type: 'image',
@@ -78,11 +87,6 @@ export const boardMemberType = defineType({
             type: 'array',
             of: [{ type: 'block' }],
             validation: (rule) => rule.required(),
-        }),
-        defineField({
-            name: 'order',
-            title: 'Display Order',
-            type: 'number',
         }),
     ],
     preview: {

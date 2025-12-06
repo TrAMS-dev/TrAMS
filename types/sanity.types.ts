@@ -13,6 +13,19 @@
  */
 
 // Source: schema.json
+export type InstruktorLink = {
+  _id: string;
+  _type: "instruktorLink";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  title: string;
+  description?: string;
+  link: string;
+  linkText: string;
+  rank?: number;
+};
+
 export type Vedtekter = {
   _id: string;
   _type: "vedtekter";
@@ -168,7 +181,6 @@ export type CourseOffering = {
   link?: string;
   linkText?: string;
   order: number;
-  category?: "course" | "event" | "volunteer" | "other";
 };
 
 export type MediaItem = {
@@ -246,7 +258,7 @@ export type BoardMember = {
   _rev: string;
   name: string;
   slug: Slug;
-  role: string;
+  role: "boardLeader" | "subjectLeader" | "internalLeader" | "externalLeader" | "internalCoordinator" | "externalCoordinator" | "committeeLeader" | "instructorLeader" | "financialLeader" | "marketingLeader" | "marketingLeader" | "sponsorLeader" | "equipmentLeader" | "secretary" | "mentorLeader";
   email?: string;
   activeFrom: string;
   activeTo: string;
@@ -393,7 +405,7 @@ export type Geopoint = {
   alt?: number;
 };
 
-export type AllSanitySchemaTypes = Vedtekter | Committee | SanityImageCrop | SanityImageHotspot | Slug | CourseOffering | MediaItem | CarouselSlide | BoardMember | SanityImagePaletteSwatch | SanityImagePalette | SanityImageDimensions | SanityImageMetadata | SanityFileAsset | SanityAssetSourceData | SanityImageAsset | Geopoint;
+export type AllSanitySchemaTypes = InstruktorLink | Vedtekter | Committee | SanityImageCrop | SanityImageHotspot | Slug | CourseOffering | MediaItem | CarouselSlide | BoardMember | SanityImagePaletteSwatch | SanityImagePalette | SanityImageDimensions | SanityImageMetadata | SanityFileAsset | SanityAssetSourceData | SanityImageAsset | Geopoint;
 export declare const internalGroqTypeReferenceTo: unique symbol;
 // Source: sanity/lib/queries.ts
 // Variable: BOARD_MEMBERS_QUERY
@@ -402,7 +414,7 @@ export type BOARD_MEMBERS_QUERYResult = Array<{
   _id: string;
   name: string;
   slug: Slug;
-  role: string;
+  role: "boardLeader" | "committeeLeader" | "equipmentLeader" | "externalCoordinator" | "externalLeader" | "financialLeader" | "instructorLeader" | "internalCoordinator" | "internalLeader" | "marketingLeader" | "mentorLeader" | "secretary" | "sponsorLeader" | "subjectLeader";
   email: string | null;
   age: number | null;
   hometown: string | null;
@@ -458,7 +470,7 @@ export type BOARD_MEMBER_QUERYResult = {
   _id: string;
   name: string;
   slug: Slug;
-  role: string;
+  role: "boardLeader" | "committeeLeader" | "equipmentLeader" | "externalCoordinator" | "externalLeader" | "financialLeader" | "instructorLeader" | "internalCoordinator" | "internalLeader" | "marketingLeader" | "mentorLeader" | "secretary" | "sponsorLeader" | "subjectLeader";
   email: string | null;
   age: number | null;
   hometown: string | null;
@@ -575,60 +587,7 @@ export type MEDIA_ITEMS_QUERYResult = Array<{
 }>;
 // Variable: BOARD_LEADER_QUERY
 // Query: *[_type == "boardMember" && role == "Leder"][0] {  _id,  name,  slug,  role,  email,  age,  hometown,  profileImage,  PersonalImage,  bio,  order,  activeFrom,  activeTo}
-export type BOARD_LEADER_QUERYResult = {
-  _id: string;
-  name: string;
-  slug: Slug;
-  role: string;
-  email: string | null;
-  age: number | null;
-  hometown: string | null;
-  profileImage: {
-    asset?: {
-      _ref: string;
-      _type: "reference";
-      _weak?: boolean;
-      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
-    };
-    media?: unknown;
-    hotspot?: SanityImageHotspot;
-    crop?: SanityImageCrop;
-    _type: "image";
-  };
-  PersonalImage: {
-    asset?: {
-      _ref: string;
-      _type: "reference";
-      _weak?: boolean;
-      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
-    };
-    media?: unknown;
-    hotspot?: SanityImageHotspot;
-    crop?: SanityImageCrop;
-    _type: "image";
-  } | null;
-  bio: Array<{
-    children?: Array<{
-      marks?: Array<string>;
-      text?: string;
-      _type: "span";
-      _key: string;
-    }>;
-    style?: "blockquote" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "normal";
-    listItem?: "bullet" | "number";
-    markDefs?: Array<{
-      href?: string;
-      _type: "link";
-      _key: string;
-    }>;
-    level?: number;
-    _type: "block";
-    _key: string;
-  }>;
-  order: number | null;
-  activeFrom: string;
-  activeTo: string;
-} | null;
+export type BOARD_LEADER_QUERYResult = null;
 // Variable: COURSE_OFFERINGS_QUERY
 // Query: *[_type == "courseOffering"] | order(order asc) {  _id,  title,  description,  image,  link,  linkText,  order,  category}
 export type COURSE_OFFERINGS_QUERYResult = Array<{
@@ -667,7 +626,7 @@ export type COURSE_OFFERINGS_QUERYResult = Array<{
   link: string | null;
   linkText: string | null;
   order: number;
-  category: "course" | "event" | "other" | "volunteer" | null;
+  category: null;
 }>;
 // Variable: COMMITTEES_QUERY
 // Query: *[_type == "committee"] | order(order asc) {  _id,  name,  slug,  email,  logo,  shortDescription,  order}
@@ -778,6 +737,16 @@ export type VEDTEKTER_QUERYResult = {
   }>;
   lastUpdated: string;
 } | null;
+// Variable: INSTRUKT_LINKS_QUERY
+// Query: *[_type == "instruktorLink"] | order(rank asc, _createdAt asc) {  _id,  title,  description,  link,  linkText,  rank}
+export type INSTRUKT_LINKS_QUERYResult = Array<{
+  _id: string;
+  title: string;
+  description: string | null;
+  link: string;
+  linkText: string;
+  rank: number | null;
+}>;
 
 // Query TypeMap
 import "@sanity/client";
@@ -792,5 +761,6 @@ declare module "@sanity/client" {
     "*[_type == \"committee\"] | order(order asc) {\n  _id,\n  name,\n  slug,\n  email,\n  logo,\n  shortDescription,\n  order\n}": COMMITTEES_QUERYResult;
     "*[_type == \"committee\" && slug.current == $slug][0] {\n  _id,\n  name,\n  slug,\n  email,\n  logo,\n  description,\n  headerImage,\n  committeeImage,\n  order\n}": COMMITTEE_QUERYResult;
     "*[_type == \"vedtekter\"][0] {\n  _id,\n  content,\n  lastUpdated\n}": VEDTEKTER_QUERYResult;
+    "*[_type == \"instruktorLink\"] | order(rank asc, _createdAt asc) {\n  _id,\n  title,\n  description,\n  link,\n  linkText,\n  rank\n}": INSTRUKT_LINKS_QUERYResult;
   }
 }

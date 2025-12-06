@@ -1,44 +1,20 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { Box, Flex, Link, Container, Text } from '@chakra-ui/react';
 import { HeroHeading, HeroText, SectionHeading, SubsectionHeading, BodyText, CenteredText } from '@/components/Typography';
+import { client } from '@/sanity/lib/client';
+import { INSTRUKT_LINKS_QUERY } from '@/sanity/lib/queries';
+import { InstruktorLink } from '@/types/sanity.types';
 
 export default function Instruktorer() {
-  const infoBoxes = [
-    {
-      title: 'INSTRUKTØRPORTAL',
-      description:
-        'Her ligger all faglig og praktisk informasjon du trenger som instruktør på eksternt kurs. Fagressurser og oppsett for eksternt kurs er revidert i 2023.',
-      link: 'https://drive.google.com/drive/folders/13Pq0o4ny5VwaNNTV2KWlGRICceZHA0s-?usp=share_link',
-      linkText: 'Ekstern - instruktørmappe',
-    },
-    {
-      title: 'MINSO-PORTAL',
-      description:
-        'For ansatte i MINSO: her ligger påmelding til kurs og diverse informasjon som du bør sette deg inn i for å holde førstehjelpskurs for MINSO.',
-      link: 'https://drive.google.com/drive/folders/1m79a1k9CBG3r5BFr_IXC0LH07qS8EP7N?usp=drive_link',
-      linkText: 'MINSO - instruktørmappe',
-    },
-    {
-      title: 'REFUSJONSSKJEMA',
-      description:
-        'Har du lagt ut for noe i forbindelse med TrAMS-oppdrag? Fyll ut refusjonsskjemaet under for tilbakebetaling.',
-      link: 'https://docs.google.com/forms/d/1Bni5xcs6YIJebPnfgNID-M74PZArlkIDKaSQqmZ7ZZw/edit',
-      linkText: 'Gå til refusjonsskjema',
-    },
-    {
-      title: 'LØNNSSKJEMA',
-      description: 'Etter utført oppdrag må du registrere deg i lønnsskjemaet for å få utbetalt honorar.',
-      link: 'https://docs.google.com/forms/u/2/d/1vHKHaTXlpCt2qlrfyLIQ6TTbItxqjBb7_-kchdt0eLo/edit?usp=drive_web',
-      linkText: 'Gå til lønnsskjema',
-    },
-    {
-      title: 'CASEBANK OG TRIGGERE',
-      description: 'Her finner du caser og triggertemaer som instruktører kan benytte i undervisningssammenheng.',
-      link: '#',
-      linkText: 'Gå til casebank og triggere',
-    },
-  ];
+  const [links, setLinks] = useState<InstruktorLink[]>([]);
+
+  useEffect(() => {
+    client.fetch<InstruktorLink[]>(INSTRUKT_LINKS_QUERY)
+      .then((data) => setLinks(data))
+      .catch((err) => console.error('Failed to fetch instruktorer links:', err));
+  }, []);
 
   return (
     <>
@@ -69,9 +45,9 @@ export default function Instruktorer() {
 
       <Container maxW="1200px" mx="auto" px={4} py={8}>
         <Flex flexWrap="wrap" gap={8} mt={8} justifyContent="center">
-          {infoBoxes.map((box, index) => (
+          {links.map((box) => (
             <Box
-              key={index}
+              key={box._id}
               flex="1 1 300px"
               bg="var(--color-light)"
               boxShadow="0 2px 5px rgba(0,0,0,0.1)"
@@ -155,7 +131,6 @@ export default function Instruktorer() {
           </BodyText>
         </Box>
       </Container>
-
     </>
   );
 }

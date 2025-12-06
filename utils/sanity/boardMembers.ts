@@ -1,5 +1,5 @@
 import { client } from '@/sanity/lib/client'
-import { BOARD_MEMBERS_QUERY, BOARD_MEMBER_QUERY } from '@/sanity/lib/queries'
+import { BOARD_MEMBERS_QUERY, BOARD_MEMBER_QUERY_BY_ROLE, BOARD_MEMBER_QUERY_BY_SLUG } from '@/sanity/lib/queries'
 import { BoardMember } from '@/types/sanity.types'
 
 /**
@@ -21,10 +21,21 @@ export async function getAllBoardMembers(): Promise<BoardMember[]> {
  */
 export async function getBoardMemberBySlug(slug: string): Promise<BoardMember | null> {
   try {
-    const boardMember = await client.fetch<BoardMember>(BOARD_MEMBER_QUERY, { slug })
+    const boardMember = await client.fetch<BoardMember>(BOARD_MEMBER_QUERY_BY_SLUG, { slug })
     return boardMember
   } catch (error) {
     console.error(`Error fetching board member with slug "${slug}":`, error)
     return null
   }
 }
+
+export async function getBoardMemberByRole(role: string): Promise<BoardMember | null> {
+  try {
+    const boardMember = await client.fetch<BoardMember>(BOARD_MEMBER_QUERY_BY_ROLE, { role })
+    return boardMember
+  } catch (error) {
+    console.error(`Error fetching board member with role "${role}":`, error)
+    return null
+  }
+}
+

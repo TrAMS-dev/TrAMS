@@ -1,5 +1,77 @@
 [
   {
+    "name": "instruktorLink",
+    "type": "document",
+    "attributes": {
+      "_id": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "string"
+        }
+      },
+      "_type": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "string",
+          "value": "instruktorLink"
+        }
+      },
+      "_createdAt": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "string"
+        }
+      },
+      "_updatedAt": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "string"
+        }
+      },
+      "_rev": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "string"
+        }
+      },
+      "title": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "string"
+        },
+        "optional": false
+      },
+      "description": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "string"
+        },
+        "optional": true
+      },
+      "link": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "string"
+        },
+        "optional": false
+      },
+      "linkText": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "string"
+        },
+        "optional": false
+      },
+      "rank": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "number"
+        },
+        "optional": true
+      }
+    }
+  },
+  {
     "name": "vedtekter",
     "type": "document",
     "attributes": {
@@ -1102,31 +1174,6 @@
           "type": "number"
         },
         "optional": false
-      },
-      "category": {
-        "type": "objectAttribute",
-        "value": {
-          "type": "union",
-          "of": [
-            {
-              "type": "string",
-              "value": "course"
-            },
-            {
-              "type": "string",
-              "value": "event"
-            },
-            {
-              "type": "string",
-              "value": "volunteer"
-            },
-            {
-              "type": "string",
-              "value": "other"
-            }
-          ]
-        },
-        "optional": true
       }
     }
   },
@@ -1637,7 +1684,69 @@
       "role": {
         "type": "objectAttribute",
         "value": {
-          "type": "string"
+          "type": "union",
+          "of": [
+            {
+              "type": "string",
+              "value": "boardLeader"
+            },
+            {
+              "type": "string",
+              "value": "subjectLeader"
+            },
+            {
+              "type": "string",
+              "value": "internalLeader"
+            },
+            {
+              "type": "string",
+              "value": "externalLeader"
+            },
+            {
+              "type": "string",
+              "value": "internalCoordinator"
+            },
+            {
+              "type": "string",
+              "value": "externalCoordinator"
+            },
+            {
+              "type": "string",
+              "value": "committeeLeader"
+            },
+            {
+              "type": "string",
+              "value": "instructorLeader"
+            },
+            {
+              "type": "string",
+              "value": "financialLeader"
+            },
+            {
+              "type": "string",
+              "value": "marketingLeader"
+            },
+            {
+              "type": "string",
+              "value": "marketingLeader"
+            },
+            {
+              "type": "string",
+              "value": "sponsorLeader"
+            },
+            {
+              "type": "string",
+              "value": "equipmentLeader"
+            },
+            {
+              "type": "string",
+              "value": "secretary"
+            },
+            {
+              "type": "string",
+              "value": "mentorLeader"
+            }
+          ]
         },
         "optional": false
       },

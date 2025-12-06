@@ -10,6 +10,7 @@ import { urlFor } from '@/sanity/lib/image';
 import ClientCalendar from '@/components/ClientCalendar';
 import { BoardMember, CarouselSlide } from '@/types/sanity.types';
 import { client } from '@/sanity/lib/client';
+import { translateRole } from '@/utils/sanity/translateRole';
 
 export default function Home() {
   const [boardMembers, setBoardMembers] = useState<BoardMember[]>([]);
@@ -114,9 +115,9 @@ export default function Home() {
                     mt={4}
                     _hover={{ boxShadow: '0 0 25px rgba(0,0,0,0.3)' }}
                     w="100%"
-                  >              
-                  Vedtekter
-                  </Button>  
+                  >
+                    Vedtekter
+                  </Button>
                 </Link>
               </Box>
             </Flex>
@@ -240,13 +241,13 @@ export default function Home() {
           >
             {boardMembers.map((member, index) => {
               const imageUrl = member.profileImage
-                ? urlFor(member.profileImage).width(160).height(160).url()
+                ? urlFor(member.profileImage).width(300).height(400).url()
                 : null;
 
               return (
                 <ChakraLink
                   key={member._id}
-                  href={`/${member.slug?.current || ''}`}
+                  href={`/styret/${member.role?.toLowerCase() || ''}`}
                   bg="white"
                   borderRadius="8px"
                   p={4}
@@ -267,16 +268,16 @@ export default function Home() {
                     <Image
                       src={imageUrl}
                       alt={member.name || ''}
-                      width={80}
-                      height={80}
-                      className="w-20 h-20 object-cover rounded-full mb-2"
+                      width={100}
+                      height={133}
+                      className="w-[100px] h-[133px] object-cover rounded-xl mb-2"
                     />
                   )}
                   <Heading as="h3" m={0} mb={2} fontSize="1rem" fontWeight={600} wordBreak="break-word" hyphens="auto">
                     {member.name}
                   </Heading>
                   <Text m={0} fontSize="0.9rem" color="#666" wordBreak="break-word">
-                    {member.role}
+                    {translateRole(member.role)}
                   </Text>
                 </ChakraLink>
               );

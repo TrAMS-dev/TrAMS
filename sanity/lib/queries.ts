@@ -1,7 +1,42 @@
 import { defineQuery } from 'next-sanity'
 
 // Query to get all board members, ordered by display order
-export const BOARD_MEMBERS_QUERY = defineQuery(`*[_type == "boardMember"] | order(order asc) {
+export const BOARD_MEMBERS_QUERY = defineQuery(`*[_type == "boardMember"] | order(
+  select(
+    role == 'boardLeader' => 1,
+    role == 'subjectLeader' => 2,
+    role == 'internalLeader' => 3,
+    role == 'externalLeader' => 4,
+    role == 'internalCoordinator' => 5,
+    role == 'externalCoordinator' => 6,
+    role == 'committeeLeader' => 7,
+    role == 'instructorLeader' => 8,
+    role == 'financialLeader' => 9,
+    role == 'marketingLeader' => 10,
+    role == 'sponsorLeader' => 11,
+    role == 'equipmentLeader' => 12,
+    role == 'secretary' => 13,
+    role == 'mentorLeader' => 14,
+    99
+  ) asc,
+  _createdAt asc
+) {
+  _id,
+  name,
+  slug,
+  role,
+  email,
+  age,
+  hometown,
+  profileImage,
+  PersonalImage,
+  bio,
+  activeFrom,
+  activeTo
+}`)
+
+// Query to get a single board member by slug
+export const BOARD_MEMBER_QUERY_BY_SLUG = defineQuery(`*[_type == "boardMember" && slug.current == $slug][0] {
   _id,
   name,
   slug,
@@ -17,8 +52,7 @@ export const BOARD_MEMBERS_QUERY = defineQuery(`*[_type == "boardMember"] | orde
   activeTo
 }`)
 
-// Query to get a single board member by slug
-export const BOARD_MEMBER_QUERY = defineQuery(`*[_type == "boardMember" && slug.current == $slug][0] {
+export const BOARD_MEMBER_QUERY_BY_ROLE = defineQuery(`*[_type == "boardMember" && role == $role][0] {
   _id,
   name,
   slug,
@@ -60,22 +94,6 @@ export const MEDIA_ITEMS_QUERY = defineQuery(`*[_type == "mediaItem"] | order(or
   publishedAt
 }`)
 
-// Query to get the current board leader (Leder)
-export const BOARD_LEADER_QUERY = defineQuery(`*[_type == "boardMember" && role == "Leder"][0] {
-  _id,
-  name,
-  slug,
-  role,
-  email,
-  age,
-  hometown,
-  profileImage,
-  PersonalImage,
-  bio,
-  order,
-  activeFrom,
-  activeTo
-}`)
 
 // Query to get all course offerings, ordered by display order
 export const COURSE_OFFERINGS_QUERY = defineQuery(`*[_type == "courseOffering"] | order(order asc) {
@@ -118,4 +136,14 @@ export const VEDTEKTER_QUERY = defineQuery(`*[_type == "vedtekter"][0] {
   _id,
   content,
   lastUpdated
+}`)
+
+// Query to get all instruktør links, ordered by rank (or createdAt if rank is missing)
+export const INSTRUKT_LINKS_QUERY = defineQuery(`*[_type == "instruktorLink"] | order(rank asc, _createdAt asc) {
+  _id,
+  title,
+  description,
+  link,
+  linkText,
+  rank
 }`)
