@@ -6,3 +6,5 @@ import { committeeType } from './committeeType'
 import { vedtekterType } from './vedtekterType'
 
 export const schemaTypes = [boardMemberType, carouselSlideType, mediaItemType, courseOfferingType, committeeType, vedtekterType]
+
+export const SingletonTypes = ['vedtekter']

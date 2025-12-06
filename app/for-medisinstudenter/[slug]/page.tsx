@@ -100,61 +100,45 @@ export default function CommitteePage() {
 
             {/* Content Section */}
             <Container maxW="1200px" mx="auto" px={4} py={12}>
-                <Box bg="white" borderRadius="12px" p={{ base: 6, md: 8 }} boxShadow="0 4px 12px rgba(0,0,0,0.1)">
-                    {/* Contact Info */}
-                    {committee.email && (
-                        <Box textAlign="center" mb={8}>
-                            <Text fontSize="1.1rem" color="gray.700">
-                                Kontakt:{' '}
-                                <ChakraLink
-                                    href={`mailto:${committee.email}`}
-                                    color="var(--color-primary)"
-                                    textDecoration="underline"
-                                >
-                                    {committee.email}
-                                </ChakraLink>
-                            </Text>
-                        </Box>
-                    )}
-
-                    {/* Description */}
-                    <Box mb={8}>
-                        <PortableText value={committee.description} components={portableTextComponents} />
+                {/* Contact Info */}
+                {committee.email && (
+                    <Box textAlign="center" mb={8}>
+                        <Text fontSize="1.1rem" color="gray.700">
+                            Kontakt:{' '}
+                            <ChakraLink
+                                href={`mailto:${committee.email}`}
+                                color="var(--color-primary)"
+                                textDecoration="underline"
+                            >
+                                {committee.email}
+                            </ChakraLink>
+                        </Text>
                     </Box>
+                )}
 
-                    {/* Committee Image */}
-                    {committeeImageUrl && (
-                        <Box mb={8} textAlign="center">
-                            <Image
-                                src={committeeImageUrl}
-                                alt={`${committee.name} medlemmer`}
-                                width={1200}
-                                height={800}
-                                style={{
-                                    width: '100%',
-                                    height: 'auto',
-                                    borderRadius: '8px',
-                                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-                                }}
-                            />
-                        </Box>
-                    )}
-
-
-                    {/* Back Link */}
-                    <Box textAlign="center" mt={8}>
-                        <ChakraLink
-                            href="/for-medisinstudenter"
-                            color="var(--color-primary)"
-                            fontSize="1.1rem"
-                            textDecoration="underline"
-                            _hover={{ color: 'var(--color-secondary)' }}
-                        >
-                            ← Tilbake til oversikten
-                        </ChakraLink>
-                    </Box>
+                {/* Description */}
+                <Box mb={8}>
+                    <PortableText value={committee.description} components={portableTextComponents} />
                 </Box>
-            </Container>
+
+                {/* Committee Image */}
+                {committeeImageUrl && (
+                    <Box mb={8} textAlign="center">
+                        <Image
+                            src={committeeImageUrl}
+                            alt={`${committee.name} medlemmer`}
+                            width={1200}
+                            height={800}
+                            style={{
+                                width: '75%',
+                                height: 'auto',
+                                borderRadius: '8px',
+                                boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                            }}
+                        />
+                    </Box>
+                )}
+            </Container >
         </>
     );
 }

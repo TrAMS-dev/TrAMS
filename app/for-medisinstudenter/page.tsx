@@ -147,7 +147,7 @@ export default function ForMedisinstudenter() {
           >
             {offers.map((offer) => {
               const imageUrl = offer.image
-                ? urlFor(offer.image).width(300).height(300).url()
+                ? urlFor(offer.image).width(800).height(800).url()
                 : null;
 
               return (
@@ -247,7 +247,7 @@ export default function ForMedisinstudenter() {
           <Flex flexWrap="wrap" gap={8} justifyContent="center">
             {committees.map((committee) => {
               const logoUrl = committee.logo
-                ? urlFor(committee.logo).width(150).height(150).url()
+                ? urlFor(committee.logo).width(400).height(400).url()
                 : null;
 
               return (

@@ -1,20 +1,25 @@
 import type { StructureResolver } from 'sanity/structure'
+import { SingletonTypes } from './schemas'
 
 // https://www.sanity.io/docs/structure-builder-cheat-sheet
-export const structure: StructureResolver = (S) =>
-  S.list()
+export const structure: StructureResolver = (S) => {
+  const singletonItems = SingletonTypes.map((schemaName) => {
+    return S.listItem()
+      .title(schemaName)
+      .child(
+        S.document()
+          .schemaType(schemaName)
+          .documentId(schemaName)
+      )
+  })
+
+  return S.list()
     .title('Content')
     .items([
-      // Singleton for Vedtekter
-      S.listItem()
-        .title('Vedtekter')
-        .child(
-          S.document()
-            .schemaType('vedtekter')
-            .documentId('vedtekter')
-        ),
-      // All other document types
+      ...singletonItems,
+      ...(singletonItems.length > 0 ? [S.divider()] : []),
       ...S.documentTypeListItems().filter(
-        (listItem) => listItem.getId() !== 'vedtekter'
+        (listItem) => !SingletonTypes.includes(listItem.getId() || '')
       ),
     ])
+}
