@@ -175,6 +175,12 @@ export const VEDTEKTER_QUERY = defineQuery(`*[_type == "vedtekter"][0] {
   lastUpdated
 }`)
 
+export const FIRST_AID_INFO_QUERY = defineQuery(`*[_type == "firstAidInfo"][0] {
+  _id,
+  col1,
+  col2
+}`)
+
 // Query to get all instruktør links, ordered by rank (or createdAt if rank is missing)
 export const INSTRUKT_LINKS_QUERY = defineQuery(`*[_type == "instruktorLink"] | order(rank asc, _createdAt asc) {
   _id,

@@ -55,8 +55,7 @@ export const courseOfferingType = defineType({
                 list: [
                     { title: 'Timeplanfestet', value: 'timeplanfestet' },
                     { title: 'Komite-arrangement', value: 'committee' },
-                    { title: 'Ekstern', value: 'external' },
-                    { title: 'Intern', value: 'internal' },
+                    { title: 'Annet', value: 'other' },
                 ],
             },
         }),

@@ -6,11 +6,9 @@ import Image from 'next/image';
 import Carousel from '@/components/Carousel';
 import { Box, Flex, Heading, Text, Container, Button, Link as ChakraLink, HStack } from '@chakra-ui/react';
 import { CURRENT_BOARD_MEMBERS_QUERY, CAROUSEL_SLIDES_QUERY } from '@/sanity/lib/queries'
-import { urlFor } from '@/sanity/lib/image';
 import ClientCalendar from '@/components/ClientCalendar';
 import { BoardMember, CarouselSlide } from '@/types/sanity.types';
 import { client } from '@/sanity/lib/client';
-import { translateRole } from '@/utils/sanity/translateRole';
 import BoardMemberCard from '@/components/BoardMemberCard';
 
 export default function Home() {

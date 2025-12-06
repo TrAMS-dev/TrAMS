@@ -1,11 +1,14 @@
 import type { StructureResolver } from 'sanity/structure'
-import { SingletonTypes } from './schemas'
+import { SingletonTypes, schemaTypes } from './schemas'
 
 // https://www.sanity.io/docs/structure-builder-cheat-sheet
 export const structure: StructureResolver = (S) => {
   const singletonItems = SingletonTypes.map((schemaName) => {
+    const schemaDef = schemaTypes.find((type) => type.name === schemaName)
+    const title = schemaDef?.title || schemaName
+
     return S.listItem()
-      .title(schemaName)
+      .title(title)
       .child(
         S.document()
           .schemaType(schemaName)

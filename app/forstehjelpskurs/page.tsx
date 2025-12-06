@@ -3,14 +3,21 @@
 import { Box, Flex, Text, Link, Container, Button } from '@chakra-ui/react';
 import Image from 'next/image';
 import { HeroHeading, HeroText, PageHeading, SectionHeading, SubsectionHeading } from '@/components/Typography';
+import { PortableText } from 'next-sanity';
+import { client } from '@/sanity/lib/client';
+import { useState, useEffect } from 'react';
+import { FirstAidInfo } from '@/types/sanity.types';
+import { FIRST_AID_INFO_QUERY } from '@/sanity/lib/queries';
+import { portableTextComponents } from '@/components/Typography';
 
 export default function Forstehjelpskurs() {
-  const scrollToSection = (sectionId: string) => {
-    const target = document.getElementById(sectionId);
-    if (target) {
-      target.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
+  const [firstAidInfo, setFirstAidInfo] = useState<FirstAidInfo>();
+
+  useEffect(() => {
+    client.fetch<FirstAidInfo>(FIRST_AID_INFO_QUERY)
+      .then((data) => setFirstAidInfo(data))
+      .catch((err) => console.error('Failed to fetch first aid info:', err));
+  }, []);
 
   return (
     <>
@@ -40,91 +47,76 @@ export default function Forstehjelpskurs() {
       </Box>
 
       {/* HERO */}
-      <Container maxW="1200px" mx="auto" px={4}>
-        <Box
-          bg="var(--color-altBg)"
-          p={{ base: 4, md: 8 }}
-          boxShadow="0 10px 20px rgba(0,0,0,0.1)"
-          mb={{ base: 4, md: 8 }}
-        >
-          <Flex flexWrap="wrap" gap={8}>
-            <Box flex="1 1 300px" p={4}>
-              <PageHeading mt={0}>Førstehjelpskurs</PageHeading>
-              <Text mb={4} lineHeight="1.6">
-                TrAMS tilbyr førstehjelpskurs i Trondheim og Trøndelag for lag, bedrifter og liknende! Våre
-                førstehjelpskurs er kvalitetssikret av leger ved fagmiljøene på St.Olavs hospital.
-              </Text>
-              <Text mb={4} lineHeight="1.6">
-                I Norge finnes det ingen offentlig godkjenning av førstehjelpskurs, og det er derfor viktig at man
-                bestiller kurs fra seriøse aktører.
-              </Text>
-              <Text mb={4} lineHeight="1.6">
-                Instruktørene våre er medisinstudenter som har fått grundig opplæring i hvordan foreningen ønsker at
-                kursene skal være. Dette kvalitetssikrer vår kursvirksomhet. Vi kan tilby kurs for mange ulike aktører, og
-                variere deler av kursenes innhold etter behov.
-              </Text>
-              <Text mb={4} lineHeight="1.6">
-                Vi tilbyr i alt to førstehjelpskurs; <b>TrAMS standard oppsett eksternkurs</b> og{' '}
-                <b>NRR-sertifisert GHLR kurs</b>.
-              </Text>
-            </Box>
+      <Container maxW="1200px" my={8}>
+        {firstAidInfo && (
+          <Box
+            bg="var(--color-altBg)"
+            boxShadow="0 10px 20px rgba(0,0,0,0.1)"
+            p={{ base: 4, md: 8 }}
+            borderRadius="8px"
+          >
+            <Flex flexWrap="wrap" gap={8}>
+              <Box flex="1 1 300px" p={4}>
+                <PortableText value={firstAidInfo.col1} components={portableTextComponents} />
+              </Box>
 
-            <Box w="2px" bg="#ccc" mx={4} />
+              <Box w={{ base: "0", md: "2px" }} bg="#ccc" mx={4} />
 
-            <Box flex="1 1 300px" p={4}>
-              <SubsectionHeading as="h3" mb={4} fontSize="1.4rem">Bestill førstehjelpskurs nå!</SubsectionHeading>
-              <Text mb={4}>
-                Veiledende pris for 15 deltakere <b>TrAMS standard oppsett eksternkurs</b>: 4 850 kr
-              </Text>
-              <Text mb={4}>
-                Veiledende pris for 10 deltagere <b>NRR-sertifisert GHLR kurs</b>: 5 000 kr
-              </Text>
-              <Text mb={4}>
-                Kontakt{' '}
-                <Link href="mailto:eksternsjef@trams.no" color="var(--color-primary)" textDecoration="underline">
-                  eksternsjef@trams.no
-                </Link>{' '}
-                for å motta tilbud på førstehjelpskurs.
-              </Text>
-              <Flex gap={4} mt={8}>
-                <Button
-                  onClick={() => scrollToSection('other-courses')}
-                  bg="var(--color-primary)"
-                  color="var(--color-light)"
-                  fontWeight={700}
-                  fontSize="1rem"
-                  p="0.6rem 1.2rem"
-                  borderRadius="4px"
-                  transition="all 0.3s ease"
-                  _hover={{
-                    bg: 'var(--color-secondary)',
-                    color: 'var(--color-text)',
-                    boxShadow: '0 0 15px rgba(0,0,0,0.2)',
-                  }}
-                >
-                  Andre kurs
-                </Button>
-                <Button
-                  onClick={() => scrollToSection('evaluering')}
-                  bg="var(--color-primary)"
-                  color="var(--color-light)"
-                  fontWeight={700}
-                  fontSize="1rem"
-                  p="0.6rem 1.2rem"
-                  borderRadius="4px"
-                  transition="all 0.3s ease"
-                  _hover={{
-                    bg: 'var(--color-secondary)',
-                    color: 'var(--color-text)',
-                    boxShadow: '0 0 15px rgba(0,0,0,0.2)',
-                  }}
-                >
-                  Evaluering
-                </Button>
-              </Flex>
-            </Box>
-          </Flex>
-        </Box>
+
+              <Box flex="1 1 300px" p={4}>
+                <PortableText value={firstAidInfo.col2} components={portableTextComponents} />
+
+                <Flex gap={4} mt={8}>
+                  <Button
+                    onClick={() => {
+                      window.scrollTo({
+                        top: document.getElementById('other-courses')?.offsetTop || 0,
+                        behavior: 'smooth',
+                      });
+                    }}
+                    bg="var(--color-primary)"
+                    color="var(--color-light)"
+                    fontWeight={700}
+                    fontSize="1rem"
+                    p="0.6rem 1.2rem"
+                    borderRadius="4px"
+                    transition="all 0.3s ease"
+                    _hover={{
+                      bg: 'var(--color-secondary)',
+                      color: 'var(--color-text)',
+                      boxShadow: '0 0 15px rgba(0,0,0,0.2)',
+                    }}
+                  >
+                    Andre kurs
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      window.scrollTo({
+                        top: document.getElementById('evaluering')?.offsetTop || 0,
+                        behavior: 'smooth',
+                      });
+                    }}
+                    bg="var(--color-primary)"
+                    color="var(--color-light)"
+                    fontWeight={700}
+                    fontSize="1rem"
+                    p="0.6rem 1.2rem"
+                    borderRadius="4px"
+                    transition="all 0.3s ease"
+                    _hover={{
+                      bg: 'var(--color-secondary)',
+                      color: 'var(--color-text)',
+                      boxShadow: '0 0 15px rgba(0,0,0,0.2)',
+                    }}
+                  >
+                    Evaluering
+                  </Button>
+                </Flex>
+              </Box>
+            </Flex>
+          </Box>
+        )
+        }
 
         {/* Heading */}
         <Box textAlign="center" py={{ base: 4, md: 8 }} px={4}>

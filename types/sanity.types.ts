@@ -13,6 +13,50 @@
  */
 
 // Source: schema.json
+export type FirstAidInfo = {
+  _id: string;
+  _type: "firstAidInfo";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  col1: Array<{
+    children?: Array<{
+      marks?: Array<string>;
+      text?: string;
+      _type: "span";
+      _key: string;
+    }>;
+    style?: "normal" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "blockquote";
+    listItem?: "bullet" | "number";
+    markDefs?: Array<{
+      href?: string;
+      _type: "link";
+      _key: string;
+    }>;
+    level?: number;
+    _type: "block";
+    _key: string;
+  }>;
+  col2: Array<{
+    children?: Array<{
+      marks?: Array<string>;
+      text?: string;
+      _type: "span";
+      _key: string;
+    }>;
+    style?: "normal" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "blockquote";
+    listItem?: "bullet" | "number";
+    markDefs?: Array<{
+      href?: string;
+      _type: "link";
+      _key: string;
+    }>;
+    level?: number;
+    _type: "block";
+    _key: string;
+  }>;
+};
+
 export type InstruktorLink = {
   _id: string;
   _type: "instruktorLink";
@@ -181,6 +225,7 @@ export type CourseOffering = {
   link?: string;
   linkText?: string;
   order: number;
+  category: "timeplanfestet" | "committee" | "external" | "internal";
 };
 
 export type MediaItem = {
@@ -258,12 +303,10 @@ export type BoardMember = {
   _rev: string;
   name: string;
   slug: Slug;
-  role: "boardLeader" | "subjectLeader" | "internalLeader" | "externalLeader" | "internalCoordinator" | "externalCoordinator" | "committeeLeader" | "instructorLeader" | "financialLeader" | "marketingLeader" | "marketingLeader" | "sponsorLeader" | "equipmentLeader" | "secretary" | "mentorLeader";
+  role: "boardLeader" | "subjectLeader" | "internalLeader" | "externalLeader" | "internalCoordinator" | "externalCoordinator" | "committeeLeader" | "instructorLeader" | "financialLeader" | "extraLeader" | "marketingLeader" | "sponsorLeader" | "equipmentLeader" | "secretary" | "mentorLeader";
   email?: string;
   activeFrom: string;
   activeTo: string;
-  age?: number;
-  hometown?: string;
   profileImage: {
     asset?: {
       _ref: string;
@@ -306,7 +349,6 @@ export type BoardMember = {
     _type: "block";
     _key: string;
   }>;
-  order?: number;
 };
 
 export type SanityImagePaletteSwatch = {
@@ -405,19 +447,19 @@ export type Geopoint = {
   alt?: number;
 };
 
-export type AllSanitySchemaTypes = InstruktorLink | Vedtekter | Committee | SanityImageCrop | SanityImageHotspot | Slug | CourseOffering | MediaItem | CarouselSlide | BoardMember | SanityImagePaletteSwatch | SanityImagePalette | SanityImageDimensions | SanityImageMetadata | SanityFileAsset | SanityAssetSourceData | SanityImageAsset | Geopoint;
+export type AllSanitySchemaTypes = FirstAidInfo | InstruktorLink | Vedtekter | Committee | SanityImageCrop | SanityImageHotspot | Slug | CourseOffering | MediaItem | CarouselSlide | BoardMember | SanityImagePaletteSwatch | SanityImagePalette | SanityImageDimensions | SanityImageMetadata | SanityFileAsset | SanityAssetSourceData | SanityImageAsset | Geopoint;
 export declare const internalGroqTypeReferenceTo: unique symbol;
 // Source: sanity/lib/queries.ts
 // Variable: BOARD_MEMBERS_QUERY
-// Query: *[_type == "boardMember"] | order(order asc) {  _id,  name,  slug,  role,  email,  age,  hometown,  profileImage,  PersonalImage,  bio,  order,  activeFrom,  activeTo}
+// Query: *[_type == "boardMember"] | order(  select(    role == 'boardLeader' => 1,    role == 'subjectLeader' => 2,    role == 'internalLeader' => 3,    role == 'externalLeader' => 4,    role == 'internalCoordinator' => 5,    role == 'externalCoordinator' => 6,    role == 'committeeLeader' => 7,    role == 'instructorLeader' => 8,    role == 'financialLeader' => 9,    role == 'marketingLeader' => 10,    role == 'extraLeader' => 11,    role == 'sponsorLeader' => 12,    role == 'equipmentLeader' => 13,    role == 'secretary' => 14,    role == 'mentorLeader' => 15,    99  ) asc,  _createdAt asc) {  _id,  name,  slug,  role,  email,  age,  hometown,  profileImage,  PersonalImage,  bio,  activeFrom,  activeTo}
 export type BOARD_MEMBERS_QUERYResult = Array<{
   _id: string;
   name: string;
   slug: Slug;
-  role: "boardLeader" | "committeeLeader" | "equipmentLeader" | "externalCoordinator" | "externalLeader" | "financialLeader" | "instructorLeader" | "internalCoordinator" | "internalLeader" | "marketingLeader" | "mentorLeader" | "secretary" | "sponsorLeader" | "subjectLeader";
+  role: "boardLeader" | "committeeLeader" | "equipmentLeader" | "externalCoordinator" | "externalLeader" | "extraLeader" | "financialLeader" | "instructorLeader" | "internalCoordinator" | "internalLeader" | "marketingLeader" | "mentorLeader" | "secretary" | "sponsorLeader" | "subjectLeader";
   email: string | null;
-  age: number | null;
-  hometown: string | null;
+  age: null;
+  hometown: null;
   profileImage: {
     asset?: {
       _ref: string;
@@ -460,20 +502,19 @@ export type BOARD_MEMBERS_QUERYResult = Array<{
     _type: "block";
     _key: string;
   }>;
-  order: number | null;
   activeFrom: string;
   activeTo: string;
 }>;
-// Variable: BOARD_MEMBER_QUERY
-// Query: *[_type == "boardMember" && slug.current == $slug][0] {  _id,  name,  slug,  role,  email,  age,  hometown,  profileImage,  PersonalImage,  bio,  order,  activeFrom,  activeTo}
-export type BOARD_MEMBER_QUERYResult = {
+// Variable: CURRENT_BOARD_MEMBERS_QUERY
+// Query: *[_type == "boardMember" && activeTo >= now()] | order(  select(    role == 'boardLeader' => 1,    role == 'subjectLeader' => 2,    role == 'internalLeader' => 3,    role == 'externalLeader' => 4,    role == 'internalCoordinator' => 5,    role == 'externalCoordinator' => 6,    role == 'committeeLeader' => 7,    role == 'instructorLeader' => 8,    role == 'financialLeader' => 9,    role == 'marketingLeader' => 10,    role == 'extraLeader' => 11,    role == 'sponsorLeader' => 12,    role == 'equipmentLeader' => 13,    role == 'secretary' => 14,    role == 'mentorLeader' => 15,    99  ) asc,  _createdAt asc) {  _id,  name,  slug,  role,  email,  age,  hometown,  profileImage,  PersonalImage,  bio,  activeFrom,  activeTo}
+export type CURRENT_BOARD_MEMBERS_QUERYResult = Array<{
   _id: string;
   name: string;
   slug: Slug;
-  role: "boardLeader" | "committeeLeader" | "equipmentLeader" | "externalCoordinator" | "externalLeader" | "financialLeader" | "instructorLeader" | "internalCoordinator" | "internalLeader" | "marketingLeader" | "mentorLeader" | "secretary" | "sponsorLeader" | "subjectLeader";
+  role: "boardLeader" | "committeeLeader" | "equipmentLeader" | "externalCoordinator" | "externalLeader" | "extraLeader" | "financialLeader" | "instructorLeader" | "internalCoordinator" | "internalLeader" | "marketingLeader" | "mentorLeader" | "secretary" | "sponsorLeader" | "subjectLeader";
   email: string | null;
-  age: number | null;
-  hometown: string | null;
+  age: null;
+  hometown: null;
   profileImage: {
     asset?: {
       _ref: string;
@@ -516,7 +557,118 @@ export type BOARD_MEMBER_QUERYResult = {
     _type: "block";
     _key: string;
   }>;
-  order: number | null;
+  activeFrom: string;
+  activeTo: string;
+}>;
+// Variable: BOARD_MEMBER_QUERY_BY_SLUG
+// Query: *[_type == "boardMember" && slug.current == $slug][0] {  _id,  name,  slug,  role,  email,  age,  hometown,  profileImage,  PersonalImage,  bio,  order,  activeFrom,  activeTo}
+export type BOARD_MEMBER_QUERY_BY_SLUGResult = {
+  _id: string;
+  name: string;
+  slug: Slug;
+  role: "boardLeader" | "committeeLeader" | "equipmentLeader" | "externalCoordinator" | "externalLeader" | "extraLeader" | "financialLeader" | "instructorLeader" | "internalCoordinator" | "internalLeader" | "marketingLeader" | "mentorLeader" | "secretary" | "sponsorLeader" | "subjectLeader";
+  email: string | null;
+  age: null;
+  hometown: null;
+  profileImage: {
+    asset?: {
+      _ref: string;
+      _type: "reference";
+      _weak?: boolean;
+      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+    };
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+  };
+  PersonalImage: {
+    asset?: {
+      _ref: string;
+      _type: "reference";
+      _weak?: boolean;
+      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+    };
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+  } | null;
+  bio: Array<{
+    children?: Array<{
+      marks?: Array<string>;
+      text?: string;
+      _type: "span";
+      _key: string;
+    }>;
+    style?: "blockquote" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "normal";
+    listItem?: "bullet" | "number";
+    markDefs?: Array<{
+      href?: string;
+      _type: "link";
+      _key: string;
+    }>;
+    level?: number;
+    _type: "block";
+    _key: string;
+  }>;
+  order: null;
+  activeFrom: string;
+  activeTo: string;
+} | null;
+// Variable: BOARD_MEMBER_QUERY_BY_ROLE
+// Query: *[_type == "boardMember" && role == $role][0] {  _id,  name,  slug,  role,  email,  age,  hometown,  profileImage,  PersonalImage,  bio,  order,  activeFrom,  activeTo}
+export type BOARD_MEMBER_QUERY_BY_ROLEResult = {
+  _id: string;
+  name: string;
+  slug: Slug;
+  role: "boardLeader" | "committeeLeader" | "equipmentLeader" | "externalCoordinator" | "externalLeader" | "extraLeader" | "financialLeader" | "instructorLeader" | "internalCoordinator" | "internalLeader" | "marketingLeader" | "mentorLeader" | "secretary" | "sponsorLeader" | "subjectLeader";
+  email: string | null;
+  age: null;
+  hometown: null;
+  profileImage: {
+    asset?: {
+      _ref: string;
+      _type: "reference";
+      _weak?: boolean;
+      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+    };
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+  };
+  PersonalImage: {
+    asset?: {
+      _ref: string;
+      _type: "reference";
+      _weak?: boolean;
+      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+    };
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+  } | null;
+  bio: Array<{
+    children?: Array<{
+      marks?: Array<string>;
+      text?: string;
+      _type: "span";
+      _key: string;
+    }>;
+    style?: "blockquote" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "normal";
+    listItem?: "bullet" | "number";
+    markDefs?: Array<{
+      href?: string;
+      _type: "link";
+      _key: string;
+    }>;
+    level?: number;
+    _type: "block";
+    _key: string;
+  }>;
+  order: null;
   activeFrom: string;
   activeTo: string;
 } | null;
@@ -585,9 +737,6 @@ export type MEDIA_ITEMS_QUERYResult = Array<{
   order: null;
   publishedAt: string | null;
 }>;
-// Variable: BOARD_LEADER_QUERY
-// Query: *[_type == "boardMember" && role == "Leder"][0] {  _id,  name,  slug,  role,  email,  age,  hometown,  profileImage,  PersonalImage,  bio,  order,  activeFrom,  activeTo}
-export type BOARD_LEADER_QUERYResult = null;
 // Variable: COURSE_OFFERINGS_QUERY
 // Query: *[_type == "courseOffering"] | order(order asc) {  _id,  title,  description,  image,  link,  linkText,  order,  category}
 export type COURSE_OFFERINGS_QUERYResult = Array<{
@@ -626,7 +775,7 @@ export type COURSE_OFFERINGS_QUERYResult = Array<{
   link: string | null;
   linkText: string | null;
   order: number;
-  category: null;
+  category: "committee" | "external" | "internal" | "timeplanfestet";
 }>;
 // Variable: COMMITTEES_QUERY
 // Query: *[_type == "committee"] | order(order asc) {  _id,  name,  slug,  email,  logo,  shortDescription,  order}
@@ -752,11 +901,12 @@ export type INSTRUKT_LINKS_QUERYResult = Array<{
 import "@sanity/client";
 declare module "@sanity/client" {
   interface SanityQueries {
-    "*[_type == \"boardMember\"] | order(order asc) {\n  _id,\n  name,\n  slug,\n  role,\n  email,\n  age,\n  hometown,\n  profileImage,\n  PersonalImage,\n  bio,\n  order,\n  activeFrom,\n  activeTo\n}": BOARD_MEMBERS_QUERYResult;
-    "*[_type == \"boardMember\" && slug.current == $slug][0] {\n  _id,\n  name,\n  slug,\n  role,\n  email,\n  age,\n  hometown,\n  profileImage,\n  PersonalImage,\n  bio,\n  order,\n  activeFrom,\n  activeTo\n}": BOARD_MEMBER_QUERYResult;
+    "*[_type == \"boardMember\"] | order(\n  select(\n    role == 'boardLeader' => 1,\n    role == 'subjectLeader' => 2,\n    role == 'internalLeader' => 3,\n    role == 'externalLeader' => 4,\n    role == 'internalCoordinator' => 5,\n    role == 'externalCoordinator' => 6,\n    role == 'committeeLeader' => 7,\n    role == 'instructorLeader' => 8,\n    role == 'financialLeader' => 9,\n    role == 'marketingLeader' => 10,\n    role == 'extraLeader' => 11,\n    role == 'sponsorLeader' => 12,\n    role == 'equipmentLeader' => 13,\n    role == 'secretary' => 14,\n    role == 'mentorLeader' => 15,\n    99\n  ) asc,\n  _createdAt asc\n) {\n  _id,\n  name,\n  slug,\n  role,\n  email,\n  age,\n  hometown,\n  profileImage,\n  PersonalImage,\n  bio,\n  activeFrom,\n  activeTo\n}": BOARD_MEMBERS_QUERYResult;
+    "*[_type == \"boardMember\" && activeTo >= now()] | order(\n  select(\n    role == 'boardLeader' => 1,\n    role == 'subjectLeader' => 2,\n    role == 'internalLeader' => 3,\n    role == 'externalLeader' => 4,\n    role == 'internalCoordinator' => 5,\n    role == 'externalCoordinator' => 6,\n    role == 'committeeLeader' => 7,\n    role == 'instructorLeader' => 8,\n    role == 'financialLeader' => 9,\n    role == 'marketingLeader' => 10,\n    role == 'extraLeader' => 11,\n    role == 'sponsorLeader' => 12,\n    role == 'equipmentLeader' => 13,\n    role == 'secretary' => 14,\n    role == 'mentorLeader' => 15,\n    99\n  ) asc,\n  _createdAt asc\n) {\n  _id,\n  name,\n  slug,\n  role,\n  email,\n  age,\n  hometown,\n  profileImage,\n  PersonalImage,\n  bio,\n  activeFrom,\n  activeTo\n}": CURRENT_BOARD_MEMBERS_QUERYResult;
+    "*[_type == \"boardMember\" && slug.current == $slug][0] {\n  _id,\n  name,\n  slug,\n  role,\n  email,\n  age,\n  hometown,\n  profileImage,\n  PersonalImage,\n  bio,\n  order,\n  activeFrom,\n  activeTo\n}": BOARD_MEMBER_QUERY_BY_SLUGResult;
+    "*[_type == \"boardMember\" && role == $role][0] {\n  _id,\n  name,\n  slug,\n  role,\n  email,\n  age,\n  hometown,\n  profileImage,\n  PersonalImage,\n  bio,\n  order,\n  activeFrom,\n  activeTo\n}": BOARD_MEMBER_QUERY_BY_ROLEResult;
     "*[_type == \"carouselSlide\"] | order(order asc) {\n  _id,\n  backgroundImage,\n  title,\n  description,\n  buttonText,\n  buttonLink,\n  order\n}": CAROUSEL_SLIDES_QUERYResult;
     "*[_type == \"mediaItem\"] | order(order asc) {\n  _id,\n  title,\n  slug,\n  description,\n  thumbnail,\n  videoUrl,\n  externalLink,\n  linkText,\n  year,\n  order,\n  publishedAt\n}": MEDIA_ITEMS_QUERYResult;
-    "*[_type == \"boardMember\" && role == \"Leder\"][0] {\n  _id,\n  name,\n  slug,\n  role,\n  email,\n  age,\n  hometown,\n  profileImage,\n  PersonalImage,\n  bio,\n  order,\n  activeFrom,\n  activeTo\n}": BOARD_LEADER_QUERYResult;
     "*[_type == \"courseOffering\"] | order(order asc) {\n  _id,\n  title,\n  description,\n  image,\n  link,\n  linkText,\n  order,\n  category\n}": COURSE_OFFERINGS_QUERYResult;
     "*[_type == \"committee\"] | order(order asc) {\n  _id,\n  name,\n  slug,\n  email,\n  logo,\n  shortDescription,\n  order\n}": COMMITTEES_QUERYResult;
     "*[_type == \"committee\" && slug.current == $slug][0] {\n  _id,\n  name,\n  slug,\n  email,\n  logo,\n  description,\n  headerImage,\n  committeeImage,\n  order\n}": COMMITTEE_QUERYResult;

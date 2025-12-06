@@ -5,6 +5,7 @@ import { Box, Container, Heading, Text, Flex } from '@chakra-ui/react'
 import { getBoardMemberBySlug, getAllBoardMembers } from '@/utils/sanity/boardMembers'
 import { urlFor } from '@/sanity/lib/image'
 import { translateRole } from '@/utils/sanity/translateRole'
+import { portableTextComponents } from '@/components/Typography'
 
 export async function generateStaticParams() {
     const boardMembers = await getAllBoardMembers()
@@ -111,7 +112,7 @@ export default async function BoardMemberPage({ params }: { params: Promise<{ sl
 
                     {/* Biography */}
                     <Box mb={4} className="portable-text">
-                        <PortableText value={boardMember.bio} />
+                        <PortableText value={boardMember.bio} components={portableTextComponents} />
                     </Box>
 
                     {/* Email */}

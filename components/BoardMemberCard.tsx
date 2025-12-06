@@ -42,7 +42,7 @@ export default function BoardMemberCard({ member, href }: BoardMemberCardProps) 
                     className="w-[100px] h-[133px] object-cover rounded-xl mb-2"
                 />
             )}
-            <Heading as="h3" m={0} mb={2} fontSize="1rem" fontWeight={600} wordBreak="break-word" hyphens="auto">
+            <Heading as="h3" m={0} fontSize="1rem" fontWeight={600} wordBreak="break-word" hyphens="auto">
                 {member.name}
             </Heading>
             <Text m={0} fontSize="0.9rem" color="#666" wordBreak="break-word">

@@ -84,7 +84,7 @@ export default function ForMedisinstudenter() {
                 medisinstudent ved NTNU, tidligere medisinstudent ved NTNU, eller lege ved St. Olavs Hospital.
               </BodyText>
             </Box>
-            <Box w="2px" bg="#ccc" mx={4} />
+            <Box w={{ base: "0", md: "2px" }} bg="#ccc" mx={4} />
             <Box flex="1 1 300px" p={4}>
               <SubsectionHeading as="h3" mb={4} fontSize="1.4rem">Meld deg inn nå!</SubsectionHeading>
               <Text mb={4}>
