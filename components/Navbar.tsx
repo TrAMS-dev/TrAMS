@@ -142,14 +142,14 @@ export default function Navbar() {
           flexDirection="column"
           borderTop="1px solid var(--color-altBg)"
           bg="white"
-          py={4}
+          py={6}
         >
           {navLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
               onClick={() => setIsMobileMenuOpen(false)}
-              className={`block no-underline px-4 py-4 transition-colors duration-300 ${isActive(link.href)
+              className={`block no-underline px-6 py-6 transition-colors duration-300 ${isActive(link.href)
                 ? 'text-(--color-primary) font-bold bg-(--color-altBg)'
                 : 'text-(--color-text) font-normal hover:bg-(--color-altBg)'
                 }`}
@@ -159,6 +159,6 @@ export default function Navbar() {
           ))}
         </Box>
       )}
-    </Box>
+    </Box >
   );
 }

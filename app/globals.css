@@ -13,6 +13,7 @@
 
 html {
   scroll-behavior: smooth;
+  height: 100%;
 }
 
 body {
@@ -22,6 +23,19 @@ body {
   background: var(--color-bg);
   color: var(--color-text);
   overflow-x: hidden;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+body>div {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+main {
+  flex-grow: 1;
 }
 
 .container {
@@ -41,4 +55,3 @@ body {
 .portable-text p:last-child {
   margin-bottom: 0;
 }
-

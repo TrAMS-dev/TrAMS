@@ -26,7 +26,7 @@ export default function RootLayout({
       <body className={`${nunitoSans.variable} antialiased`}>
         <Providers>
           <Navbar />
-          {children}
+          <main>{children}</main>
           <Footer />
         </Providers>
       </body>
