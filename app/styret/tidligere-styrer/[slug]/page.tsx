@@ -4,6 +4,7 @@ import { PortableText } from '@portabletext/react'
 import { Box, Container, Heading, Text, Flex } from '@chakra-ui/react'
 import { getBoardMemberBySlug, getAllBoardMembers } from '@/utils/sanity/boardMembers'
 import { urlFor } from '@/sanity/lib/image'
+import { translateRole } from '@/utils/sanity/translateRole'
 
 export async function generateStaticParams() {
     const boardMembers = await getAllBoardMembers()
@@ -24,8 +25,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     }
 
     return {
-        title: `${boardMember.name} - ${boardMember.role} | TrAMS`,
-        description: `${boardMember.role} i TrAMS - Trondheim Akuttmedisinske Studentforening`,
+        title: `${boardMember.name} - ${translateRole(boardMember.role)} | TrAMS`,
+        description: `${translateRole(boardMember.role)} i TrAMS - Trondheim Akuttmedisinske Studentforening`,
     }
 }
 
@@ -37,90 +38,96 @@ export default async function BoardMemberPage({ params }: { params: Promise<{ sl
         notFound()
     }
 
-    const imageUrl = boardMember.profileImage
-        ? urlFor(boardMember.profileImage).width(400).height(400).url()
+    const profileImageUrl = boardMember.profileImage
+        ? urlFor(boardMember.profileImage).url()
         : null
 
+    const personalImageUrl = boardMember.PersonalImage
+        ? urlFor(boardMember.PersonalImage).url()
+        : null
     return (
-        <Container maxW={{ base: '95%', md: '60%' }} py={{ base: 8, md: 12 }}>
-            <Box bg="white" borderRadius="8px" p={{ base: 6, md: 8 }} boxShadow="0 0 10px rgba(0,0,0,0.1)">
-                <Flex
-                    flexDirection={{ base: 'column', md: 'row' }}
-                    gap={{ base: 6, md: 8 }}
-                    align={{ base: 'center', md: 'flex-start' }}
-                >
+        <Container maxW={{ base: '95%', md: '80%' }} py={{ base: 8, md: 12 }}>
+            <Flex
+                flexDirection={{ base: 'column', md: 'row' }}
+                gap={{ base: 6, md: 8 }}
+                align={{ base: 'center', md: 'flex-start' }}
+            >
+                <Box>
                     {/* Profile Image */}
-                    {imageUrl && (
-                        <Box flexShrink={0}>
+                    {personalImageUrl ? (
+                        <Box width="100%" borderRadius="lg" overflow="hidden" >
                             <Image
-                                src={imageUrl}
+                                src={personalImageUrl}
                                 alt={boardMember.name}
-                                width={200}
-                                height={200}
-                                className="rounded-full object-cover"
+                                width={300}
+                                height={300}
+                                className='w-full h-auto'
                             />
                         </Box>
-                    )}
-
-                    {/* Content */}
-                    <Box flex={1}>
-                        <Heading
-                            as="h1"
-                            fontSize={{ base: '2rem', md: '2.5rem' }}
-                            mb={2}
-                            color="black"
-                        >
-                            {boardMember.role}
-                        </Heading>
-
-                        <Box
-                            display="block"
-                            w="80px"
-                            h="4px"
-                            bg="var(--color-primary)"
-                            mb={6}
-                            borderRadius="2px"
-                        />
-
-                        <Heading
-                            as="h2"
-                            fontSize={{ base: '1.5rem', md: '1.8rem' }}
-                            mb={4}
-                            color="black"
-                            fontWeight={600}
-                        >
-                            {boardMember.name}
-                        </Heading>
-
-                        {/* Optional Info */}
-                        {(boardMember.age || boardMember.hometown) && (
-                            <Text mb={4} color="#666">
-                                {boardMember.age && `${boardMember.age} år`}
-                                {boardMember.age && boardMember.hometown && ' | '}
-                                {boardMember.hometown && `Fra ${boardMember.hometown}`}
-                            </Text>
+                    ) :
+                        profileImageUrl && (
+                            <Box width="100%" borderRadius="lg" overflow="hidden" >
+                                <Image
+                                    src={profileImageUrl}
+                                    alt={boardMember.name}
+                                    width={300}
+                                    height={300}
+                                    className='w-full h-auto'
+                                />
+                            </Box>
                         )}
+                </Box>
 
-                        {/* Biography */}
-                        <Box mb={4} className="portable-text">
-                            <PortableText value={boardMember.bio} />
-                        </Box>
+                {/* Content */}
+                <Box flex={1}>
+                    <Heading
+                        as="h1"
+                        fontSize={{ base: '2rem', md: '2.5rem' }}
+                        mb={2}
+                        color="black"
+                    >
+                        {boardMember.name.toUpperCase()}
 
-                        {/* Email */}
-                        {boardMember.email && (
-                            <Text mt={6} color="black">
-                                E-post:{' '}
-                                <a
-                                    href={`mailto:${boardMember.email}`}
-                                    style={{ color: 'var(--color-primary)', textDecoration: 'underline' }}
-                                >
-                                    {boardMember.email}
-                                </a>
-                            </Text>
-                        )}
+                    </Heading>
+
+                    <Box
+                        display="block"
+                        w="80px"
+                        h="4px"
+                        bg="var(--color-primary)"
+                        mb={6}
+                        borderRadius="2px"
+                    />
+
+                    <Heading
+                        as="h2"
+                        fontSize={{ base: '1.5rem', md: '1.8rem' }}
+                        mb={4}
+                        color="black"
+                        fontWeight={600}
+                    >
+                        {translateRole(boardMember.role)} {boardMember.activeFrom?.split('-')[0].slice(2)}/{boardMember.activeTo?.split('-')[0].slice(2)}
+                    </Heading>
+
+                    {/* Biography */}
+                    <Box mb={4} className="portable-text">
+                        <PortableText value={boardMember.bio} />
                     </Box>
-                </Flex>
-            </Box>
-        </Container>
+
+                    {/* Email */}
+                    {boardMember.email && (
+                        <Text mt={6} color="black">
+                            E-post:{' '}
+                            <a
+                                href={`mailto:${boardMember.email}`}
+                                style={{ color: 'var(--color-primary)', textDecoration: 'underline' }}
+                            >
+                                {boardMember.email}
+                            </a>
+                        </Text>
+                    )}
+                </Box>
+            </Flex>
+        </Container >
     )
 }

@@ -46,6 +46,20 @@ export const courseOfferingType = defineType({
             description: 'Brukes for å sortere kurstilbudene',
             validation: (rule) => rule.required(),
         }),
+        defineField({
+            name: 'category',
+            title: 'Kategori',
+            type: 'string',
+            validation: (rule) => rule.required(),
+            options: {
+                list: [
+                    { title: 'Timeplanfestet', value: 'timeplanfestet' },
+                    { title: 'Komite-arrangement', value: 'committee' },
+                    { title: 'Ekstern', value: 'external' },
+                    { title: 'Intern', value: 'internal' },
+                ],
+            },
+        }),
     ],
     orderings: [
         {

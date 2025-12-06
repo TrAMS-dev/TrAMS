@@ -5,12 +5,13 @@ import Link from 'next/link';
 import Image from 'next/image';
 import Carousel from '@/components/Carousel';
 import { Box, Flex, Heading, Text, Container, Button, Link as ChakraLink, HStack } from '@chakra-ui/react';
-import { BOARD_MEMBERS_QUERY, CAROUSEL_SLIDES_QUERY } from '@/sanity/lib/queries'
+import { CURRENT_BOARD_MEMBERS_QUERY, CAROUSEL_SLIDES_QUERY } from '@/sanity/lib/queries'
 import { urlFor } from '@/sanity/lib/image';
 import ClientCalendar from '@/components/ClientCalendar';
 import { BoardMember, CarouselSlide } from '@/types/sanity.types';
 import { client } from '@/sanity/lib/client';
 import { translateRole } from '@/utils/sanity/translateRole';
+import BoardMemberCard from '@/components/BoardMemberCard';
 
 export default function Home() {
   const [boardMembers, setBoardMembers] = useState<BoardMember[]>([]);
@@ -18,7 +19,7 @@ export default function Home() {
 
 
   useEffect(() => {
-    client.fetch<BoardMember[]>(BOARD_MEMBERS_QUERY)
+    client.fetch<BoardMember[]>(CURRENT_BOARD_MEMBERS_QUERY)
       .then((boardMembers) => setBoardMembers(boardMembers));
   }, []);
 
@@ -222,7 +223,6 @@ export default function Home() {
           <Heading
             as="h2"
             textAlign="center"
-            mb={8}
             color="black"
             fontWeight={700}
             position="relative"
@@ -230,7 +230,7 @@ export default function Home() {
             fontSize="2rem"
           >
             Styret i TrAMS
-            <Box display="block" w="80px" h="4px" bg="var(--color-primary)" mx="auto" mt={2} borderRadius="2px" />
+            <Box display="block" w="120px" h="4px" bg="var(--color-primary)" mx="auto" mt={2} borderRadius="2px" />
           </Heading>
           <HStack
             gap={8}
@@ -239,50 +239,17 @@ export default function Home() {
             pt={8}
             style={{ scrollSnapType: 'x mandatory' }}
           >
-            {boardMembers.map((member, index) => {
-              const imageUrl = member.profileImage
-                ? urlFor(member.profileImage).width(300).height(400).url()
-                : null;
-
-              return (
-                <ChakraLink
-                  key={member._id}
-                  href={`/styret/${member.role?.toLowerCase() || ''}`}
-                  bg="white"
-                  borderRadius="8px"
-                  p={4}
-                  w="240px"
-                  textAlign="center"
-                  transition="all 0.3s ease"
-                  flex="0 0 auto"
-                  style={{ scrollSnapAlign: 'start' }}
-                  textDecoration="none"
-                  color="inherit"
-                  boxShadow="0 0 10px rgba(0,0,0,0.1)"
-                  _hover={{ transform: 'scale(1.05)', boxShadow: '0 0 15px rgba(0,0,0,0.2)' }}
-                  display="flex"
-                  flexDirection="column"
-                  alignItems="center"
-                >
-                  {imageUrl && (
-                    <Image
-                      src={imageUrl}
-                      alt={member.name || ''}
-                      width={100}
-                      height={133}
-                      className="w-[100px] h-[133px] object-cover rounded-xl mb-2"
-                    />
-                  )}
-                  <Heading as="h3" m={0} mb={2} fontSize="1rem" fontWeight={600} wordBreak="break-word" hyphens="auto">
-                    {member.name}
-                  </Heading>
-                  <Text m={0} fontSize="0.9rem" color="#666" wordBreak="break-word">
-                    {translateRole(member.role)}
-                  </Text>
-                </ChakraLink>
-              );
-            })}
+            {boardMembers.map((member) => (
+              <BoardMemberCard key={member._id} member={member} href={`/styret/${member.role?.toLowerCase() || ''}`} />
+            ))}
           </HStack>
+          <Box textAlign="center" mb={6}>
+            <Link href="/styret/tidligere-styrer">
+              <Text as="span" color="var(--color-primary)" _hover={{ textDecoration: 'underline' }} cursor="pointer">
+                Se tidligere styrer
+              </Text>
+            </Link>
+          </Box>
         </Box>
       </Container>
     </>

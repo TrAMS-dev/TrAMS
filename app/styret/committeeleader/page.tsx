@@ -12,18 +12,18 @@ export const metadata = {
 }
 
 export default async function CommitteeLeaderPage() {
-    const comitteeLeader = await getBoardMemberByRole('comitteeLeader')
+    const committeeLeader = await getBoardMemberByRole('committeeLeader')
 
-    if (!comitteeLeader) {
+    if (!committeeLeader) {
         notFound()
     }
 
-    const profileImageUrl = comitteeLeader.profileImage
-        ? urlFor(comitteeLeader.profileImage).url()
+    const profileImageUrl = committeeLeader.profileImage
+        ? urlFor(committeeLeader.profileImage).url()
         : null
 
-    const personalImageUrl = comitteeLeader.PersonalImage
-        ? urlFor(comitteeLeader.PersonalImage).url()
+    const personalImageUrl = committeeLeader.PersonalImage
+        ? urlFor(committeeLeader.PersonalImage).url()
         : null
 
     return (
@@ -52,7 +52,7 @@ export default async function CommitteeLeaderPage() {
                             <Box width="90%" borderRadius="lg" overflow="hidden" >
                                 <Image
                                     src={personalImageUrl}
-                                    alt={`${comitteeLeader.name} personal`}
+                                    alt={`${committeeLeader.name} personal`}
                                     width={300}
                                     height={300}
                                     className='w-full h-auto'
@@ -63,7 +63,7 @@ export default async function CommitteeLeaderPage() {
                                 <Box width="90%" borderRadius="lg" overflow="hidden" >
                                     <Image
                                         src={profileImageUrl}
-                                        alt={comitteeLeader.name}
+                                        alt={committeeLeader.name}
                                         width={300}
                                         height={300}
                                         className='w-full h-auto'
@@ -76,11 +76,11 @@ export default async function CommitteeLeaderPage() {
                     {/* Right Column: Bio & Contact */}
                     <Box flex={1}>
                         <Heading as="h3" fontSize="2.5rem" mb={6}>
-                            {comitteeLeader.name.toUpperCase()}
+                            {committeeLeader.name.toUpperCase()}
                         </Heading>
 
                         <Box className="portable-text" mb={8}>
-                            <PortableText value={comitteeLeader.bio} components={portableTextComponents} />
+                            <PortableText value={committeeLeader.bio} components={portableTextComponents} />
                         </Box>
 
                         <Box>
@@ -88,10 +88,10 @@ export default async function CommitteeLeaderPage() {
                             <Text fontSize="1.1rem">
                                 E-post kan sendes til{' '}
                                 <a
-                                    href={`mailto:${comitteeLeader.email}`}
+                                    href={`mailto:${committeeLeader.email}`}
                                     style={{ color: 'var(--color-primary)', textDecoration: 'underline', fontWeight: 600 }}
                                 >
-                                    {comitteeLeader.email}
+                                    {committeeLeader.email}
                                 </a>
                             </Text>
                         </Box>

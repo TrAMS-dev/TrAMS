@@ -36,7 +36,7 @@ export const boardMemberType = defineType({
                     { title: 'Eksternsjef', value: 'externalLeader' },
                     { title: 'Internkoordinator', value: 'internalCoordinator' },
                     { title: 'Eksternkoordinator', value: 'externalCoordinator' },
-                    { title: 'Komiteansvarlig', value: 'comitteeLeader' },
+                    { title: 'Komiteansvarlig', value: 'committeeLeader' },
                     { title: 'Instruktøransvarlig', value: 'instructorLeader' },
                     { title: 'Økonomiansvarlig', value: 'financialLeader' },
                     { title: 'Markøransvarlig', value: 'extraLeader' },

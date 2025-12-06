@@ -13,10 +13,47 @@ export const BOARD_MEMBERS_QUERY = defineQuery(`*[_type == "boardMember"] | orde
     role == 'instructorLeader' => 8,
     role == 'financialLeader' => 9,
     role == 'marketingLeader' => 10,
-    role == 'sponsorLeader' => 11,
-    role == 'equipmentLeader' => 12,
-    role == 'secretary' => 13,
-    role == 'mentorLeader' => 14,
+    role == 'extraLeader' => 11,
+    role == 'sponsorLeader' => 12,
+    role == 'equipmentLeader' => 13,
+    role == 'secretary' => 14,
+    role == 'mentorLeader' => 15,
+    99
+  ) asc,
+  _createdAt asc
+) {
+  _id,
+  name,
+  slug,
+  role,
+  email,
+  age,
+  hometown,
+  profileImage,
+  PersonalImage,
+  bio,
+  activeFrom,
+  activeTo
+}`)
+
+// Query to get CURRENT board members (activeTo >= now), ordered by display order
+export const CURRENT_BOARD_MEMBERS_QUERY = defineQuery(`*[_type == "boardMember" && activeTo >= now()] | order(
+  select(
+    role == 'boardLeader' => 1,
+    role == 'subjectLeader' => 2,
+    role == 'internalLeader' => 3,
+    role == 'externalLeader' => 4,
+    role == 'internalCoordinator' => 5,
+    role == 'externalCoordinator' => 6,
+    role == 'committeeLeader' => 7,
+    role == 'instructorLeader' => 8,
+    role == 'financialLeader' => 9,
+    role == 'marketingLeader' => 10,
+    role == 'extraLeader' => 11,
+    role == 'sponsorLeader' => 12,
+    role == 'equipmentLeader' => 13,
+    role == 'secretary' => 14,
+    role == 'mentorLeader' => 15,
     99
   ) asc,
   _createdAt asc
