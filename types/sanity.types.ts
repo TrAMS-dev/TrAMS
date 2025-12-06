@@ -13,6 +13,137 @@
  */
 
 // Source: schema.json
+export type Committee = {
+  _id: string;
+  _type: "committee";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  name: string;
+  slug: Slug;
+  email?: string;
+  logo: {
+    asset?: {
+      _ref: string;
+      _type: "reference";
+      _weak?: boolean;
+      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+    };
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+  };
+  description: Array<{
+    children?: Array<{
+      marks?: Array<string>;
+      text?: string;
+      _type: "span";
+      _key: string;
+    }>;
+    style?: "normal" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "blockquote";
+    listItem?: "bullet" | "number";
+    markDefs?: Array<{
+      href?: string;
+      _type: "link";
+      _key: string;
+    }>;
+    level?: number;
+    _type: "block";
+    _key: string;
+  }>;
+  headerImage: {
+    asset?: {
+      _ref: string;
+      _type: "reference";
+      _weak?: boolean;
+      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+    };
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+  };
+  committeeImage?: {
+    asset?: {
+      _ref: string;
+      _type: "reference";
+      _weak?: boolean;
+      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+    };
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+  };
+  order: number;
+};
+
+export type SanityImageCrop = {
+  _type: "sanity.imageCrop";
+  top: number;
+  bottom: number;
+  left: number;
+  right: number;
+};
+
+export type SanityImageHotspot = {
+  _type: "sanity.imageHotspot";
+  x: number;
+  y: number;
+  height: number;
+  width: number;
+};
+
+export type Slug = {
+  _type: "slug";
+  current: string;
+  source?: string;
+};
+
+export type CourseOffering = {
+  _id: string;
+  _type: "courseOffering";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  title: string;
+  description: Array<{
+    children?: Array<{
+      marks?: Array<string>;
+      text?: string;
+      _type: "span";
+      _key: string;
+    }>;
+    style?: "normal" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "blockquote";
+    listItem?: "bullet" | "number";
+    markDefs?: Array<{
+      href?: string;
+      _type: "link";
+      _key: string;
+    }>;
+    level?: number;
+    _type: "block";
+    _key: string;
+  }>;
+  image: {
+    asset?: {
+      _ref: string;
+      _type: "reference";
+      _weak?: boolean;
+      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+    };
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+  };
+  link?: string;
+  linkText?: string;
+  order: number;
+  category?: "course" | "event" | "volunteer" | "other";
+};
+
 export type MediaItem = {
   _id: string;
   _type: "mediaItem";
@@ -54,22 +185,6 @@ export type MediaItem = {
   externalLink?: string;
   year: number;
   publishedAt?: string;
-};
-
-export type SanityImageCrop = {
-  _type: "sanity.imageCrop";
-  top: number;
-  bottom: number;
-  left: number;
-  right: number;
-};
-
-export type SanityImageHotspot = {
-  _type: "sanity.imageHotspot";
-  x: number;
-  y: number;
-  height: number;
-  width: number;
 };
 
 export type CarouselSlide = {
@@ -122,7 +237,7 @@ export type BoardMember = {
     crop?: SanityImageCrop;
     _type: "image";
   };
-  PersonalImage: {
+  PersonalImage?: {
     asset?: {
       _ref: string;
       _type: "reference";
@@ -153,12 +268,6 @@ export type BoardMember = {
     _key: string;
   }>;
   order?: number;
-};
-
-export type Slug = {
-  _type: "slug";
-  current: string;
-  source?: string;
 };
 
 export type SanityImagePaletteSwatch = {
@@ -257,7 +366,7 @@ export type Geopoint = {
   alt?: number;
 };
 
-export type AllSanitySchemaTypes = MediaItem | SanityImageCrop | SanityImageHotspot | CarouselSlide | BoardMember | Slug | SanityImagePaletteSwatch | SanityImagePalette | SanityImageDimensions | SanityImageMetadata | SanityFileAsset | SanityAssetSourceData | SanityImageAsset | Geopoint;
+export type AllSanitySchemaTypes = Committee | SanityImageCrop | SanityImageHotspot | Slug | CourseOffering | MediaItem | CarouselSlide | BoardMember | SanityImagePaletteSwatch | SanityImagePalette | SanityImageDimensions | SanityImageMetadata | SanityFileAsset | SanityAssetSourceData | SanityImageAsset | Geopoint;
 export declare const internalGroqTypeReferenceTo: unique symbol;
 // Source: sanity/lib/queries.ts
 // Variable: BOARD_MEMBERS_QUERY
@@ -293,7 +402,7 @@ export type BOARD_MEMBERS_QUERYResult = Array<{
     hotspot?: SanityImageHotspot;
     crop?: SanityImageCrop;
     _type: "image";
-  };
+  } | null;
   bio: Array<{
     children?: Array<{
       marks?: Array<string>;
@@ -349,7 +458,7 @@ export type BOARD_MEMBER_QUERYResult = {
     hotspot?: SanityImageHotspot;
     crop?: SanityImageCrop;
     _type: "image";
-  };
+  } | null;
   bio: Array<{
     children?: Array<{
       marks?: Array<string>;
@@ -470,7 +579,7 @@ export type BOARD_LEADER_QUERYResult = {
     hotspot?: SanityImageHotspot;
     crop?: SanityImageCrop;
     _type: "image";
-  };
+  } | null;
   bio: Array<{
     children?: Array<{
       marks?: Array<string>;
@@ -493,6 +602,131 @@ export type BOARD_LEADER_QUERYResult = {
   activeFrom: string;
   activeTo: string;
 } | null;
+// Variable: COURSE_OFFERINGS_QUERY
+// Query: *[_type == "courseOffering"] | order(order asc) {  _id,  title,  description,  image,  link,  linkText,  order,  category}
+export type COURSE_OFFERINGS_QUERYResult = Array<{
+  _id: string;
+  title: string;
+  description: Array<{
+    children?: Array<{
+      marks?: Array<string>;
+      text?: string;
+      _type: "span";
+      _key: string;
+    }>;
+    style?: "blockquote" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "normal";
+    listItem?: "bullet" | "number";
+    markDefs?: Array<{
+      href?: string;
+      _type: "link";
+      _key: string;
+    }>;
+    level?: number;
+    _type: "block";
+    _key: string;
+  }>;
+  image: {
+    asset?: {
+      _ref: string;
+      _type: "reference";
+      _weak?: boolean;
+      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+    };
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+  };
+  link: string | null;
+  linkText: string | null;
+  order: number;
+  category: "course" | "event" | "other" | "volunteer" | null;
+}>;
+// Variable: COMMITTEES_QUERY
+// Query: *[_type == "committee"] | order(order asc) {  _id,  name,  slug,  email,  logo,  shortDescription,  order}
+export type COMMITTEES_QUERYResult = Array<{
+  _id: string;
+  name: string;
+  slug: Slug;
+  email: string | null;
+  logo: {
+    asset?: {
+      _ref: string;
+      _type: "reference";
+      _weak?: boolean;
+      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+    };
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+  };
+  shortDescription: null;
+  order: number;
+}>;
+// Variable: COMMITTEE_QUERY
+// Query: *[_type == "committee" && slug.current == $slug][0] {  _id,  name,  slug,  email,  logo,  description,  headerImage,  committeeImage,  order}
+export type COMMITTEE_QUERYResult = {
+  _id: string;
+  name: string;
+  slug: Slug;
+  email: string | null;
+  logo: {
+    asset?: {
+      _ref: string;
+      _type: "reference";
+      _weak?: boolean;
+      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+    };
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+  };
+  description: Array<{
+    children?: Array<{
+      marks?: Array<string>;
+      text?: string;
+      _type: "span";
+      _key: string;
+    }>;
+    style?: "blockquote" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "normal";
+    listItem?: "bullet" | "number";
+    markDefs?: Array<{
+      href?: string;
+      _type: "link";
+      _key: string;
+    }>;
+    level?: number;
+    _type: "block";
+    _key: string;
+  }>;
+  headerImage: {
+    asset?: {
+      _ref: string;
+      _type: "reference";
+      _weak?: boolean;
+      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+    };
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+  };
+  committeeImage: {
+    asset?: {
+      _ref: string;
+      _type: "reference";
+      _weak?: boolean;
+      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+    };
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+  } | null;
+  order: number;
+} | null;
 
 // Query TypeMap
 import "@sanity/client";
@@ -503,5 +737,8 @@ declare module "@sanity/client" {
     "*[_type == \"carouselSlide\"] | order(order asc) {\n  _id,\n  backgroundImage,\n  title,\n  description,\n  buttonText,\n  buttonLink,\n  order\n}": CAROUSEL_SLIDES_QUERYResult;
     "*[_type == \"mediaItem\"] | order(order asc) {\n  _id,\n  title,\n  slug,\n  description,\n  thumbnail,\n  videoUrl,\n  externalLink,\n  linkText,\n  year,\n  order,\n  publishedAt\n}": MEDIA_ITEMS_QUERYResult;
     "*[_type == \"boardMember\" && role == \"Leder\"][0] {\n  _id,\n  name,\n  slug,\n  role,\n  email,\n  age,\n  hometown,\n  profileImage,\n  PersonalImage,\n  bio,\n  order,\n  activeFrom,\n  activeTo\n}": BOARD_LEADER_QUERYResult;
+    "*[_type == \"courseOffering\"] | order(order asc) {\n  _id,\n  title,\n  description,\n  image,\n  link,\n  linkText,\n  order,\n  category\n}": COURSE_OFFERINGS_QUERYResult;
+    "*[_type == \"committee\"] | order(order asc) {\n  _id,\n  name,\n  slug,\n  email,\n  logo,\n  shortDescription,\n  order\n}": COMMITTEES_QUERYResult;
+    "*[_type == \"committee\" && slug.current == $slug][0] {\n  _id,\n  name,\n  slug,\n  email,\n  logo,\n  description,\n  headerImage,\n  committeeImage,\n  order\n}": COMMITTEE_QUERYResult;
   }
 }

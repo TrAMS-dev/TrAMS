@@ -39,13 +39,6 @@ export const committeeType = defineType({
             validation: (rule) => rule.required(),
         }),
         defineField({
-            name: 'shortDescription',
-            title: 'Kort beskrivelse',
-            type: 'text',
-            description: 'Kort beskrivelse som vises på oversiktssiden',
-            rows: 3,
-        }),
-        defineField({
             name: 'description',
             title: 'Fullstendig beskrivelse',
             type: 'array',
@@ -53,16 +46,21 @@ export const committeeType = defineType({
             validation: (rule) => rule.required(),
         }),
         defineField({
-            name: 'members',
-            title: 'Medlemmer',
-            type: 'array',
-            of: [
-                {
-                    type: 'reference',
-                    to: [{ type: 'boardMember' }],
-                },
-            ],
-            description: 'Komitémedlemmer (valgfritt)',
+            name: 'headerImage',
+            title: 'Header-bilde',
+            type: 'image',
+            options: {
+                hotspot: true,
+            },
+            validation: (rule) => rule.required(),
+        }),
+        defineField({
+            name: 'committeeImage',
+            title: 'Bilde av komiteens medlemmer',
+            type: 'image',
+            options: {
+                hotspot: true,
+            },
         }),
         defineField({
             name: 'order',

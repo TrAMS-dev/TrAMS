@@ -108,13 +108,7 @@ export const COMMITTEE_QUERY = defineQuery(`*[_type == "committee" && slug.curre
   email,
   logo,
   description,
-  members[]->{
-    _id,
-    name,
-    slug,
-    role,
-    email,
-    profileImage
-  },
+  headerImage,
+  committeeImage,
   order
 }`)

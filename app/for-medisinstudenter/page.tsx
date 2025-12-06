@@ -1,133 +1,56 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { Box, Flex, Link, Container, Text } from '@chakra-ui/react';
 import Image from 'next/image';
-import { HeroHeading, HeroText, PageHeading, SectionHeading, SubsectionHeading, BodyText, CenteredText } from '@/components/Typography';
+import { HeroHeading, HeroText, PageHeading, SectionHeading, SubsectionHeading, BodyText, CenteredText, portableTextComponents } from '@/components/Typography';
+import { COURSE_OFFERINGS_QUERY, COMMITTEES_QUERY } from '@/sanity/lib/queries';
+import { urlFor } from '@/sanity/lib/image';
+import { client } from '@/sanity/lib/client';
+import { PortableText } from 'next-sanity';
+
+// Temporary types until we regenerate sanity types
+type CourseOffering = {
+  _id: string;
+  title: string;
+  description: any[];
+  image: any;
+  link?: string;
+  linkText?: string;
+  order: number;
+  category?: string;
+};
+
+type Committee = {
+  _id: string;
+  name: string;
+  slug: { current: string };
+  email?: string;
+  logo: any;
+  shortDescription?: string;
+  order: number;
+};
 
 export default function ForMedisinstudenter() {
-  const offers = [
-    {
-      image: 'https://imgur.com/vnWYSpG.jpg',
-      title: 'TrAMS I - Kurs i basal akkuttmedisin',
-      description:
-        'I samarbeid med fakultetet for medisin og helsevitenskap ved Norges Teknisk-Naturvitenskapelige Universitet (NTNU) arrangerer TrAMS kurs i basal akuttmedisin. Kurset er på 12 timer og fordeles over 3 dager, som en del av timeplanen i semester IA. Kurset innebærer teoretisk gjennomgang av ABC-drillen, en TBL-seanse og virkelighetsnær casetrening. Deltakerne trenes i basal hjerte-lungeredning, sikring av frie luftveier og enkle strategier for blødningskontroll og overvåkning av sirkulasjonsstatus. I tillegg gjennomgås vurdering av bevissthetsnivå etter AVPU-skalaen.',
-    },
-    {
-      image: 'https://imgur.com/FCUWJQ8.jpg',
-      title: 'TrAMS II - Kurs i prehospital akkuttmedisin',
-      description:
-        'TrAMS II kurset er et kurs i prehospital akuttmedisin for medisinstudenter på stadium II. I 2021 ble kurset for første gang timeplanfestet for medisinstudenter i 3. klasse. Kurset omfatter diagnostikk og behandling av akutt respirasjonssvikt, sirkulasjonssvikt og nedsatt bevissthet, monitorering ved akutt kritisk sykdom, samt basal håndtering av traumepasienter. Kurset organiseres i en ferdighetskveld og en ringløype med realistiske caser.',
-    },
-    {
-      image: 'https://imgur.com/t5LRW8B.jpg',
-      title: 'TrAMS III - Kurs i akutt mottaksmedisin',
-      description:
-        'TrAMS III er et kurs i akutt mottaksmedisin for medisinstudenter på stadium III. Kurset omfatter undersøkelse, diagnostikk, monitorering og behandling av kritisk og akutt syke pasienter i akuttmottak. Kurset innebærer praktisk trening i ringløype.',
-    },
-    {
-      image: 'https://imgur.com/8BhcrjG.jpg',
-      title: 'Suturkurs',
-      description:
-        'Suturkursene arrangeres av KirKom. Vi tilbyr både basale suturkurs for nybegynnere og mer avanserte kurs for viderekomne.',
-    },
-    {
-      image: 'https://imgur.com/MiTCD8m.jpg',
-      title: 'Gipsekurs',
-      description: 'Kurset omfatter teoretisk gjennomgang og praktisk øving i å legge radiuslaske og ankelgips.',
-    },
-    {
-      image: 'https://imgur.com/Q0N4CF1.jpg',
-      title: 'PVK-kurs',
-      description:
-        'Kurset omfatter en gjennomgang av standard prosedyre for perifer venekanylering, samt praktisk trening i mindre grupper med instruktører.',
-    },
-    {
-      image: 'https://imgur.com/0UGQZtp.jpg',
-      title: 'Ultralyd-kurs: eFAST',
-      description:
-        'En akuttmedisinsk ultralyd-undersøkelse, som brukes i traumesammenheng for å oppdage fritt blod rundt hjertet og i buken. Som deltaker vil du få opplæring i selve undersøkelsen, deretter vil du få god tid til praktisk trening under veiledning av instruktører.',
-    },
-    {
-      image: 'https://imgur.com/TK4qFvk.jpg',
-      title: 'Ultralyd-kurs: RUSH',
-      description:
-        'Står for Rapid Ultrasound in Shock and Hypotension. Også en akuttmedisinsk ultralyd-protokoll, som er veldig relevant for LIS1! Som deltaker vil du få opplæring i selve undersøkelsen, deretter vil du få god tid til praktisk trening under veiledning av instruktører. For størst mulig utbytte anbefaler vi sterkt å delta på eFAST før RUSH.',
-    },
-    {
-      image: 'https://imgur.com/B94No1w.jpg',
-      title: 'Pediatrisk ringløype',
-      description: 'TBA',
-    },
-    {
-      image: 'https://imgur.com/6WJZ7ZM.jpg',
-      title: 'Frivillig uketjeneste i akuttmedisin',
-      description:
-        'Frivillig uketjeneste i akuttmedisin er et tilbud for alle som har deltatt på informasjonsmøte i regi av TrAMS i samarbeid med anestesiavdelingen ved St. Olavs hospital. Dette krever at man studerer medisin på NTNU ved stadium II eller III. Du trenger ikke å være medlem for å benytte deg av tilbudet.',
-      link: '#',
-      linkText: 'Les mer',
-    },
-    {
-      image: 'https://imgur.com/ugfrz3s.jpg',
-      title: 'Markøroppdrag',
-      description:
-        'Markører er nødvendige for å gjennomføre akuttmedisinske kurs. Som markør spiller man syk eller skadd i en medisinsk simulering. Gjennom året har vi behov for markører til mange av våre egne kurs, deriblant TrAMS II - og TrAMS III - kursene. I tillegg får vi flere spennende forespørsler fra andre aktører, blant annet har vi hatt markøroppdrag for Forsvaret, Politiet, Ambulansen og avdelinger på St.Olavs hospital.',
-      link: '#',
-      linkText: 'Les mer',
-    },
-    {
-      image: 'https://imgur.com/eWdPbng.jpg',
-      title: 'Foredrag',
-      description:
-        'TrAMS arrangerer også diverse foredrag gjennom et semester med akuttmedisinsk relevans. Foredragene har ulik tematikk og skal sørge for faglig påfyll og inspirasjon.',
-      link: '#',
-      linkText: 'Les mer',
-    },
-    {
-      image: 'https://imgur.com/jZBTHbd.jpg',
-      title: 'Andre arrangementer',
-      description:
-        'TrAMS arrangerer en rekke andre aktiviteter gjennom skoleåret. Juleverksted og påskeverksted er populære ettermiddagstilbud med ferdighetstrening og hygge før høytidene. Før eksamen arrangerer vi også eksamensøving for å friske opp ferdighetene før OSKE.',
-    },
-  ];
+  const [offers, setOffers] = useState<CourseOffering[]>([]);
+  const [committees, setCommittees] = useState<Committee[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const committees = [
-    {
-      name: 'KirKom - Traume og kirurgisk komité',
-      email: 'kirkom@trams.no',
-      image: 'https://imgur.com/56Uvds1.png',
-      link: '/for-medisinstudenter/kirkom',
-    },
-    {
-      name: 'RadKom - Radiologisk komité',
-      email: 'radkom@trams.no',
-      image: 'https://imgur.com/GOmZ3mx.png',
-      link: '/for-medisinstudenter/radkom',
-    },
-    {
-      name: 'FjellKom - Fjellmedisinsk komité',
-      email: 'fjellkom@trams.no',
-      image: 'https://imgur.com/doKxS3V.png',
-      link: '/for-medisinstudenter/fjellkom',
-    },
-    {
-      name: 'PedKom - Pediatrisk komité',
-      email: 'pedkom@trams.no',
-      image: 'https://imgur.com/5gHES5V.png',
-      link: '/for-medisinstudenter/pedkom',
-    },
-    {
-      name: 'SosKom - Sosialkomitéen',
-      email: 'soskom@trams.no',
-      image: 'https://imgur.com/evhbL2E.png',
-      link: '/for-medisinstudenter/soskom',
-    },
-    {
-      name: 'TrAMS Levanger',
-      email: 'levanger@trams.no',
-      image: 'https://imgur.com/vUl3eqv.png',
-      link: '/for-medisinstudenter/trams-levanger',
-    },
-  ];
+  useEffect(() => {
+    Promise.all([
+      client.fetch<CourseOffering[]>(COURSE_OFFERINGS_QUERY),
+      client.fetch<Committee[]>(COMMITTEES_QUERY),
+    ])
+      .then(([courseOfferings, committeeData]) => {
+        setOffers(courseOfferings);
+        setCommittees(committeeData);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error('Error fetching data:', error);
+        setLoading(false);
+      });
+  }, []);
 
   return (
     <>
@@ -231,86 +154,100 @@ export default function ForMedisinstudenter() {
         </CenteredText>
 
         {/* COURSE-CARDS SCROLL */}
-        <Flex
-          gap={8}
-          overflowX="auto"
-          my={12}
-          px={4}
-          className="scroll-smooth"
-          mb={16}
-        >
-          {offers.map((offer, index) => (
-            <Box
-              key={index}
-              flex="0 0 auto"
-              w="300px"
-              bg="#fff"
-              borderRadius="8px"
-              textAlign="center"
-              boxShadow="0 0 10px rgba(0,0,0,0.1)"
-              display="flex"
-              flexDirection="column"
-              overflow="hidden"
-              mb={5}
-            >
-              <Box
-                w="300px"
-                h="300px"
-                position="relative"
-                overflow="hidden"
-                display="flex"
-                alignItems="center"
-                justifyContent="center"
-              >
-                <Image
-                  src={offer.image}
-                  alt={offer.title}
-                  width={300}
-                  height={300}
-                  style={{
-                    width: '300px',
-                    height: '300px',
-                    objectFit: 'cover',
-                  }}
-                />
-              </Box>
-              <SubsectionHeading m={4} mb={2} fontSize="1.4rem">
-                {offer.title}
-              </SubsectionHeading>
-              <Text flex={1} mx={4} mb={4} lineHeight="1.4">
-                {offer.description}
-              </Text>
-              {offer.link && (
-                <Link
-                  href={offer.link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  display="block"
-                  bg="var(--color-primary)"
-                  color="var(--color-light)"
-                  fontWeight={700}
-                  textDecoration="none"
-                  fontSize="1rem"
-                  p="0.6rem 1.2rem"
-                  borderRadius="4px"
-                  transition="background 0.3s ease"
-                  cursor="pointer"
-                  mx="auto"
-                  mb={8}
-                  w="80%"
-                  maxW="200px"
+        {loading ? (
+          <Text textAlign="center" fontSize="1.2rem" color="gray.600" my={12}>
+            Laster inn...
+          </Text>
+        ) : (
+          <Flex
+            gap={8}
+            overflowX="auto"
+            my={12}
+            px={4}
+            className="scroll-smooth"
+            mb={16}
+          >
+            {offers.map((offer) => {
+              const imageUrl = offer.image
+                ? urlFor(offer.image).width(300).height(300).url()
+                : null;
+
+              return (
+                <Box
+                  key={offer._id}
+                  flex="0 0 auto"
+                  w="300px"
+                  bg="#fff"
+                  borderRadius="8px"
                   textAlign="center"
-                  _hover={{
-                    bg: 'var(--color-secondary)',
-                    color: 'black',
-                  }}
+                  boxShadow="0 0 10px rgba(0,0,0,0.1)"
+                  display="flex"
+                  flexDirection="column"
+                  overflow="hidden"
+                  mb={5}
                 >
-                  {offer.linkText}
-                </Link>
-              )}
-            </Box>
-          ))}
-        </Flex>
+                  {imageUrl && (
+                    <Box
+                      w="300px"
+                      h="300px"
+                      position="relative"
+                      overflow="hidden"
+                      display="flex"
+                      alignItems="center"
+                      justifyContent="center"
+                    >
+                      <Image
+                        src={imageUrl}
+                        alt={offer.title}
+                        width={300}
+                        height={300}
+                        style={{
+                          width: '300px',
+                          height: '300px',
+                          objectFit: 'cover',
+                        }}
+                      />
+                    </Box>
+                  )}
+                  <SubsectionHeading m={4} mb={2} fontSize="1.4rem">
+                    {offer.title}
+                  </SubsectionHeading>
+                  <Box flex={1} mx={4} mb={4} lineHeight="1.4" textAlign="left">
+                    <PortableText value={offer.description} components={portableTextComponents} />
+                  </Box>
+                  {offer.link && (
+                    <Link
+                      href={offer.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      display="block"
+                      bg="var(--color-primary)"
+                      color="var(--color-light)"
+                      fontWeight={700}
+                      textDecoration="none"
+                      fontSize="1rem"
+                      p="0.6rem 1.2rem"
+                      borderRadius="4px"
+                      transition="background 0.3s ease"
+                      cursor="pointer"
+                      mx="auto"
+                      mb={8}
+                      w="80%"
+                      maxW="200px"
+                      textAlign="center"
+                      _hover={{
+                        bg: 'var(--color-secondary)',
+                        color: 'black',
+                      }}
+                    >
+                      {offer.linkText}
+                    </Link>
+                  )}
+                </Box>
+              );
+            })}
+          </Flex>
+        )}
 
         {/* COMMITTEES SECTION */}
         <Box my={16}>
@@ -330,59 +267,67 @@ export default function ForMedisinstudenter() {
           </CenteredText>
 
           <Flex flexWrap="wrap" gap={8} justifyContent="center">
-            {committees.map((committee, index) => (
-              <Box
-                key={index}
-                flex="1 1 250px"
-                maxW="250px"
-                textAlign="center"
-                bg="#fff"
-                borderRadius="8px"
-                p={4}
-                boxShadow="0 0 10px rgba(0,0,0,0.1)"
-                display="flex"
-                flexDirection="column"
-                alignItems="center"
-              >
-                <Box display="flex" justifyContent="center" alignItems="center" width="100%" mb={4}>
-                  <Image
-                    src={committee.image}
-                    alt={committee.name}
-                    width={150}
-                    height={150}
-                    style={{ display: 'block', margin: '0 auto' }}
-                  />
-                </Box>
-                <SubsectionHeading mb={2} fontSize="1.2rem">
-                  {committee.name}
-                </SubsectionHeading>
-                <Text mb={4} fontSize="0.9rem">
-                  <Link href={`mailto:${committee.email}`} color="black" textDecoration="underline">
-                    {committee.email}
-                  </Link>
-                </Text>
-                <Link
-                  href={committee.link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  display="inline-block"
-                  p="0.4rem 0.8rem"
-                  bg="var(--color-primary)"
-                  color="var(--color-light)"
-                  textDecoration="none"
-                  borderRadius="4px"
-                  transition="background 0.3s ease"
-                  fontWeight={600}
-                  fontSize="0.9rem"
-                  _hover={{
-                    bg: 'var(--color-secondary)',
-                    color: 'black',
-                  }}
+            {committees.map((committee) => {
+              const logoUrl = committee.logo
+                ? urlFor(committee.logo).width(150).height(150).url()
+                : null;
+
+              return (
+                <Box
+                  key={committee._id}
+                  flex="1 1 250px"
+                  maxW="250px"
+                  textAlign="center"
+                  bg="#fff"
+                  borderRadius="8px"
+                  p={4}
+                  boxShadow="0 0 10px rgba(0,0,0,0.1)"
+                  display="flex"
+                  flexDirection="column"
+                  alignItems="center"
                 >
-                  Les mer
-                </Link>
-              </Box>
-            ))}
+                  {logoUrl && (
+                    <Box display="flex" justifyContent="center" alignItems="center" width="100%" mb={4}>
+                      <Image
+                        src={logoUrl}
+                        alt={committee.name}
+                        width={150}
+                        height={150}
+                        style={{ display: 'block', margin: '0 auto' }}
+                      />
+                    </Box>
+                  )}
+                  <SubsectionHeading mb={2} fontSize="1.2rem">
+                    {committee.name}
+                  </SubsectionHeading>
+                  {committee.email && (
+                    <Text mb={4} fontSize="0.9rem">
+                      <Link href={`mailto:${committee.email}`} color="black" textDecoration="underline">
+                        {committee.email}
+                      </Link>
+                    </Text>
+                  )}
+                  <Link
+                    href={`/for-medisinstudenter/${committee.slug.current}`}
+                    display="inline-block"
+                    p="0.4rem 0.8rem"
+                    bg="var(--color-primary)"
+                    color="var(--color-light)"
+                    textDecoration="none"
+                    borderRadius="4px"
+                    transition="background 0.3s ease"
+                    fontWeight={600}
+                    fontSize="0.9rem"
+                    _hover={{
+                      bg: 'var(--color-secondary)',
+                      color: 'black',
+                    }}
+                  >
+                    Les mer
+                  </Link>
+                </Box>
+              );
+            })}
           </Flex>
         </Box>
       </Container>
