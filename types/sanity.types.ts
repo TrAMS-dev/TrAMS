@@ -13,6 +13,33 @@
  */
 
 // Source: schema.json
+export type Vedtekter = {
+  _id: string;
+  _type: "vedtekter";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  content: Array<{
+    children?: Array<{
+      marks?: Array<string>;
+      text?: string;
+      _type: "span";
+      _key: string;
+    }>;
+    style?: "normal" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "blockquote";
+    listItem?: "bullet" | "number";
+    markDefs?: Array<{
+      href?: string;
+      _type: "link";
+      _key: string;
+    }>;
+    level?: number;
+    _type: "block";
+    _key: string;
+  }>;
+  lastUpdated: string;
+};
+
 export type Committee = {
   _id: string;
   _type: "committee";
@@ -366,7 +393,7 @@ export type Geopoint = {
   alt?: number;
 };
 
-export type AllSanitySchemaTypes = Committee | SanityImageCrop | SanityImageHotspot | Slug | CourseOffering | MediaItem | CarouselSlide | BoardMember | SanityImagePaletteSwatch | SanityImagePalette | SanityImageDimensions | SanityImageMetadata | SanityFileAsset | SanityAssetSourceData | SanityImageAsset | Geopoint;
+export type AllSanitySchemaTypes = Vedtekter | Committee | SanityImageCrop | SanityImageHotspot | Slug | CourseOffering | MediaItem | CarouselSlide | BoardMember | SanityImagePaletteSwatch | SanityImagePalette | SanityImageDimensions | SanityImageMetadata | SanityFileAsset | SanityAssetSourceData | SanityImageAsset | Geopoint;
 export declare const internalGroqTypeReferenceTo: unique symbol;
 // Source: sanity/lib/queries.ts
 // Variable: BOARD_MEMBERS_QUERY
@@ -727,6 +754,30 @@ export type COMMITTEE_QUERYResult = {
   } | null;
   order: number;
 } | null;
+// Variable: VEDTEKTER_QUERY
+// Query: *[_type == "vedtekter"][0] {  _id,  content,  lastUpdated}
+export type VEDTEKTER_QUERYResult = {
+  _id: string;
+  content: Array<{
+    children?: Array<{
+      marks?: Array<string>;
+      text?: string;
+      _type: "span";
+      _key: string;
+    }>;
+    style?: "blockquote" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "normal";
+    listItem?: "bullet" | "number";
+    markDefs?: Array<{
+      href?: string;
+      _type: "link";
+      _key: string;
+    }>;
+    level?: number;
+    _type: "block";
+    _key: string;
+  }>;
+  lastUpdated: string;
+} | null;
 
 // Query TypeMap
 import "@sanity/client";
@@ -740,5 +791,6 @@ declare module "@sanity/client" {
     "*[_type == \"courseOffering\"] | order(order asc) {\n  _id,\n  title,\n  description,\n  image,\n  link,\n  linkText,\n  order,\n  category\n}": COURSE_OFFERINGS_QUERYResult;
     "*[_type == \"committee\"] | order(order asc) {\n  _id,\n  name,\n  slug,\n  email,\n  logo,\n  shortDescription,\n  order\n}": COMMITTEES_QUERYResult;
     "*[_type == \"committee\" && slug.current == $slug][0] {\n  _id,\n  name,\n  slug,\n  email,\n  logo,\n  description,\n  headerImage,\n  committeeImage,\n  order\n}": COMMITTEE_QUERYResult;
+    "*[_type == \"vedtekter\"][0] {\n  _id,\n  content,\n  lastUpdated\n}": VEDTEKTER_QUERYResult;
   }
 }

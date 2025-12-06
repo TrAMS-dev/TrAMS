@@ -106,16 +106,18 @@ export default function Home() {
                   Foreningen deltar aktivt i det norske og skandinaviske studentmiljøet innen akuttmedisin gjennom NAMS
                   - Norsk Akuttmedisinsk Studentforum.
                 </Text>
-                <ChakraLink
-                  href="https://docs.google.com/document/d/1_7nyWf8L9BqeWGN4BpRjt4MkJSTiws3RvJJrkYDMQwo/edit?tab=t.0"
-                  as={Button}
-                  bg="var(--color-primary)"
-                  color="white"
-                  mt={4}
-                  _hover={{ boxShadow: '0 0 25px rgba(0,0,0,0.3)' }}
-                >
+                <Link
+                  href="/vedtekter">
+                  <Button
+                    bg="var(--color-primary)"
+                    color="white"
+                    mt={4}
+                    _hover={{ boxShadow: '0 0 25px rgba(0,0,0,0.3)' }}
+                    w="100%"
+                  >              
                   Vedtekter
-                </ChakraLink>
+                  </Button>  
+                </Link>
               </Box>
             </Flex>
           </Box>

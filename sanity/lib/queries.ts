@@ -112,3 +112,10 @@ export const COMMITTEE_QUERY = defineQuery(`*[_type == "committee" && slug.curre
   committeeImage,
   order
 }`)
+
+// Query to get the vedtekter singleton document
+export const VEDTEKTER_QUERY = defineQuery(`*[_type == "vedtekter"][0] {
+  _id,
+  content,
+  lastUpdated
+}`)
