@@ -2,13 +2,13 @@
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { Box, Container, Heading, Text, SimpleGrid, Link as ChakraLink } from '@chakra-ui/react';
+import { Box, Container, Heading, Text, Link as ChakraLink } from '@chakra-ui/react';
 import Image from 'next/image';
 import { COMMITTEE_QUERY } from '@/sanity/lib/queries';
 import { urlFor } from '@/sanity/lib/image';
 import { client } from '@/sanity/lib/client';
 import { PortableText } from 'next-sanity';
-import { portableTextComponents, HeroHeading, HeroText, PageHeading } from '@/components/Typography';
+import { portableTextComponents, HeroHeading } from '@/components/Typography';
 import { Committee } from '@/types/sanity.types';
 
 

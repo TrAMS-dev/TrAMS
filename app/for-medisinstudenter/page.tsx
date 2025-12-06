@@ -8,29 +8,7 @@ import { COURSE_OFFERINGS_QUERY, COMMITTEES_QUERY } from '@/sanity/lib/queries';
 import { urlFor } from '@/sanity/lib/image';
 import { client } from '@/sanity/lib/client';
 import { PortableText } from 'next-sanity';
-
-// Temporary types until we regenerate sanity types
-type CourseOffering = {
-  _id: string;
-  title: string;
-  description: any[];
-  image: any;
-  link?: string;
-  linkText?: string;
-  order: number;
-  category?: string;
-};
-
-type Committee = {
-  _id: string;
-  name: string;
-  slug: { current: string };
-  email?: string;
-  logo: any;
-  shortDescription?: string;
-  order: number;
-};
-
+import { CourseOffering, Committee } from '@/types/sanity.types';
 export default function ForMedisinstudenter() {
   const [offers, setOffers] = useState<CourseOffering[]>([]);
   const [committees, setCommittees] = useState<Committee[]>([]);
