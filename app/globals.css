@@ -30,3 +30,15 @@ body {
   padding: 0 1rem;
   width: 100%;
 }
+
+.portable-text p {
+  margin-bottom: 1rem;
+  line-height: 1.7;
+  color: #333;
+  font-size: 1.05rem;
+}
+
+.portable-text p:last-child {
+  margin-bottom: 0;
+}
+

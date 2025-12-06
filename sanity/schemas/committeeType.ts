@@ -1,15 +1,14 @@
 import { defineField, defineType } from 'sanity'
 import { slugify } from '../lib/slugify'
 
-
-export const boardMemberType = defineType({
-    name: 'boardMember',
-    title: 'Styremedlem',
+export const committeeType = defineType({
+    name: 'committee',
+    title: 'Komité',
     type: 'document',
     fields: [
         defineField({
             name: 'name',
-            title: 'Name',
+            title: 'Navn',
             type: 'string',
             validation: (rule) => rule.required(),
         }),
@@ -25,42 +24,14 @@ export const boardMemberType = defineType({
             validation: (rule) => rule.required(),
         }),
         defineField({
-            name: 'role',
-            title: 'Role',
-            type: 'string',
-            validation: (rule) => rule.required(),
-        }),
-        defineField({
             name: 'email',
-            title: 'Email',
+            title: 'E-post',
             type: 'string',
             validation: (rule) => rule.email(),
         }),
         defineField({
-            name: 'activeFrom',
-            title: 'Active from',
-            type: 'date',
-            validation: (rule) => rule.required(),
-        }),
-        defineField({
-            name: 'activeTo',
-            title: 'Active to',
-            type: 'date',
-            validation: (rule) => rule.required(),
-        }),
-        defineField({
-            name: 'age',
-            title: 'Age',
-            type: 'number',
-        }),
-        defineField({
-            name: 'hometown',
-            title: 'Hometown',
-            type: 'string',
-        }),
-        defineField({
-            name: 'profileImage',
-            title: 'Profile Image',
+            name: 'logo',
+            title: 'Logo',
             type: 'image',
             options: {
                 hotspot: true,
@@ -68,28 +39,51 @@ export const boardMemberType = defineType({
             validation: (rule) => rule.required(),
         }),
         defineField({
-            name: 'PersonalImage',
-            title: 'Personal Image',
-            type: 'image',
+            name: 'shortDescription',
+            title: 'Kort beskrivelse',
+            type: 'text',
+            description: 'Kort beskrivelse som vises på oversiktssiden',
+            rows: 3,
         }),
         defineField({
-            name: 'bio',
-            title: 'Biography',
+            name: 'description',
+            title: 'Fullstendig beskrivelse',
             type: 'array',
             of: [{ type: 'block' }],
             validation: (rule) => rule.required(),
         }),
         defineField({
-            name: 'order',
-            title: 'Display Order',
-            type: 'number',
+            name: 'members',
+            title: 'Medlemmer',
+            type: 'array',
+            of: [
+                {
+                    type: 'reference',
+                    to: [{ type: 'boardMember' }],
+                },
+            ],
+            description: 'Komitémedlemmer (valgfritt)',
         }),
+        defineField({
+            name: 'order',
+            title: 'Rekkefølge',
+            type: 'number',
+            description: 'Brukes for å sortere komitéene',
+            validation: (rule) => rule.required(),
+        }),
+    ],
+    orderings: [
+        {
+            title: 'Rekkefølge',
+            name: 'orderAsc',
+            by: [{ field: 'order', direction: 'asc' }],
+        },
     ],
     preview: {
         select: {
             title: 'name',
-            subtitle: 'role',
-            media: 'profileImage',
+            subtitle: 'email',
+            media: 'logo',
         },
     },
 })

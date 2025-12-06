@@ -201,20 +201,21 @@ export default function Home() {
             </ChakraLink>
             .
           </Text>
-          <ChakraLink
-            href="#"
-            as={Button}
-            bg="var(--color-secondary)"
-            color="black"
-            mt={4}
-            _hover={{ bg: 'var(--color-alternate)' }}
-          >
-            Ønsker du å vite mer om hva vi har gjort? Trykk for å se oss i media
-          </ChakraLink>
+          <Link href="/trams-i-media">
+            <Button
+              bg="var(--color-secondary)"
+              color="black"
+              mt={4}
+              _hover={{ bg: 'var(--color-alternate)' }}
+              whiteSpace="normal"
+            >
+              Ønsker du å vite mer om hva vi har gjort? Trykk for å se oss i media
+            </Button>
+          </Link>
         </Box>
 
         {/* Styret-section */}
-        <Box bg="white" borderRadius="8px" mb={{ base: 4, md: 8 }} p={{ base: 4, md: 8 }}>
+        <Box bg="white" borderRadius="8px" mb={{ base: 4, md: 8 }} p={{ base: 4, md: 8 }} id="BoardMembers">
           <Heading
             as="h2"
             textAlign="center"
@@ -243,7 +244,7 @@ export default function Home() {
               return (
                 <ChakraLink
                   key={member._id}
-                  href={`/hjem/${member.slug?.current || ''}`}
+                  href={`/${member.slug?.current || ''}`}
                   bg="white"
                   borderRadius="8px"
                   p={4}

@@ -13,6 +13,65 @@
  */
 
 // Source: schema.json
+export type MediaItem = {
+  _id: string;
+  _type: "mediaItem";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  title: string;
+  description: Array<{
+    children?: Array<{
+      marks?: Array<string>;
+      text?: string;
+      _type: "span";
+      _key: string;
+    }>;
+    style?: "normal" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "blockquote";
+    listItem?: "bullet" | "number";
+    markDefs?: Array<{
+      href?: string;
+      _type: "link";
+      _key: string;
+    }>;
+    level?: number;
+    _type: "block";
+    _key: string;
+  }>;
+  thumbnail?: {
+    asset?: {
+      _ref: string;
+      _type: "reference";
+      _weak?: boolean;
+      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+    };
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+  };
+  videoUrl?: string;
+  externalLink?: string;
+  year: number;
+  publishedAt?: string;
+};
+
+export type SanityImageCrop = {
+  _type: "sanity.imageCrop";
+  top: number;
+  bottom: number;
+  left: number;
+  right: number;
+};
+
+export type SanityImageHotspot = {
+  _type: "sanity.imageHotspot";
+  x: number;
+  y: number;
+  height: number;
+  width: number;
+};
+
 export type CarouselSlide = {
   _id: string;
   _type: "carouselSlide";
@@ -35,22 +94,6 @@ export type CarouselSlide = {
   description: string;
   buttonText: string;
   buttonLink: string;
-};
-
-export type SanityImageCrop = {
-  _type: "sanity.imageCrop";
-  top: number;
-  bottom: number;
-  left: number;
-  right: number;
-};
-
-export type SanityImageHotspot = {
-  _type: "sanity.imageHotspot";
-  x: number;
-  y: number;
-  height: number;
-  width: number;
 };
 
 export type BoardMember = {
@@ -214,7 +257,7 @@ export type Geopoint = {
   alt?: number;
 };
 
-export type AllSanitySchemaTypes = CarouselSlide | SanityImageCrop | SanityImageHotspot | BoardMember | Slug | SanityImagePaletteSwatch | SanityImagePalette | SanityImageDimensions | SanityImageMetadata | SanityFileAsset | SanityAssetSourceData | SanityImageAsset | Geopoint;
+export type AllSanitySchemaTypes = MediaItem | SanityImageCrop | SanityImageHotspot | CarouselSlide | BoardMember | Slug | SanityImagePaletteSwatch | SanityImagePalette | SanityImageDimensions | SanityImageMetadata | SanityFileAsset | SanityAssetSourceData | SanityImageAsset | Geopoint;
 export declare const internalGroqTypeReferenceTo: unique symbol;
 // Source: sanity/lib/queries.ts
 // Variable: BOARD_MEMBERS_QUERY
@@ -329,6 +372,127 @@ export type BOARD_MEMBER_QUERYResult = {
   activeFrom: string;
   activeTo: string;
 } | null;
+// Variable: CAROUSEL_SLIDES_QUERY
+// Query: *[_type == "carouselSlide"] | order(order asc) {  _id,  backgroundImage,  title,  description,  buttonText,  buttonLink,  order}
+export type CAROUSEL_SLIDES_QUERYResult = Array<{
+  _id: string;
+  backgroundImage: {
+    asset?: {
+      _ref: string;
+      _type: "reference";
+      _weak?: boolean;
+      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+    };
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+  };
+  title: string;
+  description: string;
+  buttonText: string;
+  buttonLink: string;
+  order: null;
+}>;
+// Variable: MEDIA_ITEMS_QUERY
+// Query: *[_type == "mediaItem"] | order(order asc) {  _id,  title,  slug,  description,  thumbnail,  videoUrl,  externalLink,  linkText,  year,  order,  publishedAt}
+export type MEDIA_ITEMS_QUERYResult = Array<{
+  _id: string;
+  title: string;
+  slug: null;
+  description: Array<{
+    children?: Array<{
+      marks?: Array<string>;
+      text?: string;
+      _type: "span";
+      _key: string;
+    }>;
+    style?: "blockquote" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "normal";
+    listItem?: "bullet" | "number";
+    markDefs?: Array<{
+      href?: string;
+      _type: "link";
+      _key: string;
+    }>;
+    level?: number;
+    _type: "block";
+    _key: string;
+  }>;
+  thumbnail: {
+    asset?: {
+      _ref: string;
+      _type: "reference";
+      _weak?: boolean;
+      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+    };
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+  } | null;
+  videoUrl: string | null;
+  externalLink: string | null;
+  linkText: null;
+  year: number;
+  order: null;
+  publishedAt: string | null;
+}>;
+// Variable: BOARD_LEADER_QUERY
+// Query: *[_type == "boardMember" && role == "Leder"][0] {  _id,  name,  slug,  role,  email,  age,  hometown,  profileImage,  PersonalImage,  bio,  order,  activeFrom,  activeTo}
+export type BOARD_LEADER_QUERYResult = {
+  _id: string;
+  name: string;
+  slug: Slug;
+  role: string;
+  email: string | null;
+  age: number | null;
+  hometown: string | null;
+  profileImage: {
+    asset?: {
+      _ref: string;
+      _type: "reference";
+      _weak?: boolean;
+      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+    };
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+  };
+  PersonalImage: {
+    asset?: {
+      _ref: string;
+      _type: "reference";
+      _weak?: boolean;
+      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+    };
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+  };
+  bio: Array<{
+    children?: Array<{
+      marks?: Array<string>;
+      text?: string;
+      _type: "span";
+      _key: string;
+    }>;
+    style?: "blockquote" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "normal";
+    listItem?: "bullet" | "number";
+    markDefs?: Array<{
+      href?: string;
+      _type: "link";
+      _key: string;
+    }>;
+    level?: number;
+    _type: "block";
+    _key: string;
+  }>;
+  order: number | null;
+  activeFrom: string;
+  activeTo: string;
+} | null;
 
 // Query TypeMap
 import "@sanity/client";
@@ -336,5 +500,8 @@ declare module "@sanity/client" {
   interface SanityQueries {
     "*[_type == \"boardMember\"] | order(order asc) {\n  _id,\n  name,\n  slug,\n  role,\n  email,\n  age,\n  hometown,\n  profileImage,\n  PersonalImage,\n  bio,\n  order,\n  activeFrom,\n  activeTo\n}": BOARD_MEMBERS_QUERYResult;
     "*[_type == \"boardMember\" && slug.current == $slug][0] {\n  _id,\n  name,\n  slug,\n  role,\n  email,\n  age,\n  hometown,\n  profileImage,\n  PersonalImage,\n  bio,\n  order,\n  activeFrom,\n  activeTo\n}": BOARD_MEMBER_QUERYResult;
+    "*[_type == \"carouselSlide\"] | order(order asc) {\n  _id,\n  backgroundImage,\n  title,\n  description,\n  buttonText,\n  buttonLink,\n  order\n}": CAROUSEL_SLIDES_QUERYResult;
+    "*[_type == \"mediaItem\"] | order(order asc) {\n  _id,\n  title,\n  slug,\n  description,\n  thumbnail,\n  videoUrl,\n  externalLink,\n  linkText,\n  year,\n  order,\n  publishedAt\n}": MEDIA_ITEMS_QUERYResult;
+    "*[_type == \"boardMember\" && role == \"Leder\"][0] {\n  _id,\n  name,\n  slug,\n  role,\n  email,\n  age,\n  hometown,\n  profileImage,\n  PersonalImage,\n  bio,\n  order,\n  activeFrom,\n  activeTo\n}": BOARD_LEADER_QUERYResult;
   }
 }
