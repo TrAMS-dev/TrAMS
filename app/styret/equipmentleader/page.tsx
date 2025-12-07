@@ -15,6 +15,7 @@ export default async function EquipmentLeaderPage() {
     const equipmentLeader = await getBoardMemberByRole('equipmentLeader')
 
     if (!equipmentLeader) {
+        console.error('Equipment leader not found')
         notFound()
     }
 

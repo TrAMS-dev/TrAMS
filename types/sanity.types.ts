@@ -13,6 +13,63 @@
  */
 
 // Source: schema.json
+export type AkuttCalling = {
+  _id: string;
+  _type: "akuttCalling";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  title: string;
+  content: Array<{
+    children?: Array<{
+      marks?: Array<string>;
+      text?: string;
+      _type: "span";
+      _key: string;
+    }>;
+    style?: "normal" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "blockquote";
+    listItem?: "bullet" | "number";
+    markDefs?: Array<{
+      href?: string;
+      _type: "link";
+      _key: string;
+    }>;
+    level?: number;
+    _type: "block";
+    _key: string;
+  }>;
+  gallery?: Array<{
+    asset?: {
+      _ref: string;
+      _type: "reference";
+      _weak?: boolean;
+      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+    };
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+    _key: string;
+  }>;
+  link?: string;
+};
+
+export type SanityImageCrop = {
+  _type: "sanity.imageCrop";
+  top: number;
+  bottom: number;
+  left: number;
+  right: number;
+};
+
+export type SanityImageHotspot = {
+  _type: "sanity.imageHotspot";
+  x: number;
+  y: number;
+  height: number;
+  width: number;
+};
+
 export type FirstAidInfo = {
   _id: string;
   _type: "firstAidInfo";
@@ -163,22 +220,6 @@ export type Committee = {
   order: number;
 };
 
-export type SanityImageCrop = {
-  _type: "sanity.imageCrop";
-  top: number;
-  bottom: number;
-  left: number;
-  right: number;
-};
-
-export type SanityImageHotspot = {
-  _type: "sanity.imageHotspot";
-  x: number;
-  y: number;
-  height: number;
-  width: number;
-};
-
 export type Slug = {
   _type: "slug";
   current: string;
@@ -225,7 +266,7 @@ export type CourseOffering = {
   link?: string;
   linkText?: string;
   order: number;
-  category: "timeplanfestet" | "committee" | "external" | "internal";
+  category: "timeplanfestet" | "committeevent" | "skillcourse" | "other";
 };
 
 export type MediaItem = {
@@ -447,7 +488,7 @@ export type Geopoint = {
   alt?: number;
 };
 
-export type AllSanitySchemaTypes = FirstAidInfo | InstruktorLink | Vedtekter | Committee | SanityImageCrop | SanityImageHotspot | Slug | CourseOffering | MediaItem | CarouselSlide | BoardMember | SanityImagePaletteSwatch | SanityImagePalette | SanityImageDimensions | SanityImageMetadata | SanityFileAsset | SanityAssetSourceData | SanityImageAsset | Geopoint;
+export type AllSanitySchemaTypes = AkuttCalling | SanityImageCrop | SanityImageHotspot | FirstAidInfo | InstruktorLink | Vedtekter | Committee | Slug | CourseOffering | MediaItem | CarouselSlide | BoardMember | SanityImagePaletteSwatch | SanityImagePalette | SanityImageDimensions | SanityImageMetadata | SanityFileAsset | SanityAssetSourceData | SanityImageAsset | Geopoint;
 export declare const internalGroqTypeReferenceTo: unique symbol;
 // Source: sanity/lib/queries.ts
 // Variable: BOARD_MEMBERS_QUERY
@@ -775,7 +816,7 @@ export type COURSE_OFFERINGS_QUERYResult = Array<{
   link: string | null;
   linkText: string | null;
   order: number;
-  category: "committee" | "external" | "internal" | "timeplanfestet";
+  category: "committeevent" | "other" | "skillcourse" | "timeplanfestet";
 }>;
 // Variable: COMMITTEES_QUERY
 // Query: *[_type == "committee"] | order(order asc) {  _id,  name,  slug,  email,  logo,  shortDescription,  order}
@@ -886,6 +927,47 @@ export type VEDTEKTER_QUERYResult = {
   }>;
   lastUpdated: string;
 } | null;
+// Variable: FIRST_AID_INFO_QUERY
+// Query: *[_type == "firstAidInfo"][0] {  _id,  col1,  col2}
+export type FIRST_AID_INFO_QUERYResult = {
+  _id: string;
+  col1: Array<{
+    children?: Array<{
+      marks?: Array<string>;
+      text?: string;
+      _type: "span";
+      _key: string;
+    }>;
+    style?: "blockquote" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "normal";
+    listItem?: "bullet" | "number";
+    markDefs?: Array<{
+      href?: string;
+      _type: "link";
+      _key: string;
+    }>;
+    level?: number;
+    _type: "block";
+    _key: string;
+  }>;
+  col2: Array<{
+    children?: Array<{
+      marks?: Array<string>;
+      text?: string;
+      _type: "span";
+      _key: string;
+    }>;
+    style?: "blockquote" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "normal";
+    listItem?: "bullet" | "number";
+    markDefs?: Array<{
+      href?: string;
+      _type: "link";
+      _key: string;
+    }>;
+    level?: number;
+    _type: "block";
+    _key: string;
+  }>;
+} | null;
 // Variable: INSTRUKT_LINKS_QUERY
 // Query: *[_type == "instruktorLink"] | order(rank asc, _createdAt asc) {  _id,  title,  description,  link,  linkText,  rank}
 export type INSTRUKT_LINKS_QUERYResult = Array<{
@@ -896,6 +978,44 @@ export type INSTRUKT_LINKS_QUERYResult = Array<{
   linkText: string;
   rank: number | null;
 }>;
+// Variable: AKUTTKALLING_QUERY
+// Query: *[_type == "akuttCalling"][0] {  _id,  title,  content,  gallery,  link}
+export type AKUTTKALLING_QUERYResult = {
+  _id: string;
+  title: string;
+  content: Array<{
+    children?: Array<{
+      marks?: Array<string>;
+      text?: string;
+      _type: "span";
+      _key: string;
+    }>;
+    style?: "blockquote" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "normal";
+    listItem?: "bullet" | "number";
+    markDefs?: Array<{
+      href?: string;
+      _type: "link";
+      _key: string;
+    }>;
+    level?: number;
+    _type: "block";
+    _key: string;
+  }>;
+  gallery: Array<{
+    asset?: {
+      _ref: string;
+      _type: "reference";
+      _weak?: boolean;
+      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+    };
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+    _key: string;
+  }> | null;
+  link: string | null;
+} | null;
 
 // Query TypeMap
 import "@sanity/client";
@@ -911,6 +1031,8 @@ declare module "@sanity/client" {
     "*[_type == \"committee\"] | order(order asc) {\n  _id,\n  name,\n  slug,\n  email,\n  logo,\n  shortDescription,\n  order\n}": COMMITTEES_QUERYResult;
     "*[_type == \"committee\" && slug.current == $slug][0] {\n  _id,\n  name,\n  slug,\n  email,\n  logo,\n  description,\n  headerImage,\n  committeeImage,\n  order\n}": COMMITTEE_QUERYResult;
     "*[_type == \"vedtekter\"][0] {\n  _id,\n  content,\n  lastUpdated\n}": VEDTEKTER_QUERYResult;
+    "*[_type == \"firstAidInfo\"][0] {\n  _id,\n  col1,\n  col2\n}": FIRST_AID_INFO_QUERYResult;
     "*[_type == \"instruktorLink\"] | order(rank asc, _createdAt asc) {\n  _id,\n  title,\n  description,\n  link,\n  linkText,\n  rank\n}": INSTRUKT_LINKS_QUERYResult;
+    "*[_type == \"akuttCalling\"][0] {\n  _id,\n  title,\n  content,\n  gallery,\n  link\n}": AKUTTKALLING_QUERYResult;
   }
 }

@@ -190,3 +190,10 @@ export const INSTRUKT_LINKS_QUERY = defineQuery(`*[_type == "instruktorLink"] | 
   linkText,
   rank
 }`)
+export const AKUTTKALLING_QUERY = defineQuery(`*[_type == "akuttCalling"][0] {
+  _id,
+  title,
+  content,
+  gallery,
+  link
+}`)

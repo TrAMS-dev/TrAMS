@@ -53,8 +53,9 @@ export const courseOfferingType = defineType({
             validation: (rule) => rule.required(),
             options: {
                 list: [
-                    { title: 'Timeplanfestet', value: 'timeplanfestet' },
-                    { title: 'Komite-arrangement', value: 'committee' },
+                    { title: 'Timeplanfestet kurs', value: 'timeplanfestet' },
+                    { title: 'Komite-arrangement', value: 'committeevent' },
+                    { title: 'Ferdighetskurs', value: 'skillcourse' },
                     { title: 'Annet', value: 'other' },
                 ],
             },
