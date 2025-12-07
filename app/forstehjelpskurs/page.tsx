@@ -2,7 +2,7 @@
 
 import { Box, Flex, Text, Link, Container, Button } from '@chakra-ui/react';
 import Image from 'next/image';
-import { HeroHeading, HeroText, PageHeading, SectionHeading, SubsectionHeading } from '@/components/Typography';
+import { HeroHeading, HeroText, SectionHeading, SubsectionHeading } from '@/components/Typography';
 import { PortableText } from 'next-sanity';
 import { client } from '@/sanity/lib/client';
 import { useState, useEffect } from 'react';

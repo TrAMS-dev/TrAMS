@@ -13,9 +13,9 @@
  */
 
 // Source: schema.json
-export type AkuttCalling = {
+export type MarkorPage = {
   _id: string;
-  _type: "akuttCalling";
+  _type: "markorPage";
   _createdAt: string;
   _updatedAt: string;
   _rev: string;
@@ -68,6 +68,47 @@ export type SanityImageHotspot = {
   y: number;
   height: number;
   width: number;
+};
+
+export type AkuttCalling = {
+  _id: string;
+  _type: "akuttCalling";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  title: string;
+  content: Array<{
+    children?: Array<{
+      marks?: Array<string>;
+      text?: string;
+      _type: "span";
+      _key: string;
+    }>;
+    style?: "normal" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "blockquote";
+    listItem?: "bullet" | "number";
+    markDefs?: Array<{
+      href?: string;
+      _type: "link";
+      _key: string;
+    }>;
+    level?: number;
+    _type: "block";
+    _key: string;
+  }>;
+  gallery?: Array<{
+    asset?: {
+      _ref: string;
+      _type: "reference";
+      _weak?: boolean;
+      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+    };
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+    _key: string;
+  }>;
+  link?: string;
 };
 
 export type FirstAidInfo = {
@@ -488,7 +529,7 @@ export type Geopoint = {
   alt?: number;
 };
 
-export type AllSanitySchemaTypes = AkuttCalling | SanityImageCrop | SanityImageHotspot | FirstAidInfo | InstruktorLink | Vedtekter | Committee | Slug | CourseOffering | MediaItem | CarouselSlide | BoardMember | SanityImagePaletteSwatch | SanityImagePalette | SanityImageDimensions | SanityImageMetadata | SanityFileAsset | SanityAssetSourceData | SanityImageAsset | Geopoint;
+export type AllSanitySchemaTypes = MarkorPage | SanityImageCrop | SanityImageHotspot | AkuttCalling | FirstAidInfo | InstruktorLink | Vedtekter | Committee | Slug | CourseOffering | MediaItem | CarouselSlide | BoardMember | SanityImagePaletteSwatch | SanityImagePalette | SanityImageDimensions | SanityImageMetadata | SanityFileAsset | SanityAssetSourceData | SanityImageAsset | Geopoint;
 export declare const internalGroqTypeReferenceTo: unique symbol;
 // Source: sanity/lib/queries.ts
 // Variable: BOARD_MEMBERS_QUERY
@@ -1016,6 +1057,44 @@ export type AKUTTKALLING_QUERYResult = {
   }> | null;
   link: string | null;
 } | null;
+// Variable: MARKOR_PAGE_QUERY
+// Query: *[_type == "markorPage"][0] {  _id,  title,  content,  gallery,  link}
+export type MARKOR_PAGE_QUERYResult = {
+  _id: string;
+  title: string;
+  content: Array<{
+    children?: Array<{
+      marks?: Array<string>;
+      text?: string;
+      _type: "span";
+      _key: string;
+    }>;
+    style?: "blockquote" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "normal";
+    listItem?: "bullet" | "number";
+    markDefs?: Array<{
+      href?: string;
+      _type: "link";
+      _key: string;
+    }>;
+    level?: number;
+    _type: "block";
+    _key: string;
+  }>;
+  gallery: Array<{
+    asset?: {
+      _ref: string;
+      _type: "reference";
+      _weak?: boolean;
+      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+    };
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+    _key: string;
+  }> | null;
+  link: string | null;
+} | null;
 
 // Query TypeMap
 import "@sanity/client";
@@ -1034,5 +1113,6 @@ declare module "@sanity/client" {
     "*[_type == \"firstAidInfo\"][0] {\n  _id,\n  col1,\n  col2\n}": FIRST_AID_INFO_QUERYResult;
     "*[_type == \"instruktorLink\"] | order(rank asc, _createdAt asc) {\n  _id,\n  title,\n  description,\n  link,\n  linkText,\n  rank\n}": INSTRUKT_LINKS_QUERYResult;
     "*[_type == \"akuttCalling\"][0] {\n  _id,\n  title,\n  content,\n  gallery,\n  link\n}": AKUTTKALLING_QUERYResult;
+    "*[_type == \"markorPage\"][0] {\n  _id,\n  title,\n  content,\n  gallery,\n  link\n}": MARKOR_PAGE_QUERYResult;
   }
 }

@@ -1,14 +1,15 @@
 'use client';
 
-import { Box, Container, Heading, Text, Link, Button, SimpleGrid, Flex } from '@chakra-ui/react';
+import { Box, Container, Link, Button, SimpleGrid } from '@chakra-ui/react';
 import { PortableText } from 'next-sanity';
 import { client } from '@/sanity/lib/client';
 import { useState, useEffect } from 'react';
 import { AkuttCalling } from '@/types/sanity.types';
 import { AKUTTKALLING_QUERY } from '@/sanity/lib/queries';
-import { portableTextComponents, PageHeading, HeroText, HeroHeading } from '@/components/Typography';
+import { portableTextComponents, HeroHeading } from '@/components/Typography';
 import { urlFor } from '@/sanity/lib/image';
 import Image from 'next/image';
+import { SanityImageSource } from "@sanity/image-url/lib/types/types";
 
 export default function AkuttCallingPage() {
     const [data, setData] = useState<AkuttCalling>();
@@ -87,7 +88,7 @@ export default function AkuttCallingPage() {
 
                     {data.gallery && data.gallery.length > 0 && (
                         <SimpleGrid columns={{ base: 1, lg: 2 }} gap={4}>
-                            {data.gallery.map((image: any, index: number) => (
+                            {data.gallery.map((image: SanityImageSource, index: number) => (
                                 <Box key={index} display="flex" justifyContent="center" alignItems="center" height="500px" overflow="hidden">
                                     <Image
                                         src={urlFor(image).url()}

@@ -197,3 +197,11 @@ export const AKUTTKALLING_QUERY = defineQuery(`*[_type == "akuttCalling"][0] {
   gallery,
   link
 }`)
+
+export const MARKOR_PAGE_QUERY = defineQuery(`*[_type == "markorPage"][0] {
+  _id,
+  title,
+  content,
+  gallery,
+  link
+}`)

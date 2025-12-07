@@ -4,8 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import Image from 'next/image';
-import { Box, Flex, Button, HStack, IconButton } from '@chakra-ui/react';
-import { User } from 'lucide-react';
+import { Box, Flex, Button, HStack } from '@chakra-ui/react';
 
 export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);

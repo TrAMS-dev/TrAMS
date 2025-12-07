@@ -7,7 +7,8 @@ import { vedtekterType } from './vedtekterType'
 import { instruktorLinkType } from './instruktorLinkType'
 import { firstAidInfoType } from './firstAidInfoType'
 import { akuttCallingType } from './akuttCallingType'
+import { markorPageType } from './markorPageType'
 
-export const schemaTypes = [boardMemberType, carouselSlideType, mediaItemType, courseOfferingType, committeeType, vedtekterType, instruktorLinkType, firstAidInfoType, akuttCallingType]
+export const schemaTypes = [boardMemberType, carouselSlideType, mediaItemType, courseOfferingType, committeeType, vedtekterType, instruktorLinkType, firstAidInfoType, akuttCallingType, markorPageType]
 
-export const SingletonTypes = ['vedtekter', 'firstAidInfo', 'akuttCalling']
+export const SingletonTypes = ['vedtekter', 'firstAidInfo', 'akuttCalling', 'markorPage']
