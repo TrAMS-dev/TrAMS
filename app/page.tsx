@@ -1,11 +1,13 @@
-'use client';
-
 import Link from 'next/link';
 import { Box, Flex, Heading, Text, Button, Stack, Container } from '@chakra-ui/react';
 import Navbar from '@/components/Navbar';
-import { ArrowRight, HeartPulse, Calendar, Users } from 'lucide-react';
+import { HeartPulse, Calendar, Users } from 'lucide-react';
+import { createClient } from '@/utils/supabase/server';
 
-export default function Home() {
+export default async function Home() {
+  const supabase = await createClient()
+
+  const video = supabase.storage.from('assets').getPublicUrl('TrAMS_intro.mp4')
   return (
     <Box as="section" position="relative" h="100vh" w="100vw" overflow="hidden" bg="gray.900">
       {/* Background Video */}
@@ -14,7 +16,7 @@ export default function Home() {
         loop
         muted
         playsInline
-        src="/assets/TrAMS_intro.mp4"
+        src={video.data.publicUrl}
         poster="/assets/poster.jpg"
         style={{
           position: 'absolute',
