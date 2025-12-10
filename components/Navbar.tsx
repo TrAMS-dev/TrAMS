@@ -6,7 +6,11 @@ import { usePathname } from 'next/navigation';
 import Image from 'next/image';
 import { Box, Flex, Button, HStack } from '@chakra-ui/react';
 
-export default function Navbar() {
+interface NavbarProps {
+  transparent?: boolean;
+}
+
+export default function Navbar({ transparent = false }: NavbarProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -26,10 +30,12 @@ export default function Navbar() {
   }, []);
 
   const navLinks = [
-    { href: '/', label: 'Hjem' },
-    { href: '/forstehjelpskurs', label: 'Førstehjelpskurs' },
+    { href: '/om-oss', label: 'Om oss' },
+    { href: '/forstehjelpskurs', label: 'Våre tilbud' },
+    { href: '/book-kurs', label: 'Book kurs' },
     { href: '/for-medisinstudenter', label: 'For medisinstudenter' },
     { href: '/instruktorer', label: 'For instruktører' },
+    { href: '/arrangementer', label: 'Arrangementer' },
   ];
 
   const isActive = (href: string) => {
@@ -39,15 +45,23 @@ export default function Navbar() {
     return pathname?.startsWith(href);
   };
 
+  const textColor = transparent && !isMobileMenuOpen ? 'white' : 'var(--color-text)';
+  const hoverColor = transparent && !isMobileMenuOpen ? 'gray.200' : 'var(--color-primary)';
+  const activeColor = transparent && !isMobileMenuOpen ? 'white' : 'var(--color-primary)';
+  const logoSrc = transparent && !isMobileMenuOpen ? '/assets/Logo_white.png' : '/assets/Logo.png'; // Assuming same logo works or handled via CSS filter if needed, but white text next to it changes.
+
   return (
     <Box
       as="nav"
-      bg="white"
-      boxShadow="0 2px 10px rgba(0,0,0,0.1)"
-      position="sticky"
+      bg={transparent && !isMobileMenuOpen ? 'transparent' : 'white'}
+      boxShadow={transparent && !isMobileMenuOpen ? 'none' : '0 2px 10px rgba(0,0,0,0.1)'}
+      position={transparent ? 'absolute' : 'sticky'}
       top={0}
+      left={0}
+      right={0}
       zIndex={1000}
       px={4}
+      transition="background-color 0.3s ease, box-shadow 0.3s ease"
     >
       <Flex
         maxW="1200px"
@@ -59,13 +73,13 @@ export default function Navbar() {
         {/* Logo */}
         <Link href="/" className="flex items-center gap-4 no-underline text-inherit">
           <Image
-            src="/assets/Logo.png"
+            src={logoSrc}
             alt="TrAMS logo"
             width={50}
             height={50}
             className="h-[50px] w-auto"
           />
-          <Box as="span" fontWeight={700} fontSize="1.1rem" color="var(--color-text)">
+          <Box as="span" fontWeight={700} fontSize="1.1rem" color={textColor}>
             TrAMS
           </Box>
         </Link>
@@ -79,12 +93,15 @@ export default function Navbar() {
             <Link
               key={link.href}
               href={link.href}
-              className={`no-underline transition-colors duration-300 relative pb-2 ${isActive(link.href)
-                ? 'text-(--color-primary) font-bold'
-                : 'text-(--color-text) font-normal hover:text-(--color-primary)'
-                }`}
+              className={`no-underline transition-colors duration-300 relative pb-2`}
+              style={{
+                color: isActive(link.href) ? 'var(--active-color)' : 'var(--text-color)',
+                fontWeight: isActive(link.href) ? 'bold' : 'normal'
+              }}
             >
-              {link.label}
+              <Box as="span" color={isActive(link.href) ? activeColor : textColor} _hover={{ color: hoverColor }}>
+                {link.label}
+              </Box>
               {isActive(link.href) && (
                 <Box
                   position="absolute"
@@ -92,7 +109,7 @@ export default function Navbar() {
                   left={0}
                   right={0}
                   h="3px"
-                  bg="var(--color-primary)"
+                  bg={activeColor}
                   borderRadius="2px"
                 />
               )}
@@ -109,25 +126,26 @@ export default function Navbar() {
           flexDirection="column"
           gap={1}
           aria-label="Toggle menu"
+          _hover={{ bg: transparent ? 'whiteAlpha.200' : 'gray.100' }}
         >
           <Box
             w="25px"
             h="3px"
-            bg="var(--color-text)"
+            bg={textColor}
             transition="all 0.3s ease"
             transform={isMobileMenuOpen ? 'rotate(45deg) translate(5px, 5px)' : 'none'}
           />
           <Box
             w="25px"
             h="3px"
-            bg="var(--color-text)"
+            bg={textColor}
             transition="all 0.3s ease"
             opacity={isMobileMenuOpen ? 0 : 1}
           />
           <Box
             w="25px"
             h="3px"
-            bg="var(--color-text)"
+            bg={textColor}
             transition="all 0.3s ease"
             transform={isMobileMenuOpen ? 'rotate(-45deg) translate(7px, -6px)' : 'none'}
           />
@@ -142,6 +160,10 @@ export default function Navbar() {
           borderTop="1px solid var(--color-altBg)"
           bg="white"
           py={6}
+          position="absolute" // Ensure it doesn't push content down if nav is transparent absolute
+          left={0}
+          right={0}
+          boxShadow="0 4px 6px rgba(0,0,0,0.1)"
         >
           {navLinks.map((link) => (
             <Link
@@ -161,3 +183,4 @@ export default function Navbar() {
     </Box >
   );
 }
+

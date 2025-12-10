@@ -2,8 +2,6 @@ import type { Metadata } from "next";
 import { Nunito_Sans } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 import { Analytics } from "@vercel/analytics/next"
 
 const nunitoSans = Nunito_Sans({
@@ -29,9 +27,7 @@ export default function RootLayout({
     <html lang="no">
       <body className={`${nunitoSans.variable} antialiased`}>
         <Providers>
-          <Navbar />
-          <main>{children}</main>
-          <Footer />
+          {children}
           <Analytics />
         </Providers>
       </body>

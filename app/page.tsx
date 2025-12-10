@@ -1,255 +1,183 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
-import Carousel from '@/components/Carousel';
-import { Box, Flex, Heading, Text, Container, Button, Link as ChakraLink, HStack } from '@chakra-ui/react';
-import { CURRENT_BOARD_MEMBERS_QUERY, CAROUSEL_SLIDES_QUERY } from '@/sanity/lib/queries'
-import ClientCalendar from '@/components/ClientCalendar';
-import { BoardMember, CarouselSlide } from '@/types/sanity.types';
-import { client } from '@/sanity/lib/client';
-import BoardMemberCard from '@/components/BoardMemberCard';
+import { Box, Flex, Heading, Text, Button, Stack, Container } from '@chakra-ui/react';
+import Navbar from '@/components/Navbar';
+import { ArrowRight, HeartPulse, Calendar, Users } from 'lucide-react';
 
 export default function Home() {
-  const [boardMembers, setBoardMembers] = useState<BoardMember[]>([]);
-  const [carouselSlides, setCarouselSlides] = useState<CarouselSlide[]>([]);
-
-
-  useEffect(() => {
-    client.fetch<BoardMember[]>(CURRENT_BOARD_MEMBERS_QUERY)
-      .then((boardMembers) => setBoardMembers(boardMembers));
-  }, []);
-
-
-  useEffect(() => {
-    client.fetch<CarouselSlide[]>(CAROUSEL_SLIDES_QUERY)
-      .then((carouselSlides) => setCarouselSlides(carouselSlides));
-  }, []);
-
-
-
   return (
-    <>
-      <Carousel slides={carouselSlides} />
+    <Box as="section" position="relative" h="100vh" w="100vw" overflow="hidden" bg="gray.900">
+      {/* Background Video */}
+      <video
+        autoPlay
+        loop
+        muted
+        playsInline
+        src="/assets/TrAMS_intro.mp4"
+        poster="/assets/poster.jpg"
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          objectFit: 'cover',
+          filter: 'brightness(0.6)',
+          zIndex: 0
+        }}
+      />
 
-      {/* HERO-COURSES */}
-      <Flex justify="center" flexWrap="wrap" gap={{ base: 4, md: 8 }} my={{ base: 4, md: 8 }}>
-        <Link
-          href="/forstehjelpskurs"
-          className="min-h-[150px] bg-white rounded-lg min-w-[400px] text-center text-lg block no-underline transition-transform duration-300 shadow-[0_0_10px_rgba(0,0,0,0.1)] hover:-translate-y-1 p-6"
-        >
-          <Heading as="h2" position="relative" mt={0} mb={4} color="black" pt={6} pb={2} fontSize="1.5rem">
-            Book førstehjelpskurs
-            <Box display="block" w="80px" h="4px" bg="var(--color-primary)" mx="auto" mt={2} borderRadius="2px" />
-          </Heading>
-          <Text fontSize="1rem" color="black">For bedrift eller forening</Text>
-        </Link>
-        <Link
-          href="/for-medisinstudenter"
-          className="min-h-[150px] bg-white rounded-lg min-w-[400px] text-center text-lg block no-underline transition-transform duration-300 shadow-[0_0_10px_rgba(0,0,0,0.1)] hover:-translate-y-1 p-6"
-        >
+      {/* Fallback Gradient if video fails/loads */}
+      <Box
+        position="absolute"
+        top={0}
+        left={0}
+        w="100%"
+        h="100%"
+        bgGradient="linear(to-br, blue.900, purple.900)"
+        opacity={0.8}
+        zIndex={-1}
+      />
 
-          <Heading as="h2" position="relative" mt={0} mb={4} color="black" pt={6} pb={2} fontSize="1.5rem">
-            Internkurs for studenter
-            <Box display="block" w="80px" h="4px" bg="var(--color-primary)" mx="auto" mt={2} borderRadius="2px" />
-          </Heading>
-          <Text fontSize="1rem" color="black">For medisinstudenter</Text>
-        </Link>
-      </Flex>
+      {/* Overlay to ensure text readability */}
+      <Box
+        position="absolute"
+        top={0}
+        left={0}
+        w="100%"
+        h="100%"
+        bg="blackAlpha.600"
+        zIndex={1}
+      />
 
-      {/* Info-section: about + calendar */}
-      <Container maxW={{ base: "95%", md: "60%" }} p={0} id='about'>
-        <Flex flexDirection="column" align="flex-start" gap={{ base: 4, md: 8 }} maxW="1200px" mx="auto" my={{ base: 4, md: 8 }} bg="var(--color-altBg)" p={{ base: 4, md: 4 }} borderRadius="8px">
-          <Box
-            id="om-oss"
-            flex="1 1 auto"
-            minW="300px"
-            bg="white"
-            borderRadius="8px"
-            p={{ base: 4, md: 4 }}
-            boxShadow="0 0 10px rgba(0,0,0,0.1)"
-          >
+      {/* Navbar - Transparent Mode */}
+      <Box position="relative" zIndex={100}>
+        <Navbar transparent />
+      </Box>
+
+      {/* Main Content */}
+      <Flex
+        position="relative"
+        zIndex={10}
+        h="calc(100vh - 80px)" // Adjust based on navbar height approx
+        align="center"
+        justify="center"
+        direction="column"
+        color="white"
+        textAlign="center"
+        px={4}
+      >
+        <Container maxW="container.xl">
+          <Flex direction="column" align="center" gap={6}>
             <Heading
-              as="h2"
-              textAlign="center"
-              mb={4}
-              position="relative"
-              color="black"
-              pb={2}
-              fontSize="1.8rem"
+              as="h1"
+              size="4xl"
+              fontWeight="extrabold"
+              letterSpacing="tight"
+              textShadow="0 0 20px rgba(0,0,0,0.5)"
+              mb={2}
             >
-              Trondheim Akuttmedisinske Studentforening
-              <Box display="block" w="80px" h="4px" bg="var(--color-primary)" mx="auto" mt={2} borderRadius="2px" />
+              Akuttmedisin for Alle
             </Heading>
-            <Flex flexWrap="wrap" gap={4} align="flex-start">
-              <Box flex="1 1 300px">
-                <Text mb={4}>
-                  <Box as="span" float="right" ml={4}>
-                    <Image
-                      src="https://imgur.com/jZBTHbd.png"
-                      alt="TrAMS logo"
-                      width={100}
-                      height={100}
-                      className="max-w-[100px]"
-                    />
-                  </Box>
-                  Trondheim akuttmedisinske studentforening (TrAMS), stiftet 7. mai 2009, er en ideell organisasjon av og
-                  for medisinstudenter i Trondheim, basert på frivillighet.
-                </Text>
-                <Text mb={4}>
-                  Vi legger vekt på faglig kompetanse innen akuttmedisin for både kommende leger og lekfolk. Vårt mål er
-                  å skape trygghet rundt håndtering av akuttmedisinske situasjoner ved å fremme interesse, engasjement
-                  og styrke kunnskapen gjennom kvalitetssikrede kurs og ferdighetstrening.
-                </Text>
-                <Text mb={4}>
-                  Foreningen deltar aktivt i det norske og skandinaviske studentmiljøet innen akuttmedisin gjennom NAMS
-                  - Norsk Akuttmedisinsk Studentforum.
-                </Text>
-                <Link
-                  href="/vedtekter">
-                  <Button
-                    bg="var(--color-primary)"
-                    color="white"
-                    mt={4}
-                    _hover={{ boxShadow: '0 0 25px rgba(0,0,0,0.3)' }}
-                    w="100%"
-                  >
-                    Vedtekter
-                  </Button>
-                </Link>
-              </Box>
-            </Flex>
-          </Box>
-
-          <Box
-            flex="1 1 400px"
-            minW="300px"
-            width="full"
-            bg="white"
-            borderRadius="8px"
-            p={{ base: 4, md: 4 }}
-            display="flex"
-            flexDirection="column"
-            gap={4}
-            boxShadow="0 0 10px rgba(0,0,0,0.1)"
-          >
-            <ClientCalendar />
-          </Box>
-        </Flex>
-
-        {/* Cooperation partners */}
-        <Box textAlign="center" mb={{ base: 4, md: 8 }}>
-          <Heading
-            as="h2"
-            position="relative"
-            color="black"
-            pb={2}
-            mb={4}
-            fontSize="2rem"
-          >
-            Samarbeidspartnere og søsterforeninger
-            <Box display="block" w="120px" h="4px" bg="var(--color-primary)" mx="auto" mt={2} borderRadius="2px" />
-          </Heading>
-          <Flex flexWrap="wrap" gap={8} justify="center" align="center">
-            <Image src="https://i.imgur.com/6gLu8ff.jpg" alt="Partner 1 logo" width={120} height={80} className="max-h-[80px] object-contain" />
-            <Image src="https://i.imgur.com/nzYXh3a.jpg" alt="Partner 2 logo" width={120} height={80} className="max-h-[80px] object-contain" />
-            <Image src="https://i.imgur.com/7LEQQKV.jpg" alt="Partner 3 logo" width={120} height={80} className="max-h-[80px] object-contain" />
-            <Image src="https://i.imgur.com/kJ1FDvn.jpg" alt="Partner 4 logo" width={120} height={80} className="max-h-[80px] object-contain" />
-            <Image src="https://i.imgur.com/2WaPh9I.jpg" alt="Partner 5 logo" width={120} height={80} className="max-h-[80px] object-contain" />
-            <Image src="https://i.imgur.com/lfoK4RR.jpg" alt="Partner 6 logo" width={120} height={80} className="max-h-[80px] object-contain" />
-          </Flex>
-          <Box id="sosterforeninger" mt={8}>
-            <Flex flexWrap="wrap" gap={8} justify="center" align="center">
-              <Image src="https://imgur.com/Zu9ERQR.jpg" alt="Søsterforening 1" width={200} height={150} className="max-h-[150px] object-contain" />
-              <Image src="https://imgur.com/QAgRYfg.jpg" alt="Søsterforening 2" width={200} height={150} className="max-h-[150px] object-contain" />
-              <Image src="https://imgur.com/WtxQ0lI.jpg" alt="Søsterforening 3" width={200} height={150} className="max-h-[150px] object-contain" />
-              <Image src="https://imgur.com/1BDV2P9.jpg" alt="Søsterforening 4" width={200} height={150} className="max-h-[150px] object-contain" />
-            </Flex>
-          </Box>
-        </Box>
-
-        {/* Join us section */}
-        <Box
-          my={{ base: 4, md: 8 }}
-          mx="auto"
-          borderRadius="25px"
-          textAlign="center"
-          p={{ base: 4, md: 8 }}
-          bg="var(--color-primary)"
-          color="white"
-          maxW="1200px"
-        >
-          <Heading as="h2" mb={4} fontSize="2rem">Bli med på laget som samarbeidspartner</Heading>
-          <Text mb={4} lineHeight="1.6">
-            Vi er alltid på jakt etter støtte eller nye samarbeidspartnere. Kjenner du noen som er interessert i å bli
-            bedre kjent med oss?
-            <br />
-            <br />
-            I Trondheim har foreningen en solid plassering i studentmiljøet. Vi samarbeider tett med Fakultet for
-            medisin og helsevitenskap ved NTNU om å gjennomføre kurs for nye studenter i basal akuttmedisin. I tillegg
-            samarbeider vi med bl.a. anestesiavdelingen ved St. Olavs hospital om å tilby det som på studiet kalles
-            frivillig uketjeneste, en lærerik hospiteringsordning. Leger ved luftambulansen i Trondheim har også stilt
-            opp for å holde foredrag o.l. for studenter ved flere anledninger. Vi har gjennomført arrangementer der vi
-            har koordinert øvelser sammen med Redningstjenesten 330 skvadron, Redningsselskapet, Trøndelag brann- og
-            redningstjeneste, Trøndelag politidistrikt. Sist, men ikke minst, har Sør-Trøndelag ambulansetjeneste vært
-            en kjempemessig støttespiller for oss.
-            <br />
-            <br />
-            Vi ønsker å takke alle som bidrar til å hjelpe oss i arbeidet for å fremme interesse og kunnskap rundt
-            akuttmedisin! Ønsker du å støtte arbeidet vårt? Ta kontakt med{' '}
-            <ChakraLink href="mailto:sponsoransvarlig@trams.no" color="var(--color-secondary)" textDecoration="underline">
-              sponsoransvarlig@trams.no
-            </ChakraLink>
-            .
-          </Text>
-          <Link href="/trams-i-media">
-            <Button
-              bg="var(--color-secondary)"
-              color="black"
-              mt={4}
-              _hover={{ bg: 'var(--color-alternate)' }}
-              whiteSpace="normal"
+            <Text
+              fontSize="xl"
+              maxW="2xl"
+              mb={8}
+              opacity={0.9}
+              textShadow="0 0 10px rgba(0,0,0,0.5)"
             >
-              Ønsker du å vite mer om hva vi har gjort? Trykk for å se oss i media
-            </Button>
-          </Link>
-        </Box>
+              Vi er Trondheim Akuttmedisinske Studentforening. <br />
+              Lær livreddende førstehjelp av medisinstudenter.
+            </Text>
 
-        {/* Styret-section */}
-        <Box bg="white" borderRadius="8px" mb={{ base: 4, md: 8 }} p={{ base: 4, md: 8 }} id="BoardMembers">
-          <Heading
-            as="h2"
-            textAlign="center"
-            color="black"
-            fontWeight={700}
-            position="relative"
-            pb={2}
-            fontSize="2rem"
-          >
-            Styret i TrAMS
-            <Box display="block" w="120px" h="4px" bg="var(--color-primary)" mx="auto" mt={2} borderRadius="2px" />
-          </Heading>
-          <HStack
-            gap={8}
-            overflowX="auto"
-            pb={8}
-            pt={8}
-            style={{ scrollSnapType: 'x mandatory' }}
-          >
-            {boardMembers.map((member) => (
-              <BoardMemberCard key={member._id} member={member} href={`/styret/${member.role?.toLowerCase() || ''}`} />
-            ))}
-          </HStack>
-          <Box textAlign="center" mb={6}>
-            <Link href="/styret/tidligere-styrer">
-              <Text as="span" color="var(--color-primary)" _hover={{ textDecoration: 'underline' }} cursor="pointer">
-                Se tidligere styrer
-              </Text>
-            </Link>
-          </Box>
-        </Box>
-      </Container>
-    </>
+            <Stack
+              direction={{ base: 'column', md: 'row' }}
+              gap={6}
+              mt={8}
+              w="full"
+              justify="center"
+              align="center"
+            >
+              {/* Card 1: Våre Kurs */}
+              <Link href="/forstehjelpskurs" style={{ textDecoration: 'none' }}>
+                <Button
+                  height="auto"
+                  w="280px"
+                  p={8}
+                  bg="whiteAlpha.200"
+                  backdropFilter="blur(10px)"
+                  border="1px solid"
+                  borderColor="whiteAlpha.300"
+                  borderRadius="xl"
+                  _hover={{
+                    bg: 'whiteAlpha.300',
+                    transform: 'translateY(-5px)',
+                    boxShadow: '0 20px 40px rgba(0,0,0,0.4)'
+                  }}
+                  transition="all 0.3s ease"
+                >
+                  <Flex direction="column" align="center" gap={3}>
+                    <HeartPulse size={32} />
+                    <Text fontSize="xl" fontWeight="bold">Førstehjelpskurs</Text>
+                    <Text fontSize="sm" opacity={0.8} fontWeight="normal">Se våre kurstilbud</Text>
+                  </Flex>
+                </Button>
+              </Link>
+
+              {/* Card 2: Book Kurs */}
+              <Link href="/book-kurs" style={{ textDecoration: 'none' }}>
+                <Button
+                  height="auto"
+                  w="280px"
+                  p={8}
+                  bg="var(--color-primary)"
+                  _hover={{
+                    bg: 'red.600',
+                    transform: 'scale(1.05)',
+                    boxShadow: '0 0 30px rgba(229, 62, 62, 0.6)'
+                  }}
+                  borderRadius="xl"
+                  transition="all 0.3s ease"
+                  boxShadow="0 0 20px rgba(229, 62, 62, 0.4)"
+                >
+                  <Flex direction="column" align="center" gap={3}>
+                    <Calendar size={32} />
+                    <Text fontSize="xl" fontWeight="bold">Book Kurs</Text>
+                    <Text fontSize="sm" opacity={0.9} fontWeight="normal">Bestill til din bedrift</Text>
+                  </Flex>
+                </Button>
+              </Link>
+
+              {/* Card 3: Om Oss */}
+              <Link href="/om-oss" style={{ textDecoration: 'none' }}>
+                <Button
+                  height="auto"
+                  w="280px"
+                  p={8}
+                  bg="whiteAlpha.200"
+                  backdropFilter="blur(10px)"
+                  border="1px solid"
+                  borderColor="whiteAlpha.300"
+                  borderRadius="xl"
+                  _hover={{
+                    bg: 'whiteAlpha.300',
+                    transform: 'translateY(-5px)',
+                    boxShadow: '0 20px 40px rgba(0,0,0,0.4)'
+                  }}
+                  transition="all 0.3s ease"
+                >
+                  <Flex direction="column" align="center" gap={3}>
+                    <Users size={32} />
+                    <Text fontSize="xl" fontWeight="bold">Om Oss</Text>
+                    <Text fontSize="sm" opacity={0.8} fontWeight="normal">Hvem er TrAMS?</Text>
+                  </Flex>
+                </Button>
+              </Link>
+            </Stack>
+          </Flex>
+        </Container>
+      </Flex>
+    </Box>
   );
 }
