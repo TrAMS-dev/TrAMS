@@ -6,6 +6,7 @@ import { client } from "@/sanity/lib/client";
 import { BoardMember } from "@/types/sanity.types";
 import { BOARD_MEMBERS_QUERY } from "@/sanity/lib/queries";
 import BoardMemberCard from '@/components/BoardMemberCard';
+import { PartnersSection } from '@/components/CooperationPartners';
 
 export default function OmOss() {
     const [boardMembers, setBoardMembers] = useState<BoardMember[]>([]);
@@ -128,22 +129,7 @@ export default function OmOss() {
                         Samarbeidspartnere og søsterforeninger
                         <Box display="block" w="120px" h="4px" bg="var(--color-primary)" mx="auto" mt={2} borderRadius="2px" />
                     </Heading>
-                    <Flex flexWrap="wrap" gap={8} justify="center" align="center">
-                        <Image src="https://i.imgur.com/6gLu8ff.jpg" alt="Partner 1 logo" width={120} height={80} className="max-h-[80px] object-contain" />
-                        <Image src="https://i.imgur.com/nzYXh3a.jpg" alt="Partner 2 logo" width={120} height={80} className="max-h-[80px] object-contain" />
-                        <Image src="https://i.imgur.com/7LEQQKV.jpg" alt="Partner 3 logo" width={120} height={80} className="max-h-[80px] object-contain" />
-                        <Image src="https://i.imgur.com/kJ1FDvn.jpg" alt="Partner 4 logo" width={120} height={80} className="max-h-[80px] object-contain" />
-                        <Image src="https://i.imgur.com/2WaPh9I.jpg" alt="Partner 5 logo" width={120} height={80} className="max-h-[80px] object-contain" />
-                        <Image src="https://i.imgur.com/lfoK4RR.jpg" alt="Partner 6 logo" width={120} height={80} className="max-h-[80px] object-contain" />
-                    </Flex>
-                    <Box id="sosterforeninger" mt={8}>
-                        <Flex flexWrap="wrap" gap={8} justify="center" align="center">
-                            <Image src="https://imgur.com/Zu9ERQR.jpg" alt="Søsterforening 1" width={200} height={150} className="max-h-[150px] object-contain" />
-                            <Image src="https://imgur.com/QAgRYfg.jpg" alt="Søsterforening 2" width={200} height={150} className="max-h-[150px] object-contain" />
-                            <Image src="https://imgur.com/WtxQ0lI.jpg" alt="Søsterforening 3" width={200} height={150} className="max-h-[150px] object-contain" />
-                            <Image src="https://imgur.com/1BDV2P9.jpg" alt="Søsterforening 4" width={200} height={150} className="max-h-[150px] object-contain" />
-                        </Flex>
-                    </Box>
+                    <PartnersSection />
                 </Box>
 
                 {/* Join us section */}
