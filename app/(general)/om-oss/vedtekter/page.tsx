@@ -31,7 +31,7 @@ export default function VedtekterPage() {
             {/* Hero Section */}
             <Box
                 position="relative"
-                h="30vh"
+                h="25vh"
                 bgImage="url('https://i.imgur.com/rKhkGGT.jpg')"
                 backgroundPosition="center"
                 backgroundSize="cover"

@@ -25,7 +25,7 @@ export default function OmOss() {
         <>
             <Box
                 position="relative"
-                h="30vh"
+                h="25vh"
                 bgImage="url('https://i.imgur.com/rKhkGGT.jpg')"
                 backgroundPosition="center"
                 backgroundSize="cover"

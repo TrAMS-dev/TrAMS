@@ -12,7 +12,7 @@ const nunitoSans = Nunito_Sans({
 
 export const metadata: Metadata = {
   title: "TrAMS - Trondheim Akuttmedisinske Studentforening",
-  description: "Trondheim akuttmedisinske studentforening (TrAMS), stiftet 7. mai 2009, er en ideell organisasjon av og for medisinstudenter i Trondheim, basert på frivillighet.",
+  description: "Trondheim Akuttmedisinske Studentforening (TrAMS), er en ideell student-organisasjon i Trondheim, som holder kurs i HLR og Førstehjelp.",
   icons: {
     icon: "/assets/favicon.ico",
   },
