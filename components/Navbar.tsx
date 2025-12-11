@@ -123,7 +123,7 @@ export default function Navbar({ transparent = false }: NavbarProps) {
           open={isMobileMenuOpen}
           onOpenChange={({ open }) => setIsMobileMenuOpen(open)}
         >
-          <Drawer.Backdrop />
+          <Drawer.Backdrop color={transparent ? 'whiteAlpha.500' : 'blackAlpha.200'} />
 
           <Drawer.Trigger asChild>
             <Button
@@ -141,14 +141,13 @@ export default function Navbar({ transparent = false }: NavbarProps) {
 
           <Drawer.Positioner>
             <Drawer.Content
-              bg="white"
+              bg={transparent ? 'black' : 'white'}
               maxW="320px"
               ml="auto"
               boxShadow="lg"
               p={0}
             >
               <Drawer.Body p={6}>
-                {/* 3) Use CloseTrigger so Drawer will also update its own state */}
                 <Flex justify="flex-end" mb={4}>
                   <Drawer.CloseTrigger asChild>
                     <Button
