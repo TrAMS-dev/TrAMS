@@ -33,18 +33,44 @@ export default function Forstehjelpskurs() {
             Førstehjelpskurs
           </Heading>
           <Text fontSize={{ base: '1rem', md: '1.2rem' }} lineHeight="1.5">
-            Trondheim Akuttmedisinske Studentforening
+            TrAMS tilbyr flere førstehjelpskurs for bedrifter i Trondheim. Lær livreddende førstehjelp i dag.
           </Text>
         </Box >
       </Box>
 
       {/* INTRO TEXT */}
-      < Container maxW="container.md" py={{ base: 12, md: 20 }
-      }>
+      < Container maxW="container.md" py={{ base: 8, md: 12 }}>
         <Text fontSize={{ base: "1.1rem", md: "1.25rem" }} lineHeight="1.8" textAlign="center" color="gray.700">
           Vi tilbyr to ulike førstehjelpskurs som resulterer i to ulike kursbevis. Kursholderene er to medisinstudenter ved NTNU som har gjennomgått instruktørutdanning gjennom TrAMS og følger et standardisert oppsett. Vi stiller med dukker og hjertestartere til den praktiske delen på alle kurs.
         </Text>
+        <Flex
+          justifyContent="center"
+          mt={6}
+        >
+          <Link
+            href="/book-kurs"
+            _hover={{ textDecoration: 'none' }}
+          >
+            <Button
+              height="auto"
+              w="280px"
+              p={{ base: 4, md: 8 }}
+              bg="var(--color-primary)"
+              _hover={{
+                bg: 'red.600',
+                transform: 'scale(1.05)',
+                boxShadow: '0 0 30px rgba(229, 62, 62, 0.6)'
+              }}
+              borderRadius="xl"
+              transition="all 0.3s ease"
+              boxShadow="0 0 20px rgba(229, 62, 62, 0.4)"
+            >
+              <Text fontSize="xl" fontWeight="bold">Book førstehjelpskurs</Text>
+            </Button>
+          </Link>
+        </Flex>
       </Container >
+
 
 
       {/* STANDARD KURS */}
