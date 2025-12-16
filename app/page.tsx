@@ -4,9 +4,12 @@ import Navbar from '@/components/Navbar';
 import { HeartPulse, Calendar, Users } from 'lucide-react';
 import { createClient } from '@/utils/supabase/server';
 
+export const metadata = {
+  title: "TrAMS | Trondheim Akuttmedisinske Studentforening",
+  description: "Trondheim Akuttmedisinske Studentforening (TrAMS) er en studentforening for medisinstudenter som er interessert i akuttmedisin. Vi organiserer kurs, aktiviteter og samarbeid med andre studentforeninger og organisasjoner.",
+}
 export default async function Home() {
   const supabase = await createClient()
-
   const video = supabase.storage.from('assets').getPublicUrl('TrAMS_intro.mp4')
   return (
     <Box as="section" position="relative" h="100vh" w="100vw" overflow="hidden" bg="gray.900">
@@ -72,7 +75,7 @@ export default async function Home() {
       >
         <Flex direction="column" justify="space-between" align="center" h="100%">
 
-          <Flex direction="column" align="center" gap={6} pt={40}>
+          <Flex direction="column" align="center" gap={6} pt={{ base: 10, md: 40 }}>
             <Heading
               as="h1"
               size={{ base: "2xl", md: "3xl", lg: "4xl" }}

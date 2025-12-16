@@ -1,16 +1,21 @@
 import { Box } from "@chakra-ui/react";
-import ClientCalendar from "@/components/ClientCalendar";
+import Calendar from "@/components/Calendar";
 import { HeroHeading, HeroText } from '@/components/Typography';
 
+export const metadata = {
+    title: "Arrangementer | TrAMS",
+    description: "Se oversikt over alle kommende arrangementer hos TrAMS - Trondheim Akuttmedisinske Studentforening.",
+};
 
 export default function Arrangementer() {
+
     return (
         <>
             {/* HERO */}
             <Box
                 position="relative"
                 h="25vh"
-                bgImage="url('https://i.imgur.com/521F3ik.jpg')"
+                bgImage="url('https://i.imgur.com/oc9gbos.png')"
                 backgroundPosition="center"
                 backgroundSize="cover"
                 backgroundRepeat="no-repeat"
@@ -42,7 +47,7 @@ export default function Arrangementer() {
                 gap={4}
                 boxShadow="0 0 10px rgba(0,0,0,0.1)"
             >
-                <ClientCalendar />
+                <Calendar />
             </Box>
         </>
     );

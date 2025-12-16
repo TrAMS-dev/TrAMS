@@ -1,26 +1,24 @@
-'use client'
-
-import { Container, Flex, Box, Heading, Text, Image, Link, HStack, Link as ChakraLink, Button } from "@chakra-ui/react";
-import { useEffect, useState } from "react";
 import { client } from "@/sanity/lib/client";
-import { BoardMember } from "@/types/sanity.types";
 import { BOARD_MEMBERS_QUERY } from "@/sanity/lib/queries";
-import BoardMemberCard from '@/components/BoardMemberCard';
-import { PartnersSection } from '@/components/CooperationPartners';
+import { BoardMember } from "@/types/sanity.types";
+import { Container, Flex, Box, Heading, Text, Image, Link, HStack, Link as ChakraLink, Button } from "@chakra-ui/react";
+import BoardMemberSection from "@/components/BoardMemberSection";
+import { PartnersSection } from "@/components/CooperationPartners";
 
-export default function OmOss() {
-    const [boardMembers, setBoardMembers] = useState<BoardMember[]>([]);
+export const metadata = {
+    title: "Om Oss | TrAMS",
+    description: "Lær mer om TrAMS - Trondheim Akuttmedisinske Studentforening, vårt styre, samarbeidspartnere og historie.",
+};
 
-    useEffect(() => {
-        client
-            .fetch<BoardMember[]>(BOARD_MEMBERS_QUERY)
-            .then((data) => {
-                setBoardMembers(data);
-            })
-            .catch((error) => {
-                console.error('Error fetching board members:', error);
-            });
-    }, []);
+export default async function OmOss() {
+
+    let boardMembers: BoardMember[] = [];
+
+    try {
+        boardMembers = await client.fetch<BoardMember[]>(BOARD_MEMBERS_QUERY);
+    } catch (error) {
+        console.error('Error fetching board members:', error);
+    }
 
     return (
         <>
@@ -118,17 +116,6 @@ export default function OmOss() {
 
                 {/* Cooperation partners */}
                 <Box textAlign="center" mb={{ base: 4, md: 8 }}>
-                    <Heading
-                        as="h2"
-                        position="relative"
-                        color="black"
-                        pb={2}
-                        mb={4}
-                        fontSize="2rem"
-                    >
-                        Samarbeidspartnere og søsterforeninger
-                        <Box display="block" w="120px" h="4px" bg="var(--color-primary)" mx="auto" mt={2} borderRadius="2px" />
-                    </Heading>
                     <PartnersSection />
                 </Box>
 
@@ -178,40 +165,7 @@ export default function OmOss() {
                         </Button>
                     </Link>
                 </Box>
-
-                {/* Styret-section */}
-                <Box bg="white" borderRadius="8px" mb={{ base: 4, md: 8 }} p={{ base: 4, md: 8 }} id="BoardMembers">
-                    <Heading
-                        as="h2"
-                        textAlign="center"
-                        color="black"
-                        fontWeight={700}
-                        position="relative"
-                        pb={2}
-                        fontSize="2rem"
-                    >
-                        Styret i TrAMS
-                        <Box display="block" w="120px" h="4px" bg="var(--color-primary)" mx="auto" mt={2} borderRadius="2px" />
-                    </Heading>
-                    <HStack
-                        gap={8}
-                        overflowX="auto"
-                        pb={8}
-                        pt={8}
-                        style={{ scrollSnapType: 'x mandatory' }}
-                    >
-                        {boardMembers.map((member) => (
-                            <BoardMemberCard key={member._id} member={member} href={`/styret/${member.role?.toLowerCase() || ''}`} />
-                        ))}
-                    </HStack>
-                    <Box textAlign="center" mb={6}>
-                        <Link href="/styret/tidligere-styrer">
-                            <Text as="span" color="var(--color-primary)" _hover={{ textDecoration: 'underline' }} cursor="pointer">
-                                Se tidligere styrer
-                            </Text>
-                        </Link>
-                    </Box>
-                </Box>
+                <BoardMemberSection />
             </Container>
         </>
     )

@@ -1,9 +1,6 @@
-'use client';
-
 import { Box, Container, Link, Button, SimpleGrid } from '@chakra-ui/react';
 import { PortableText } from 'next-sanity';
 import { client } from '@/sanity/lib/client';
-import { useState, useEffect } from 'react';
 import { AkuttCalling } from '@/types/sanity.types';
 import { AKUTTKALLING_QUERY } from '@/sanity/lib/queries';
 import { portableTextComponents, HeroHeading } from '@/components/Typography';
@@ -11,16 +8,16 @@ import { urlFor } from '@/sanity/lib/image';
 import Image from 'next/image';
 import { SanityImageSource } from "@sanity/image-url/lib/types/types";
 
-export default function AkuttCallingPage() {
-    const [data, setData] = useState<AkuttCalling>();
 
-    useEffect(() => {
-        client.fetch<AkuttCalling>(AKUTTKALLING_QUERY)
-            .then((res) => setData(res))
-            .catch((err) => console.error('Failed to fetch akuttcalling:', err));
-    }, []);
+export const metadata = {
+    title: "Akuttcalling | TrAMS",
+    description: "Les om Akuttcalling via TrAMS",
+};
 
-    if (!data) return <Box p={8} textAlign="center">Laster...</Box>;
+export default async function AkuttCallingPage() {
+
+
+    const data = await client.fetch<AkuttCalling>(AKUTTKALLING_QUERY);
 
     return (
         <>

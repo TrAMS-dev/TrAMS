@@ -1,24 +1,21 @@
-'use client';
-
 import { Box, Container, Link, Button } from '@chakra-ui/react';
 import { PortableText } from 'next-sanity';
 import { client } from '@/sanity/lib/client';
-import { useState, useEffect } from 'react';
 import { MarkorPage } from '@/types/sanity.types';
 import { MARKOR_PAGE_QUERY } from '@/sanity/lib/queries';
 import { portableTextComponents, HeroHeading } from '@/components/Typography';
 import Gallery from '@/components/Gallery';
 
-export default function JoinExtrasPage() {
-    const [data, setData] = useState<MarkorPage>();
 
-    useEffect(() => {
-        client.fetch<MarkorPage>(MARKOR_PAGE_QUERY)
-            .then((res) => setData(res))
-            .catch((err) => console.error('Failed to fetch markorpage:', err));
-    }, []);
+export const metadata = {
+    title: "Markører | TrAMS",
+    description: "Bli med som markør for TrAMS og bidra til realistisk ferdighetstrening for medisinstudenter.",
+};
 
-    if (!data) return <Box p={8} textAlign="center">Laster...</Box>;
+export default async function MarkorerPage() {
+
+
+    const data = await client.fetch<MarkorPage>(MARKOR_PAGE_QUERY);
 
     return (
         <>

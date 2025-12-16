@@ -1,35 +1,14 @@
-'use client';
-
-import { useEffect, useState } from 'react';
 import { Box, Flex, Link, Container, Text } from '@chakra-ui/react';
-import Image from 'next/image';
-import { HeroHeading, HeroText, PageHeading, SectionHeading, SubsectionHeading, BodyText, CenteredText, portableTextComponents } from '@/components/Typography';
-import { COURSE_OFFERINGS_QUERY, COMMITTEES_QUERY } from '@/sanity/lib/queries';
-import { urlFor } from '@/sanity/lib/image';
-import { client } from '@/sanity/lib/client';
-import { PortableText } from 'next-sanity';
-import { CourseOffering, Committee } from '@/types/sanity.types';
+import { HeroHeading, HeroText, PageHeading, SectionHeading, SubsectionHeading, BodyText, CenteredText } from '@/components/Typography';
+import CommiteeCards from '../../../components/CommiteeCards';
+import CourseCards from '../../../components/CourseCards';
+
+export const metadata = {
+  title: "For Medisinstudenter | TrAMS",
+  description: "Informasjon for medisinstudenter om medlemskap, kurs, komiteer og andre tilbud fra TrAMS.",
+};
+
 export default function ForMedisinstudenter() {
-  const [offers, setOffers] = useState<CourseOffering[]>([]);
-  const [committees, setCommittees] = useState<Committee[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    Promise.all([
-      client.fetch<CourseOffering[]>(COURSE_OFFERINGS_QUERY),
-      client.fetch<Committee[]>(COMMITTEES_QUERY),
-    ])
-      .then(([courseOfferings, committeeData]) => {
-        setOffers(courseOfferings);
-        setCommittees(committeeData);
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.error('Error fetching data:', error);
-        setLoading(false);
-      });
-  }, []);
-
   return (
     <>
       {/* HERO */}
@@ -130,102 +109,7 @@ export default function ForMedisinstudenter() {
           for medlemmer. I tillegg kan du som medlem søke om å bli instruktør i TrAMS eller bli med i en av komiteene
           våre!
         </CenteredText>
-
-        {/* COURSE-CARDS SCROLL */}
-        {loading ? (
-          <Text textAlign="center" fontSize="1.2rem" color="gray.600" my={12}>
-            Laster inn...
-          </Text>
-        ) : (
-          <Flex
-            gap={8}
-            overflowX="auto"
-            my={12}
-            px={4}
-            className="scroll-smooth"
-            mb={16}
-          >
-            {offers.map((offer) => {
-              const imageUrl = offer.image
-                ? urlFor(offer.image).width(800).height(800).url()
-                : null;
-
-              return (
-                <Box
-                  key={offer._id}
-                  flex="0 0 auto"
-                  w="300px"
-                  bg="#fff"
-                  borderRadius="8px"
-                  textAlign="center"
-                  boxShadow="0 0 10px rgba(0,0,0,0.1)"
-                  display="flex"
-                  flexDirection="column"
-                  overflow="hidden"
-                  mb={5}
-                >
-                  {imageUrl && (
-                    <Box
-                      w="300px"
-                      h="300px"
-                      position="relative"
-                      overflow="hidden"
-                      display="flex"
-                      alignItems="center"
-                      justifyContent="center"
-                    >
-                      <Image
-                        src={imageUrl}
-                        alt={offer.title}
-                        width={300}
-                        height={300}
-                        style={{
-                          width: '300px',
-                          height: '300px',
-                          objectFit: 'cover',
-                        }}
-                      />
-                    </Box>
-                  )}
-                  <SubsectionHeading m={4} mb={2} fontSize="1.4rem">
-                    {offer.title}
-                  </SubsectionHeading>
-                  <Box flex={1} mx={4} mb={4} lineHeight="1.4" textAlign="left">
-                    <PortableText value={offer.description} components={portableTextComponents} />
-                  </Box>
-                  {offer.link && (
-                    <Link
-                      href={offer.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      display="block"
-                      bg="var(--color-primary)"
-                      color="var(--color-light)"
-                      fontWeight={700}
-                      textDecoration="none"
-                      fontSize="1rem"
-                      p="0.6rem 1.2rem"
-                      borderRadius="4px"
-                      transition="background 0.3s ease"
-                      cursor="pointer"
-                      mx="auto"
-                      mb={8}
-                      w="80%"
-                      maxW="200px"
-                      textAlign="center"
-                      _hover={{
-                        bg: 'var(--color-secondary)',
-                        color: 'black',
-                      }}
-                    >
-                      {offer.linkText}
-                    </Link>
-                  )}
-                </Box>
-              );
-            })}
-          </Flex>
-        )}
+        <CourseCards />
 
         {/* COMMITTEES SECTION */}
         <Box my={16}>
@@ -243,70 +127,7 @@ export default function ForMedisinstudenter() {
             </Link>{' '}
             eller kontakt komitéen direkte.
           </CenteredText>
-
-          <Flex flexWrap="wrap" gap={8} justifyContent="center">
-            {committees.map((committee) => {
-              const logoUrl = committee.logo
-                ? urlFor(committee.logo).width(400).height(400).url()
-                : null;
-
-              return (
-                <Box
-                  key={committee._id}
-                  flex="1 1 250px"
-                  maxW="250px"
-                  textAlign="center"
-                  bg="#fff"
-                  borderRadius="8px"
-                  p={4}
-                  boxShadow="0 0 10px rgba(0,0,0,0.1)"
-                  display="flex"
-                  flexDirection="column"
-                  alignItems="center"
-                >
-                  {logoUrl && (
-                    <Box display="flex" justifyContent="center" alignItems="center" width="100%" mb={4}>
-                      <Image
-                        src={logoUrl}
-                        alt={committee.name}
-                        width={150}
-                        height={150}
-                        style={{ display: 'block', margin: '0 auto' }}
-                      />
-                    </Box>
-                  )}
-                  <SubsectionHeading mb={2} fontSize="1.2rem">
-                    {committee.name}
-                  </SubsectionHeading>
-                  {committee.email && (
-                    <Text mb={4} fontSize="0.9rem">
-                      <Link href={`mailto:${committee.email}`} color="black" textDecoration="underline">
-                        {committee.email}
-                      </Link>
-                    </Text>
-                  )}
-                  <Link
-                    href={`/for-medisinstudenter/${committee.slug.current}`}
-                    display="inline-block"
-                    p="0.4rem 0.8rem"
-                    bg="var(--color-primary)"
-                    color="var(--color-light)"
-                    textDecoration="none"
-                    borderRadius="4px"
-                    transition="background 0.3s ease"
-                    fontWeight={600}
-                    fontSize="0.9rem"
-                    _hover={{
-                      bg: 'var(--color-secondary)',
-                      color: 'black',
-                    }}
-                  >
-                    Les mer
-                  </Link>
-                </Box>
-              );
-            })}
-          </Flex>
+          <CommiteeCards />
         </Box>
       </Container>
 

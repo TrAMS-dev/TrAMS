@@ -1,20 +1,17 @@
-'use client';
+import { Box, Flex, Link, Container } from '@chakra-ui/react';
+import { HeroHeading, HeroText, SectionHeading, BodyText, CenteredText } from '@/components/Typography';
+import LinkGrid from '../../../components/LinkGrid';
 
-import { useEffect, useState } from 'react';
-import { Box, Flex, Link, Container, Text } from '@chakra-ui/react';
-import { HeroHeading, HeroText, SectionHeading, SubsectionHeading, BodyText, CenteredText } from '@/components/Typography';
-import { client } from '@/sanity/lib/client';
-import { INSTRUKT_LINKS_QUERY } from '@/sanity/lib/queries';
-import { InstruktorLink } from '@/types/sanity.types';
+
+
+export const metadata = {
+  title: "Instruktører | TrAMS",
+  description: "Er du instruktør eller ønsker å bli det? Her finner du informasjon og ressurser for TrAMS-instruktører.",
+};
 
 export default function Instruktorer() {
-  const [links, setLinks] = useState<InstruktorLink[]>([]);
 
-  useEffect(() => {
-    client.fetch<InstruktorLink[]>(INSTRUKT_LINKS_QUERY)
-      .then((data) => setLinks(data))
-      .catch((err) => console.error('Failed to fetch instruktorer links:', err));
-  }, []);
+
 
   return (
     <>
@@ -44,47 +41,7 @@ export default function Instruktorer() {
       </Box>
 
       <Container maxW="1200px" mx="auto" px={4} py={8}>
-        <Flex flexWrap="wrap" gap={8} mt={8} justifyContent="center">
-          {links.map((box) => (
-            <Box
-              key={box._id}
-              flex="1 1 300px"
-              bg="var(--color-light)"
-              boxShadow="0 2px 5px rgba(0,0,0,0.1)"
-              borderRadius="8px"
-              p={6}
-              textAlign="center"
-              maxW="350px"
-            >
-              <SubsectionHeading mt={0} mb={2} fontSize="1.1rem">
-                {box.title}
-              </SubsectionHeading>
-              <Text mb={4} fontSize="0.9rem" lineHeight="1.4">
-                {box.description}
-              </Text>
-              <Link
-                href={box.link}
-                target="_blank"
-                rel="noopener noreferrer"
-                display="inline-block"
-                bg="var(--color-primary)"
-                color="var(--color-light)"
-                p="0.6rem 1.2rem"
-                textDecoration="none"
-                borderRadius="4px"
-                transition="background 0.3s ease"
-                fontWeight={600}
-                fontSize="0.9rem"
-                _hover={{
-                  bg: 'var(--color-secondary)',
-                  color: 'black',
-                }}
-              >
-                {box.linkText}
-              </Link>
-            </Box>
-          ))}
-        </Flex>
+        <LinkGrid />
 
         <Box mt={12}>
           <Flex flexWrap="wrap" gap={8} alignItems="flex-start">
