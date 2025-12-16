@@ -2,7 +2,7 @@ import { client } from '@/sanity/lib/client';
 import { COMMITTEE_QUERY } from '@/sanity/lib/queries';
 import { Committee } from '@/types/sanity.types';
 import { Metadata } from 'next';
-import CommitteeView from '../../../../components/CommitteeView';
+import CommitteeView from '@/components/CommitteeView';
 
 type Props = {
     params: Promise<{ slug: string }>

@@ -204,4 +204,22 @@ export const MARKOR_PAGE_QUERY = defineQuery(`*[_type == "markorPage"][0] {
   content,
   gallery,
   link
+}
+`)
+
+export const COOPERATION_PARTNERS_QUERY = defineQuery(`*[_type == "cooperationPartners"][0] {
+  _id,
+  partners[] {
+    _key,
+    name,
+    logo,
+    url,
+    size
+  },
+  sisterOrganizations[] {
+    _key,
+    name,
+    logo,
+    url
+  }
 }`)

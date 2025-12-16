@@ -1,7 +1,7 @@
 import { Box, Flex, Link, Container, Text } from '@chakra-ui/react';
 import { HeroHeading, HeroText, PageHeading, SectionHeading, SubsectionHeading, BodyText, CenteredText } from '@/components/Typography';
-import CommiteeCards from '../../../components/CommiteeCards';
-import CourseCards from '../../../components/CourseCards';
+import CommiteeCards from '@/components/CommiteeCards';
+import CourseCards from '@/components/CourseCards';
 
 export const metadata = {
   title: "For Medisinstudenter | TrAMS",

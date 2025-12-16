@@ -1,7 +1,6 @@
 import { Box, Flex, Link, Container } from '@chakra-ui/react';
 import { HeroHeading, HeroText, SectionHeading, BodyText, CenteredText } from '@/components/Typography';
-import LinkGrid from '../../../components/LinkGrid';
-
+import LinkGrid from '@/components/LinkGrid';
 
 
 export const metadata = {

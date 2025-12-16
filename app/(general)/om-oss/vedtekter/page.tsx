@@ -1,5 +1,4 @@
-import VedtekterContent from '../../../../components/VedtekterContent';
-import { Box } from '@chakra-ui/react';
+import VedtekterContent from '@/components/VedtekterContent';
 
 export const metadata = {
     title: "Vedtekter | TrAMS",

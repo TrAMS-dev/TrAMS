@@ -1,7 +1,6 @@
 import { Box, Flex, Text, Link, Container, Button } from '@chakra-ui/react';
 import Image from 'next/image';
 import { HeroHeading, HeroText, SectionHeading, SubsectionHeading } from '@/components/Typography';
-import InfoCard from '@/components/InfoCard';
 
 export const metadata = {
   title: "Førstehjelpskurs | TrAMS",
@@ -32,68 +31,54 @@ export default function Forstehjelpskurs() {
         <Box position="relative" zIndex={2} maxW="800px" color="var(--color-light)">
           <HeroHeading fontSize={{ base: "2rem", md: "2.5rem" }}>Førstehjelpskurs</HeroHeading>
           <HeroText fontSize={{ base: "1rem", md: "1.2rem" }}>
-            TrAMS tilbyr førstehjelpskurs i Trondheim og Trøndelag. Les mer om våre kurs og meld deg på i dag!
+            TrAMS tilbyr førstehjelpskurs i Trondheim og Trøndelag. Les mer om våre kurs!
           </HeroText>
         </Box>
+      </Box>
+      <Box
+        position="relative"
+        p={8}
+        mt={{ base: 4, md: 8 }}
+      >        <Text textAlign="center">Vi tilbyr to ulike førstehjelpskurs som resulterer i to ulike kursbevis. Kursholderene er to medisinstudenter ved NTNU som har gjennomgått instruktør- utdanning gjennom TrAMS. og følger et standardisert oppsett. Vi stiller med dukker og hjertestartere til den praktiske delen på alle kurs. Under følger en oversikt over hva våre to kursene inneholder.
+        </Text>
       </Box>
 
       {/* HERO */}
       <Container maxW="1200px" my={8}>
-        <InfoCard />
-        {/* Heading */}
         <Box textAlign="center" py={{ base: 4, md: 8 }} px={4}>
           <SectionHeading fontSize="2.2rem" m={0} mb={4}>
-            TrAMS standard oppsett eksternkurs:
+            Standard oppsett eksternkurs
           </SectionHeading>
           <Text>
-            <b>TrAMS standard oppsett eksternkurs</b> er vårt eget kurs utviklet av oss i TrAMS-arrangementer og
-            fagpersoner på st. Olavs.
+            Dette kurset er utviklet av TrAMS, med utgangspunkt i NRR sine retningslinjer, og er kvalitetssikret av flere anestesileger ved St.Olavs Hospital. Vi kan derfor holde førstehjelpskurs på en forsvarlig, lærerik og casebasert måte. Dette kurset består av tre deler, og varer i totalt tre timer.
           </Text>
         </Box>
 
         {/* Angled Section #1 */}
         <Box
           position="relative"
-          p={{ base: 6, md: 10 }}
+          p={{ base: 8, md: 12 }}
           bg="var(--color-secondary)"
           color="var(--color-text)"
           borderRadius="25px"
           overflow="hidden"
-          transition="transform 0.3s ease, box-shadow 0.3s ease"
           mb={{ base: 4, md: 8 }}
-          _hover={{
-            transform: 'scale(1.02)',
-          }}
         >
           <Flex
             alignItems="center"
             justifyContent="space-between"
             w="100%"
-            gap={8}
+            gap={12}
             flexWrap="wrap"
           >
-            <Flex gap={4} alignItems="center" flex={1}>
+            <Flex gap={6} alignItems="center" flex={1}>
               <Flex alignItems="center" gap={2}>
                 <Text fontSize="2rem" fontWeight={800} color="var(--color-primary)">1</Text>
-                <Box
-                  w="120px"
-                  h="120px"
-                  display="flex"
-                  alignItems="center"
-                  justifyContent="center"
-                  flexShrink={0}
-                  fontSize="1.3rem"
-                  color="#fff"
-                  bg="var(--color-primary)"
-                  borderRadius="50%"
-                >
-                  <Text>ABC</Text>
-                </Box>
               </Flex>
               <Box>
-                <SubsectionHeading m={0} mb={2}>ABC-prinsippet</SubsectionHeading>
-                <Text m={0} lineHeight="1.4">
-                  Undervisning i ABC-drillen, en internasjonalt anerkjent metodikk for å avdekke sykdom eller skade.
+                <SubsectionHeading m={0} mb={4}>ABC-drillen</SubsectionHeading>
+                <Text m={0} lineHeight="1.6">
+                  Vi forklarer ABC-drillen, og lærer bort hvordan den kan brukes på en god måte. Dette er med et formål om at deltakerne skal kunne falle tilbake på en prioritert fremgangsmåte der de mest <b>fatale/kritiske</b> tilstandene behandles først. Instruktørene går blant annet gjennom hvordan man gir en fri luftvei, legger i sideleie, stopper blødninger og hvilke andre tiltak som er viktig å tenke på i en akutt førstehjelpssituasjon.
                 </Text>
               </Box>
             </Flex>
@@ -111,51 +96,20 @@ export default function Forstehjelpskurs() {
         {/* Angled Section #2 (reverse) */}
         <Box
           position="relative"
-          p={{ base: 6, md: 10 }}
+          p={{ base: 8, md: 12 }}
           bg="var(--color-primary)"
           color="var(--color-light)"
           borderRadius="25px"
           overflow="hidden"
-          transition="transform 0.3s ease, box-shadow 0.3s ease"
           mb={{ base: 4, md: 8 }}
-          _hover={{
-            transform: 'scale(1.02)',
-          }}
         >
           <Flex
             alignItems="center"
             justifyContent="space-between"
             w="100%"
-            gap={8}
+            gap={12}
             flexWrap="wrap"
-            flexDirection="row-reverse"
           >
-            <Flex gap={4} alignItems="center" flex={1}>
-              <Flex alignItems="center" gap={2}>
-                <Text fontSize="2rem" fontWeight={800} color="var(--color-light)">2</Text>
-                <Box
-                  w="120px"
-                  h="120px"
-                  display="flex"
-                  alignItems="center"
-                  justifyContent="center"
-                  flexShrink={0}
-                  fontSize="1.3rem"
-                  color="var(--color-text)"
-                  bg="var(--color-secondary)"
-                  borderRadius="25px"
-                >
-                  <Text>BHLR</Text>
-                </Box>
-              </Flex>
-              <Box>
-                <SubsectionHeading m={0} mb={2}>BHLR</SubsectionHeading>
-                <Text m={0} lineHeight="1.4">
-                  Undervisning og trening på dukker i hjerte- lungeredning, basert på retningslinjer fra Norsk
-                  resuscitasjonsråd (NRR).
-                </Text>
-              </Box>
-            </Flex>
             <Image
               src="https://imgur.com/TAoKstN.jpg"
               alt="BHLR kursbilde"
@@ -164,52 +118,42 @@ export default function Forstehjelpskurs() {
               style={{ objectFit: 'cover', width: '250px', height: '250px' }}
               className="rounded-lg"
             />
+            <Flex gap={6} alignItems="center" flex={1}>
+              <Text fontSize="2rem" fontWeight={800} color="var(--color-light)">2</Text>
+              <Box>
+                <SubsectionHeading m={0} mb={4}>HLR</SubsectionHeading>
+                <Text m={0} lineHeight="1.6">
+                  Etter innføringen av ABC-drillen, går vi gjennom hvordan hjerte-lungeredning gjøres korrekt, slik at kompresjoner og innblåsninger faktisk har effekt. Nøyaktig og effektiv utførelse av HLR og bruk av hjertestarter er to viktige komponenter når det kommer livredning. Vi etterstreber så mye hands-on-øving som mulig, ettersom vi mener dette er den beste måten å lære på. I tillegg vil den praktiske øvingen gjøre deltakerne tryggere på å ta avgjørelsen om å sette i gang slik gjenopplivning i en eventuell reell situasjon.
+                </Text>
+              </Box>
+            </Flex>
           </Flex>
+
         </Box>
 
         {/* Angled Section #3 */}
         <Box
           position="relative"
-          p={{ base: 6, md: 10 }}
+          p={{ base: 8, md: 12 }}
           bg="var(--color-secondary)"
           color="var(--color-text)"
           borderRadius="25px"
           overflow="hidden"
-          transition="transform 0.3s ease, box-shadow 0.3s ease"
           mb={{ base: 4, md: 8 }}
-          _hover={{
-            transform: 'scale(1.02)',
-          }}
         >
           <Flex
             alignItems="center"
             justifyContent="space-between"
             w="100%"
-            gap={8}
+            gap={12}
             flexWrap="wrap"
           >
-            <Flex gap={4} alignItems="center" flex={1}>
-              <Flex alignItems="center" gap={2}>
-                <Text fontSize="2rem" fontWeight={800} color="var(--color-primary)">3</Text>
-                <Box
-                  w="120px"
-                  h="120px"
-                  display="flex"
-                  alignItems="center"
-                  justifyContent="center"
-                  flexShrink={0}
-                  fontSize="1.3rem"
-                  color="#fff"
-                  bg="var(--color-primary)"
-                  clipPath="polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%)"
-                >
-                  <Text>CASE</Text>
-                </Box>
-              </Flex>
+            <Flex gap={6} alignItems="center" flex={1}>
+              <Text fontSize="2rem" fontWeight={800} color="var(--color-primary)">3</Text>
               <Box>
-                <SubsectionHeading m={0} mb={2}>CASE</SubsectionHeading>
-                <Text m={0} lineHeight="1.4">
-                  Case-trening på ulike scenarioer, tilpasset deltakergruppen etter behov.
+                <SubsectionHeading m={0} mb={4}>Casetrening</SubsectionHeading>
+                <Text m={0} lineHeight="1.6">
+                  Etter to timer med mye informasjon og veiledning, får man endelig muligheten til å flette alt sammen. Kursholderene vil dele opp gruppen og legge til rette for å simulere realistiske førstehjelpssituasjoner. Nå må gruppene bruke hva de har lært for å kunne håndtere scenarioene på best mulig måte.
                 </Text>
               </Box>
             </Flex>
@@ -223,60 +167,41 @@ export default function Forstehjelpskurs() {
             />
           </Flex>
         </Box>
-
+        <Text my={4} w="100%" textAlign="center">
+          Etter endt kurs, vil alle registrerte deltakere få godkjent kursbevis gjennom TrAMS, dersom det er ønskelig.
+        </Text>
         <Box textAlign="center" py={{ base: 4, md: 8 }} px={4}>
           <SectionHeading fontSize="2.2rem" m={0} mb={4}>
             NRR-sertifisert GHLR kurs
           </SectionHeading>
           <Text>
-            <b>NRR-sertifisert GHLR kurs</b> er et kurs utviklet av NRR hvor hver deltager må gjøre NRR sin e-læring i
-            forkant av kurset og hvor vi stiller med NRR instruktører. Kurset er beskrevet under.
+            Dette er et grunnleggende hjerte-lungeredningskurs utviklet av Norsk Resuscitasjonsråd i samarbeid med Lærdal Medical AS. Kurset følger norske rettingslinjer for førstehjelp og gjenopplivning og fokuserer på praktisk HLR-opplæring for personer uten forkunnskaper innen hjerte-lungeredning.
           </Text>
         </Box>
 
         {/* NRR GHLR Sections */}
         <Box
           position="relative"
-          p={{ base: 6, md: 10 }}
+          p={{ base: 8, md: 12 }}
           bg="var(--color-secondary)"
           color="var(--color-text)"
           borderRadius="25px"
           overflow="hidden"
-          transition="transform 0.3s ease, box-shadow 0.3s ease"
           mb={{ base: 4, md: 8 }}
-          _hover={{
-            transform: 'scale(1.02)',
-          }}
         >
           <Flex
             alignItems="center"
             justifyContent="space-between"
             w="100%"
-            gap={8}
+            gap={12}
             flexWrap="wrap"
           >
-            <Flex gap={4} alignItems="center" flex={1}>
-              <Flex alignItems="center" gap={2}>
-                <Text fontSize="2rem" fontWeight={800} color="var(--color-primary)">1</Text>
-                <Box
-                  w="120px"
-                  h="120px"
-                  display="flex"
-                  alignItems="center"
-                  justifyContent="center"
-                  flexShrink={0}
-                  fontSize="1.3rem"
-                  color="#fff"
-                  bg="var(--color-primary)"
-                  borderRadius="50%"
-                >
-                  <Text>e-læring</Text>
-                </Box>
-              </Flex>
+            <Flex gap={6} alignItems="center" flex={1}>
+              <Text fontSize="2rem" fontWeight={800} color="var(--color-primary)">1</Text>
               <Box>
-                <SubsectionHeading m={0} mb={2}>e-læring</SubsectionHeading>
-                <Text m={0} lineHeight="1.4">
-                  Deltakere gjennomgår NRR sin egne e-læring hvor teori rundt GHLR blir gjennomgått og testet.
+                <SubsectionHeading m={0} mb={4}>e-læring</SubsectionHeading>
+                <Text m={0} lineHeight="1.6">
+                  Ved bestilling av dette kurset, må deltakerne betale for, og utføre, et e-læringskurs på forkant av kurset. Denne kostnaden vil være ekskludert fra hva TrAMS fakturerer for selve kurset, og kommer på 60 kr per deltaker).
                 </Text>
               </Box>
             </Flex>
@@ -293,50 +218,20 @@ export default function Forstehjelpskurs() {
 
         <Box
           position="relative"
-          p={{ base: 6, md: 10 }}
+          p={{ base: 8, md: 12 }}
           bg="var(--color-primary)"
           color="var(--color-light)"
           borderRadius="25px"
           overflow="hidden"
-          transition="transform 0.3s ease, box-shadow 0.3s ease"
           mb={{ base: 4, md: 8 }}
-          _hover={{
-            transform: 'scale(1.02)',
-          }}
         >
           <Flex
             alignItems="center"
             justifyContent="space-between"
             w="100%"
-            gap={8}
+            gap={12}
             flexWrap="wrap"
-            flexDirection="row-reverse"
           >
-            <Flex gap={4} alignItems="center" flex={1}>
-              <Flex alignItems="center" gap={2}>
-                <Text fontSize="2rem" fontWeight={800} color="var(--color-light)">2</Text>
-                <Box
-                  w="120px"
-                  h="120px"
-                  display="flex"
-                  alignItems="center"
-                  justifyContent="center"
-                  flexShrink={0}
-                  fontSize="1.3rem"
-                  color="var(--color-text)"
-                  bg="var(--color-secondary)"
-                  borderRadius="25px"
-                >
-                  <Text>GHLR</Text>
-                </Box>
-              </Flex>
-              <Box>
-                <SubsectionHeading m={0} mb={2}>GHLR</SubsectionHeading>
-                <Text m={0} lineHeight="1.4">
-                  Våre godkjente NRR GHLR instruktører gjennomgår praktisk trening i GHLR på dukker.
-                </Text>
-              </Box>
-            </Flex>
             <Image
               src="https://imgur.com/TAoKstN.jpg"
               alt="BHLR kursbilde"
@@ -345,13 +240,23 @@ export default function Forstehjelpskurs() {
               style={{ objectFit: 'cover', width: '250px', height: '250px' }}
               className="rounded-lg"
             />
+            <Flex gap={6} alignItems="center" flex={1}>
+              <Text fontSize="2rem" fontWeight={800} color="var(--color-light)">2</Text>
+              <Box>
+                <SubsectionHeading m={0} mb={4}>GHLR</SubsectionHeading>
+                <Text m={0} lineHeight="1.6">
+                  Kursholderene forklarer og demonstrerer grunnleggende hjerte-lungeredning, og man vil få et NRR-kursbevis etter at kurset er holdt. Kurset i seg selv vil vare 90 minutter.                </Text>
+              </Box>
+            </Flex>
           </Flex>
-        </Box>
+
+        </Box >
 
         {/* Side-by-side Wrapper */}
-        <Flex
+        < Flex
           flexWrap="wrap"
-          gap={{ base: 4, md: 8 }}
+          gap={{ base: 4, md: 8 }
+          }
           p={{ base: 4, md: 8 }}
           bg="var(--color-altBg)"
           borderRadius="8px"
@@ -442,8 +347,8 @@ export default function Forstehjelpskurs() {
               </Link>
             </Box>
           </Box>
-        </Flex>
-      </Container>
+        </Flex >
+      </Container >
 
     </>
   );

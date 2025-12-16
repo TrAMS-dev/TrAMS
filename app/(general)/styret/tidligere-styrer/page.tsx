@@ -1,5 +1,5 @@
 import { Container, Heading, Box } from "@chakra-ui/react";
-import EarilerMembersSection from "../../../../components/EarilerMembersSection";
+import EarilerMembersSection from "@/components/EarilerMembersSection";
 
 
 export const metadata = {

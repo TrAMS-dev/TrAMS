@@ -4,6 +4,8 @@ import { BoardMember } from "@/types/sanity.types";
 import { Container, Flex, Box, Heading, Text, Image, Link, HStack, Link as ChakraLink, Button } from "@chakra-ui/react";
 import BoardMemberSection from "@/components/BoardMemberSection";
 import { PartnersSection } from "@/components/CooperationPartners";
+import { COOPERATION_PARTNERS_QUERY } from "@/sanity/lib/queries";
+import { CooperationPartners } from "@/types/sanity.types";
 
 export const metadata = {
     title: "Om Oss | TrAMS",
@@ -18,6 +20,13 @@ export default async function OmOss() {
         boardMembers = await client.fetch<BoardMember[]>(BOARD_MEMBERS_QUERY);
     } catch (error) {
         console.error('Error fetching board members:', error);
+    }
+
+    let cooperationPartners: CooperationPartners | null = null;
+    try {
+        cooperationPartners = await client.fetch<CooperationPartners>(COOPERATION_PARTNERS_QUERY);
+    } catch (error) {
+        console.error('Error fetching cooperation partners:', error);
     }
 
     return (
@@ -115,9 +124,8 @@ export default async function OmOss() {
                 </Flex>
 
                 {/* Cooperation partners */}
-                <Box textAlign="center" mb={{ base: 4, md: 8 }}>
-                    <PartnersSection />
-                </Box>
+
+                <PartnersSection data={cooperationPartners} />
 
                 {/* Join us section */}
                 <Box
