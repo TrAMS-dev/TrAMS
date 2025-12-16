@@ -20,7 +20,7 @@ import { SubsectionHeading } from './Typography';
 
 export default function BookKursForm() {
     const [step, setStep] = useState(1);
-    const totalSteps = 4;
+    const totalSteps = 5;
 
     // Calculate progress value based on current step (e.g., Step 1 = 25%, Step 2 = 50%...)
     const progressValue = (step / totalSteps) * 100;
@@ -102,7 +102,7 @@ export default function BookKursForm() {
     };
 
     const nextStep = () => {
-        if (step === 1) {
+        if (step === 2) {
             if (!formData.kontaktpersonNavn || !formData.kontaktpersonEpost) {
                 setValidationError('Vennligst fyll ut navn og epost til kontaktperson.');
                 return;
@@ -114,7 +114,7 @@ export default function BookKursForm() {
                 return;
             }
         }
-        if (step === 2) {
+        if (step === 3) {
             if (!formData.kursType) {
                 setValidationError('Vennligst velg et kurs.');
                 return;
@@ -128,7 +128,7 @@ export default function BookKursForm() {
                 return;
             }
         }
-        if (step === 3) {
+        if (step === 4) {
             if (!formData.fraDato || !formData.tilDato) {
                 setValidationError('Vennligst oppgi datoer.');
                 return;
@@ -188,8 +188,39 @@ export default function BookKursForm() {
                     </Alert.Root>
                 )}
 
-                {/* STEP 1: Kontaktinfo */}
+                {/* STEP 1: Priser og Info */}
                 {step === 1 && (
+                    <Box animation="fade-in 0.3s">
+                        <SubsectionHeading fontSize="1.2rem" mb={4}>Priser og Informasjon</SubsectionHeading>
+                        <Stack gap={4}>
+                            <Box p={4} bg="gray.50" borderRadius="md" border="1px dashed" borderColor="gray.300">
+                                <Text fontWeight="bold" mb={2}>Priser:</Text>
+                                <Text><strong>TrAMS standard oppsett eksternkurs</strong>: 4 850 kr</Text>
+
+                                <Text><strong>NRR-sertifisert GHLR kurs</strong>: 5 000 kr</Text>
+                                <Text fontSize="sm" color="gray.500"> prisende er veiledende for 15 deltagere</Text>
+                            </Box>
+
+                            <Alert.Root status="info">
+                                <Alert.Indicator />
+                                <Alert.Title>Avbestilling</Alert.Title>
+                                <Alert.Description>
+                                    Avbestilling må skje senest to uker før oppdraget.
+                                </Alert.Description>
+                            </Alert.Root>
+
+                            <Box fontSize="sm" color="gray.600">
+                                <Text mb={2}>
+                                    Vi gjør oppmerksom på at vi vil kunne lagre informasjonen i bestillingsskjemaet i opptil 2 år etter innsending.
+                                </Text>
+                            </Box>
+                        </Stack>
+                    </Box>
+                )}
+
+                {/* STEP 2: Kontaktinfo */}
+
+                {step === 2 && (
                     <Box animation="fade-in 0.3s">
                         <SubsectionHeading fontSize="1.2rem" mb={4}>Kontaktinformasjon</SubsectionHeading>
                         <Stack gap={4}>
@@ -228,8 +259,8 @@ export default function BookKursForm() {
                     </Box>
                 )}
 
-                {/* STEP 2: Kursdetaljer */}
-                {step === 2 && (
+                {/* STEP 3: Kursdetaljer */}
+                {step === 3 && (
                     <Box animation="fade-in 0.3s">
                         <SubsectionHeading fontSize="1.2rem" mb={4}>Kursdetaljer</SubsectionHeading>
                         <Stack gap={4}>
@@ -284,8 +315,8 @@ export default function BookKursForm() {
                     </Box>
                 )}
 
-                {/* STEP 3: Logistikk (Tid og Sted) */}
-                {step === 3 && (
+                {/* STEP 4: Logistikk (Tid og Sted) */}
+                {step === 4 && (
                     <Box animation="fade-in 0.3s">
                         <SubsectionHeading fontSize="1.2rem" mb={4}>Tid og Sted</SubsectionHeading>
                         <Stack gap={4}>
@@ -338,8 +369,8 @@ export default function BookKursForm() {
                     </Box>
                 )}
 
-                {/* STEP 4: Avslutning */}
-                {step === 4 && (
+                {/* STEP 5: Avslutning */}
+                {step === 5 && (
                     <Box animation="fade-in 0.3s">
                         <SubsectionHeading fontSize="1.2rem" mb={4}>Annet</SubsectionHeading>
                         <Stack gap={4}>
@@ -399,7 +430,7 @@ export default function BookKursForm() {
                                 color="white"
                                 _hover={{ bg: "red.600" }}
                             >
-                                Neste
+                                {step === 1 ? "Start bestilling" : "Neste"}
                             </Button>
                         ) : (
                             <Button
