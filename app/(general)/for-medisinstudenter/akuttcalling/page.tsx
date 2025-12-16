@@ -19,6 +19,16 @@ export default async function AkuttCallingPage() {
 
     const data = await client.fetch<AkuttCalling>(AKUTTKALLING_QUERY);
 
+    if (!data) {
+        return (
+            <Container maxW="80%" py={12}>
+                <Box textAlign="center">
+                    Ingen informasjon tilgjengelig.
+                </Box>
+            </Container>
+        );
+    }
+
     return (
         <>
             <Box
