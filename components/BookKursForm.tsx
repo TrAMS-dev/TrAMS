@@ -36,6 +36,7 @@ export default function BookKursForm() {
         kursType: '',
         kursTypeAnnet: '',
         sted: 'eget',
+        adresse: '',
         annet: '',
         kursbevis: false,
     });
@@ -135,6 +136,10 @@ export default function BookKursForm() {
             }
             if (!formData.sted) {
                 setValidationError('Vennligst oppgi sted.');
+                return;
+            }
+            if (formData.sted === 'eget' && !formData.adresse) {
+                setValidationError('Vennligst oppgi adresse.');
                 return;
             }
         }
@@ -276,7 +281,7 @@ export default function BookKursForm() {
                                     >
                                         <option value="TrAMS Standard Eksternkurs (ABC+BHLR+Case)">TrAMS Standard Eksternkurs (ABC+BHLR+Case)</option>
                                         <option value="NRR-sertifisert GHLR-kurs">NRR-sertifisert GHLR-kurs</option>
-                                        <option value="Annet">Annet (venligst spesifiser)</option>
+                                        <option value="Annet">Annet (vennligst spesifiser)</option>
                                     </NativeSelect.Field>
                                     <NativeSelect.Indicator />
                                 </NativeSelect.Root>
@@ -360,10 +365,21 @@ export default function BookKursForm() {
                                         <RadioGroup.Item value="helsehus">
                                             <RadioGroup.ItemHiddenInput />
                                             <RadioGroup.ItemIndicator />
-                                            <RadioGroup.ItemText>Øya Helsehus (vi organiserer med lokaler)</RadioGroup.ItemText>
+                                            <RadioGroup.ItemText>Øya Helsehus (vi stiller med loklaler)</RadioGroup.ItemText>
                                         </RadioGroup.Item>
                                     </Stack>
                                 </RadioGroup.Root>
+                                {formData.sted === 'eget' && (
+                                    <Field.Root>
+                                        <Field.Label>Adresse<Text as="span" color="red.500">*</Text></Field.Label>
+                                        <Input
+                                            name="adresse"
+                                            value={formData.adresse}
+                                            onChange={handleChange}
+                                            placeholder="Adresse"
+                                        />
+                                    </Field.Root>
+                                )}
                             </Field.Root>
                         </Stack>
                     </Box>

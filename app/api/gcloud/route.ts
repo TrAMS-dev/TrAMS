@@ -10,6 +10,7 @@ interface BookingRequestBody {
     antallDeltakere?: string;
     datoer?: string;
     sted?: string;
+    adresse?: string;
     annet?: string;
     kursbevis?: boolean;
 }
@@ -30,6 +31,7 @@ export async function POST(req: Request) {
         antallDeltakere,
         datoer,
         sted,
+        adresse,
         annet,
         kursbevis
     } = body;
@@ -82,6 +84,7 @@ export async function POST(req: Request) {
                     antallDeltakere ?? "",
                     datoer ?? "",
                     sted ?? "",
+                    adresse ?? "",
                     annet ?? "",
                     kursbevis ? "Ja" : "Nei"
                 ]],
