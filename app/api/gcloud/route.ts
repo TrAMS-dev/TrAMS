@@ -1,7 +1,22 @@
 import { google } from "googleapis";
 
+interface BookingRequestBody {
+    kontaktpersonNavn?: string;
+    kontaktpersonTelefon?: string;
+    kontaktpersonEpost?: string;
+    kursType?: string;
+    kursTypeAnnet?: string;
+    deltakermasse?: string;
+    antallDeltakere?: string;
+    datoer?: string;
+    sted?: string;
+    annet?: string;
+    kursbevis?: boolean;
+}
+
+
 export async function POST(req: Request) {
-    const body = await req.json();
+    const body = (await req.json()) as BookingRequestBody;
     console.log("API gcloud hit with body:", body);
 
     // Destructure known fields from BookKursForm
@@ -10,6 +25,7 @@ export async function POST(req: Request) {
         kontaktpersonTelefon,
         kontaktpersonEpost,
         kursType,
+        kursTypeAnnet,
         deltakermasse,
         antallDeltakere,
         datoer,
@@ -61,6 +77,7 @@ export async function POST(req: Request) {
                     kontaktpersonTelefon ?? "",
                     kontaktpersonEpost ?? "",
                     kursType ?? "",
+                    kursTypeAnnet ?? "",
                     deltakermasse ?? "",
                     antallDeltakere ?? "",
                     datoer ?? "",
@@ -70,10 +87,11 @@ export async function POST(req: Request) {
                 ]],
             },
         });
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error("GCloud Append Error:", error);
+        const errorMessage = error instanceof Error ? error.message : "Failed to append to sheet";
         return Response.json({
-            error: error.message || "Failed to append to sheet",
+            error: errorMessage,
             details: "Check if the sheet name is exactly 'Sheet1' (case sensitive)."
         }, { status: 400 });
     }
