@@ -1,28 +1,8 @@
 import Image from 'next/image';
-import { Box, Flex, Heading } from '@chakra-ui/react';
+import { Box, Flex, Heading, Link } from '@chakra-ui/react';
 import { CooperationPartners } from '@/types/sanity.types';
 import { urlFor } from '@/sanity/lib/image';
 
-const Logo = ({
-    src,
-    alt,
-    boxWidth,
-    boxHeight,
-}: {
-    src: string;
-    alt: string;
-    boxWidth: number;
-    boxHeight: number;
-}) => (
-    <Box position="relative" w={boxWidth} h={boxHeight}>
-        <Image
-            src={src}
-            alt={alt}
-            fill
-            style={{ objectFit: 'contain' }}
-        />
-    </Box>
-);
 
 interface PartnersSectionProps {
     data: CooperationPartners | null;
@@ -67,13 +47,21 @@ export const PartnersSection = ({ data }: PartnersSectionProps) => {
                             if (partner.size === 'large') { width = 200; height = 150; }
 
                             return (
-                                <Logo
+                                <Link
+                                    href={partner.url}
                                     key={partner._key || index}
-                                    src={imageUrl}
-                                    alt={partner.name || 'Partner logo'}
-                                    boxWidth={width}
-                                    boxHeight={height}
-                                />
+                                    _hover={{
+                                        transform: 'scale(1.05)',
+                                        transition: 'transform 0.3s ease-in-out',
+                                    }}
+                                >
+                                    <Image
+                                        src={imageUrl}
+                                        alt={partner.name || 'Partner logo'}
+                                        width={width}
+                                        height={height}
+                                    />
+                                </Link>
                             );
                         })}
                     </Flex>
@@ -88,14 +76,14 @@ export const PartnersSection = ({ data }: PartnersSectionProps) => {
                         color="black"
                         pb={2}
                         mb={4}
-                        fontSize="1.5rem"
+                        fontSize="2rem"
                     >
                         Søsterforeninger
                         <Box
                             display="block"
                             w="80px"
                             h="3px"
-                            bg="var(--color-secondary)"
+                            bg="var(--color-primary)"
                             mx="auto"
                             mt={2}
                             borderRadius="2px"
@@ -106,13 +94,22 @@ export const PartnersSection = ({ data }: PartnersSectionProps) => {
                             if (!org.logo) return null;
                             const imageUrl = urlFor(org.logo).url();
                             return (
-                                <Logo
+                                <Link
+                                    href={org.url}
                                     key={org._key || index}
-                                    src={imageUrl}
-                                    alt={org.name || 'Sister org logo'}
-                                    boxWidth={200}
-                                    boxHeight={150}
-                                />
+                                    _hover={{
+                                        transform: 'scale(1.05)',
+                                        transition: 'transform 0.3s ease-in-out',
+                                    }}
+                                >
+                                    <Image
+                                        src={imageUrl}
+                                        alt={org.name || 'Sister org logo'}
+                                        width={200}
+                                        height={150}
+
+                                    />
+                                </Link>
                             );
                         })}
                     </Flex>

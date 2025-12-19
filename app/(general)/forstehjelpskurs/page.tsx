@@ -48,7 +48,7 @@ export default function Forstehjelpskurs() {
           mt={6}
         >
           <Link
-            href="/book-kurs"
+            href="/forstehjelpskurs/book-kurs"
             _hover={{ textDecoration: 'none' }}
           >
             <Button

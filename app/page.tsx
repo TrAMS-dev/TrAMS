@@ -135,7 +135,7 @@ export default async function Home() {
             </Link>
 
             {/* Card 2: Book Kurs */}
-            <Link href="/book-kurs" style={{ textDecoration: 'none' }}>
+            <Link href="/forstehjelpskurs/book-kurs" style={{ textDecoration: 'none' }}>
               <Button
                 height="auto"
                 w="280px"

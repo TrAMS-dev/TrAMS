@@ -161,13 +161,17 @@ export default async function OmOss() {
                         </ChakraLink>
                         .
                     </Text>
-                    <Link href="/trams-i-media">
+                    <Link href="/trams-i-media" alignItems="center">
                         <Button
                             bg="var(--color-secondary)"
                             color="black"
                             mt={4}
                             _hover={{ bg: 'var(--color-alternate)' }}
                             whiteSpace="normal"
+                            h="auto"
+                            py={4}
+                            px={6}
+                            w="100%"
                         >
                             Ønsker du å vite mer om hva vi har gjort? Trykk for å se oss i media
                         </Button>

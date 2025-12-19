@@ -32,8 +32,7 @@ export default function Navbar({ transparent = false }: NavbarProps) {
 
   const navLinks = [
     { href: '/om-oss', label: 'Om oss' },
-    { href: '/forstehjelpskurs', label: 'Våre tilbud' },
-    { href: '/book-kurs', label: 'Book kurs' },
+    { href: '/forstehjelpskurs', label: 'Førstehjelpskurs' },
     { href: '/for-medisinstudenter', label: 'For medisinstudenter' },
     { href: '/instruktorer', label: 'For instruktører' },
     { href: '/arrangementer', label: 'Arrangementer' },
