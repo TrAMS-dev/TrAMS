@@ -7,12 +7,16 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "typegen": "sanity schema extract --enforce-required-fields --path=sanity/extract.json && sanity typegen generate"
+    "typegen": "sanity schema extract --enforce-required-fields --path=sanity/extract.json && sanity typegen generate && supabase gen types typescript --project-id xbelxtmgtotwbikjfrth > types/supabase.ts"
   },
   "dependencies": {
     "@ark-ui/react": "^5.29.1",
     "@chakra-ui/react": "^3.30.0",
     "@emotion/react": "^11.14.0",
+    "@fullcalendar/core": "^6.1.19",
+    "@fullcalendar/daygrid": "^6.1.19",
+    "@fullcalendar/interaction": "^6.1.19",
+    "@fullcalendar/react": "^6.1.19",
     "@portabletext/react": "^3.0.10",
     "@sanity/client": "^7.13.1",
     "@sanity/export": "4.0.0",
@@ -30,7 +34,8 @@
     "react": "^19.2.1",
     "react-dom": "^19.2.1",
     "sanity": "4.18.0",
-    "styled-components": "^6.1.19"
+    "styled-components": "^6.1.19",
+    "supabase": "^2.67.3"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.17",

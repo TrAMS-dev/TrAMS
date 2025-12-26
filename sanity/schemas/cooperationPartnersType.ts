@@ -82,4 +82,15 @@ export const cooperationPartnersType = defineType({
             ],
         }),
     ],
+    preview: {
+        select: {
+            partners: 'partners',
+            sisterOrganizations: 'sisterOrganizations',
+        },
+        prepare(selection) {
+            return {
+                title: 'Samarbeidspartnere og søsterforeninger',
+            }
+        },
+    },
 })
