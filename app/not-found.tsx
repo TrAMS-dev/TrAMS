@@ -1,3 +1,5 @@
+'use client';
+
 import NextLink from 'next/link';
 import { Box, HStack, Button, Link as ChakraLink } from '@chakra-ui/react';
 import { PageHeading, CenteredText } from '../components/Typography';

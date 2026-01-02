@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Box, Flex, Heading, Text, Button, Stack, Container } from '@chakra-ui/react';
+import { Box, Flex, Heading, Text, Button, Stack, Link as ChakraLink } from '@chakra-ui/react';
 import Navbar from '@/components/Navbar';
 import { HeartPulse, Calendar, Users } from 'lucide-react';
 import { createClient } from '@/utils/supabase/server';
@@ -186,6 +186,24 @@ export default async function Home() {
           </Stack>
         </Flex >
       </Flex >
-    </Box >
+
+      <ChakraLink
+        href="/admin"
+        position="absolute"
+        bottom={4}
+        left="50%"
+        transform="translateX(-50%)"
+        color="gray.500"
+        textDecoration="none"
+        _hover={{ color: 'var(--color-primary)', opacity: 1 }}
+        fontSize="0.7rem"
+        display="inline-block"
+        opacity={0.2}
+        zIndex={20}
+      >
+        Adminside
+      </ChakraLink>
+
+    </Box>
   );
 }

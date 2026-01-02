@@ -1,20 +1,36 @@
 'use client'
 
-import { useState } from 'react'
-import { Box, Heading, Input, Button, Stack, Center, Field } from '@chakra-ui/react'
+import { useState, useEffect } from 'react'
+import { Box, Heading, Input, Button, Stack, Center, Field, Link, Alert, Spinner } from '@chakra-ui/react'
 import { createClient } from '@/utils/supabase/client'
 import { useRouter } from 'next/navigation'
+import { useAuth } from '@/hooks/useAuth'
 
 export default function LoginPage() {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
-    const [isLoading, setIsLoading] = useState(false)
+    const [error, setError] = useState<string | null>(null)
+    const [isSubmitting, setIsSubmitting] = useState(false)
+    const { isAuthenticated, isApproved, isLoading, refresh } = useAuth()
     const router = useRouter()
     const supabase = createClient()
 
+    // Handle redirect after authentication state changes
+    useEffect(() => {
+        if (!isLoading && isAuthenticated) {
+            if (isApproved) {
+                router.push('/admin')
+            } else {
+                // Show error but don't redirect - user is logged in but not approved
+                setError('Kontoen din er ikke godkjent av administrator ennå.')
+            }
+        }
+    }, [isAuthenticated, isApproved, isLoading, router])
+
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault()
-        setIsLoading(true)
+        setError(null)
+        setIsSubmitting(true)
 
         try {
             const { error } = await supabase.auth.signInWithPassword({
@@ -26,14 +42,32 @@ export default function LoginPage() {
                 throw error
             }
 
-            router.push('/admin')
-            router.refresh()
+            // Wait for useAuth to update with the new session
+            // The useEffect above will handle the redirect
+            await refresh()
         } catch (error) {
             console.error('Login error:', error)
-            alert(error instanceof Error ? error.message : 'Login failed')
-        } finally {
-            setIsLoading(false)
+            setError(error instanceof Error ? error.message : 'Innlogging feilet')
+            setIsSubmitting(false)
         }
+    }
+
+    // Show spinner while checking auth or while successfully logging in
+    if (isLoading || (isSubmitting && !error)) {
+        return (
+            <Center minH="80vh" bg="gray.50">
+                <Spinner size="xl" />
+            </Center>
+        )
+    }
+
+    // If already authenticated and approved, show spinner while redirecting
+    if (isAuthenticated && isApproved) {
+        return (
+            <Center minH="80vh" bg="gray.50">
+                <Spinner size="xl" />
+            </Center>
+        )
     }
 
     return (
@@ -52,6 +86,12 @@ export default function LoginPage() {
 
                 <form onSubmit={handleLogin}>
                     <Stack gap={4}>
+                        {error && (
+                            <Alert.Root status="error">
+                                <Alert.Indicator />
+                                <Alert.Title>{error}</Alert.Title>
+                            </Alert.Root>
+                        )}
                         <Field.Root>
                             <Field.Label>E-post</Field.Label>
                             <Input
@@ -76,7 +116,7 @@ export default function LoginPage() {
 
                         <Button
                             type="submit"
-                            loading={isLoading}
+                            loading={isSubmitting}
                             bg="var(--color-primary)"
                             color="white"
                             width="full"
@@ -84,9 +124,16 @@ export default function LoginPage() {
                         >
                             Logg inn
                         </Button>
+
+                        <Center>
+                            <Link href="/admin/register" color="var(--color-primary)" fontSize="sm">
+                                Registrer ny bruker
+                            </Link>
+                        </Center>
                     </Stack>
                 </form>
             </Box>
         </Center>
     )
 }
+

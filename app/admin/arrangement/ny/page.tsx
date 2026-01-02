@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import { Box, Heading, Stack, Input, Textarea, Button, Field } from '@chakra-ui/react'
 import { useRouter } from 'next/navigation'
+import { ImageUploader } from '@/components/admin/ImageUploader'
+import { useAuth } from '@/hooks/useAuth'
 
 interface EventFormData {
     title: string
@@ -18,6 +20,7 @@ interface EventFormData {
 
 export default function AdminCreateEventPage() {
     const router = useRouter()
+    const { user } = useAuth()
     const [formData, setFormData] = useState<EventFormData>({
         title: '',
         description: '',
@@ -40,6 +43,12 @@ export default function AdminCreateEventPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
+
+        if (!user) {
+            alert('Du må være logget inn for å opprette et arrangement')
+            return
+        }
+
         setIsSubmitting(true)
 
         try {
@@ -51,6 +60,7 @@ export default function AdminCreateEventPage() {
                 body: JSON.stringify({
                     ...formData,
                     max_attendees: formData.max_attendees ? parseInt(formData.max_attendees) : null,
+                    author: user.id
                 }),
             })
 
@@ -139,14 +149,11 @@ export default function AdminCreateEventPage() {
                     </Field.Root>
 
                     <Field.Root>
-                        <Field.Label>Bilde-URL</Field.Label>
-                        <Field.HelperText>Lenke til et bilde som representerer arrangementet</Field.HelperText>
-                        <Input
-                            name="image"
-                            type="url"
+                        <Field.Label>Bilde</Field.Label>
+                        <Field.HelperText>Last opp et bilde som representerer arrangementet</Field.HelperText>
+                        <ImageUploader
                             value={formData.image}
-                            onChange={handleChange}
-                            placeholder="https://example.com/image.jpg"
+                            onChange={(url) => setFormData((prev) => ({ ...prev, image: url }))}
                         />
                     </Field.Root>
 
@@ -157,7 +164,6 @@ export default function AdminCreateEventPage() {
                     >
                         <Field.Root>
                             <Field.Label>Maks antall deltakere</Field.Label>
-                            <Field.HelperText>La stå tomt for ubegrenset</Field.HelperText>
                             <Input
                                 name="max_attendees"
                                 type="number"
@@ -166,6 +172,8 @@ export default function AdminCreateEventPage() {
                                 onChange={handleChange}
                                 placeholder="F.eks. 50"
                             />
+                            <Field.HelperText>La stå tomt for ubegrenset</Field.HelperText>
+
                         </Field.Root>
 
                         <Field.Root>
@@ -179,17 +187,6 @@ export default function AdminCreateEventPage() {
                         </Field.Root>
                     </Box>
 
-                    <Field.Root>
-                        <Field.Label>Arrangør</Field.Label>
-                        <Field.HelperText>Hvem arrangerer dette?</Field.HelperText>
-                        <Input
-                            name="author"
-                            value={formData.author}
-                            onChange={handleChange}
-                            placeholder="F.eks. TrAMS Styret"
-                        />
-                    </Field.Root>
-
                     <Box
                         display="flex"
                         justifyContent="flex-end"
@@ -201,7 +198,7 @@ export default function AdminCreateEventPage() {
                         <Button
                             type="button"
                             variant="outline"
-                            onClick={() => router.push('/admin')}
+                            onClick={() => [router.push('/admin'),]}
                             disabled={isSubmitting}
                         >
                             Avbryt

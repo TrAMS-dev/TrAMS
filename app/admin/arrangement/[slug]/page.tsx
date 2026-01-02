@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { Box, Heading, Stack, Input, Textarea, Button, Field, Spinner, Flex } from '@chakra-ui/react'
 import { useRouter, useParams } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
+import { ImageUploader } from '@/components/admin/ImageUploader'
 
 interface EventFormData {
     title: string
@@ -170,12 +171,11 @@ export default function AdminEditEventPage() {
                     </Field.Root>
 
                     <Field.Root>
-                        <Field.Label>Bilde-URL</Field.Label>
-                        <Input
-                            name="image"
-                            type="url"
+                        <Field.Label>Bilde</Field.Label>
+                        <Field.HelperText>Last opp et bilde som representerer arrangementet</Field.HelperText>
+                        <ImageUploader
                             value={formData.image}
-                            onChange={handleChange}
+                            onChange={(url) => setFormData((prev) => (prev ? { ...prev, image: url } : null))}
                         />
                     </Field.Root>
 
@@ -206,14 +206,7 @@ export default function AdminEditEventPage() {
                         </Field.Root>
                     </Box>
 
-                    <Field.Root>
-                        <Field.Label>Arrangør</Field.Label>
-                        <Input
-                            name="author"
-                            value={formData.author}
-                            onChange={handleChange}
-                        />
-                    </Field.Root>
+
 
                     <Box
                         display="flex"
