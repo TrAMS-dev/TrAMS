@@ -4,6 +4,7 @@ import "./globals.css";
 import { Providers } from "./providers";
 import { Analytics } from "@vercel/analytics/next"
 import { SpeedInsights } from "@vercel/speed-insights/next"
+import { Toaster } from "@/components/ui/toaster"
 
 const nunitoSans = Nunito_Sans({
   variable: "--font-nunito-sans",
@@ -36,6 +37,7 @@ export default function RootLayout({
     <html lang="no">
       <body className={`${nunitoSans.variable} antialiased`}>
         <Providers>
+          <Toaster />
           {children}
           <Analytics />
           <SpeedInsights />

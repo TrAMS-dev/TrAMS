@@ -6,8 +6,11 @@ import {
     Input,
     Textarea,
     Button,
+    NativeSelect,
     Field,
 } from '@chakra-ui/react'
+import { toaster } from "@/components/ui/toaster"
+import { activeYears } from '@/utils/functions/activeYears'
 
 interface EventSignupDialogProps {
     open: boolean
@@ -68,7 +71,12 @@ export default function EventSignupDialog({
                 throw new Error(data.error || 'Failed to sign up')
             }
 
-            alert('Påmelding vellykket! Du er nå påmeldt ' + eventTitle)
+            toaster.create({
+                title: 'Påmelding vellykket!',
+                type: 'success',
+                description: 'Du er nå påmeldt ' + eventTitle,
+                duration: 5000,
+            })
 
             // Reset form
             setFormData({
@@ -81,7 +89,12 @@ export default function EventSignupDialog({
             onSuccess?.()
             onClose()
         } catch (error) {
-            alert('Påmelding feilet: ' + (error instanceof Error ? error.message : 'Noe gikk galt'))
+            toaster.create({
+                title: 'Påmelding feilet!',
+                type: 'error',
+                description: 'Noe gikk galt',
+                duration: 5000,
+            })
         } finally {
             setIsSubmitting(false)
         }
@@ -99,18 +112,17 @@ export default function EventSignupDialog({
 
                     <form onSubmit={handleSubmit}>
                         <Dialog.Body display="flex" flexDirection="column" gap={4}>
-                            <Field.Root>
+                            <Field.Root required>
                                 <Field.Label>Navn *</Field.Label>
                                 <Input
                                     name="name"
                                     value={formData.name}
                                     onChange={handleChange}
                                     placeholder="Ola Nordmann"
-                                    required
                                 />
                             </Field.Root>
 
-                            <Field.Root>
+                            <Field.Root required>
                                 <Field.Label>E-post *</Field.Label>
                                 <Input
                                     name="email"
@@ -118,19 +130,32 @@ export default function EventSignupDialog({
                                     value={formData.email}
                                     onChange={handleChange}
                                     placeholder="ola.nordmann@ntnu.no"
-                                    required
                                 />
                             </Field.Root>
 
-                            <Field.Root>
+                            <Field.Root required>
                                 <Field.Label>Kull *</Field.Label>
-                                <Input
-                                    name="kull"
-                                    value={formData.kull}
-                                    onChange={handleChange}
-                                    placeholder="2023"
-                                    required
-                                />
+
+                                <NativeSelect.Root>
+                                    <NativeSelect.Field
+                                        name="kull"
+                                        value={formData.kull}
+                                        onChange={(e) =>
+                                            setFormData((prev) => ({ ...prev, kull: e.target.value }))
+                                        }
+                                    >
+                                        <option value="" disabled>
+                                            Velg kull
+                                        </option>
+                                        {activeYears().map((year) => (
+                                            <option key={year} value={year}>
+                                                {year}
+                                            </option>
+                                        ))}
+                                    </NativeSelect.Field>
+
+                                    <NativeSelect.Indicator />
+                                </NativeSelect.Root>
                             </Field.Root>
 
                             <Field.Root>

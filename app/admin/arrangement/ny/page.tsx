@@ -5,6 +5,7 @@ import { Box, Heading, Stack, Input, Textarea, Button, Field } from '@chakra-ui/
 import { useRouter } from 'next/navigation'
 import { ImageUploader } from '@/components/admin/ImageUploader'
 import { useAuth } from '@/hooks/useAuth'
+import { toaster } from '@/components/ui/toaster'
 
 interface EventFormData {
     title: string
@@ -45,7 +46,11 @@ export default function AdminCreateEventPage() {
         e.preventDefault()
 
         if (!user) {
-            alert('Du må være logget inn for å opprette et arrangement')
+            toaster.create({
+                title: 'Du må være logget inn for å opprette et arrangement',
+                type: 'error',
+                duration: 5000,
+            })
             return
         }
 
@@ -70,13 +75,21 @@ export default function AdminCreateEventPage() {
                 throw new Error(data.error || 'Failed to create event')
             }
 
-            alert('Arrangement opprettet!')
+            toaster.create({
+                title: 'Arrangement opprettet!',
+                type: 'success',
+                duration: 5000,
+            })
 
             // Navigate to the dashboard
             router.push('/admin')
             router.refresh()
         } catch (error) {
-            alert('Kunne ikke opprette arrangement: ' + (error instanceof Error ? error.message : 'Noe gikk galt'))
+            toaster.create({
+                title: 'Kunne ikke opprette arrangement',
+                type: 'error',
+                duration: 5000,
+            })
             setIsSubmitting(false)
         }
     }

@@ -5,6 +5,7 @@ import { Box, Heading, Stack, Input, Textarea, Button, Field, Spinner, Flex } fr
 import { useRouter, useParams } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
 import { ImageUploader } from '@/components/admin/ImageUploader'
+import { toaster } from '@/components/ui/toaster'
 
 interface EventFormData {
     title: string
@@ -38,7 +39,11 @@ export default function AdminEditEventPage() {
                 .single()
 
             if (error || !data) {
-                alert('Fant ikke arrangementet')
+                toaster.create({
+                    title: 'Fant ikke arrangementet',
+                    type: 'error',
+                    duration: 5000,
+                })
                 router.push('/admin')
                 return
             }
@@ -94,12 +99,20 @@ export default function AdminEditEventPage() {
 
             if (error) throw error
 
-            alert('Arrangement oppdatert!')
+            toaster.create({
+                title: 'Arrangement oppdatert!',
+                type: 'success',
+                duration: 5000,
+            })
 
             router.push('/admin')
             router.refresh()
         } catch (error) {
-            alert('Kunne ikke oppdatere arrangement: ' + (error instanceof Error ? error.message : 'Noe gikk galt'))
+            toaster.create({
+                title: 'Kunne ikke oppdatere arrangement',
+                type: 'error',
+                duration: 5000,
+            })
             setIsSubmitting(false)
         }
     }

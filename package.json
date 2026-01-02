@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@ark-ui/react": "^5.29.1",
+    "@chakra-ui/cli": "^3.30.0",
     "@chakra-ui/react": "^3.30.0",
     "@emotion/react": "^11.14.0",
     "@fullcalendar/core": "^6.1.19",
