@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import FullCalendar from '@fullcalendar/react'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import interactionPlugin from '@fullcalendar/interaction'
@@ -15,6 +15,10 @@ import {
     Badge,
     Image,
     SimpleGrid,
+    Input,
+    NativeSelect,
+    Switch,
+    Field,
 } from '@chakra-ui/react'
 import { Calendar, List, MapPin, Clock, Users } from 'lucide-react'
 import { useRouter } from 'next/navigation'
@@ -24,16 +28,79 @@ interface EventCalendarProps {
 }
 
 export default function EventCalendar({ events }: EventCalendarProps) {
-    const [view, setView] = useState<'calendar' | 'list'>('calendar')
+    const [view, setView] = useState<'calendar' | 'list'>('list')
+    const [searchTerm, setSearchTerm] = useState('')
+    const [locationFilter, setLocationFilter] = useState('all')
+    const [sortBy, setSortBy] = useState<'date-asc' | 'date-desc' | 'title-asc' | 'title-desc'>('date-asc')
+    const [includePast, setIncludePast] = useState(false)
     const router = useRouter()
 
-    // Sort events by date for the list view
-    const sortedEvents = [...events].sort((a, b) => {
-        return new Date(a.start_datetime || '').getTime() - new Date(b.start_datetime || '').getTime()
-    })
+    const locationOptions = useMemo(() => {
+        const options = events
+            .map((event) => event.location)
+            .filter((location): location is string => Boolean(location))
+
+        return Array.from(new Set(options)).sort((a, b) => a.localeCompare(b))
+    }, [events])
+
+    const filteredEvents = useMemo(() => {
+        const now = new Date()
+        const query = searchTerm.trim().toLowerCase()
+
+        return events.filter((event) => {
+            const startDate = event.start_datetime ? new Date(event.start_datetime) : null
+            const endDate = event.end_datetime ? new Date(event.end_datetime) : null
+            const comparisonDate = endDate ?? startDate
+            const isPast = comparisonDate ? comparisonDate.getTime() < now.getTime() : false
+
+            if (!includePast && isPast) {
+                return false
+            }
+
+            if (locationFilter !== 'all' && event.location !== locationFilter) {
+                return false
+            }
+
+            if (!query) {
+                return true
+            }
+
+            const haystack = [
+                event.title,
+                event.description,
+                event.location,
+            ]
+                .filter(Boolean)
+                .join(' ')
+                .toLowerCase()
+
+            return haystack.includes(query)
+        })
+    }, [events, includePast, locationFilter, searchTerm])
+
+    const sortedEvents = useMemo(() => {
+        const getEventTime = (event: Tables<'Events'>) => {
+            const dateValue = event.start_datetime ? new Date(event.start_datetime) : null
+            return dateValue ? dateValue.getTime() : null
+        }
+
+        return [...filteredEvents].sort((a, b) => {
+            if (sortBy === 'title-asc' || sortBy === 'title-desc') {
+                const titleA = (a.title || '').localeCompare(b.title || '', 'nb')
+                return sortBy === 'title-asc' ? titleA : -titleA
+            }
+
+            const timeA = getEventTime(a)
+            const timeB = getEventTime(b)
+            const safeA = timeA ?? (sortBy === 'date-asc' ? Number.POSITIVE_INFINITY : Number.NEGATIVE_INFINITY)
+            const safeB = timeB ?? (sortBy === 'date-asc' ? Number.POSITIVE_INFINITY : Number.NEGATIVE_INFINITY)
+
+            return sortBy === 'date-asc' ? safeA - safeB : safeB - safeA
+        })
+    }, [filteredEvents, sortBy])
 
     // Transform Supabase events to FullCalendar format
-    const calendarEvents = events.map(event => ({
+    const calendarEvents = filteredEvents.map(event => ({
         id: event.id.toString(),
         title: event.title || 'Untitled Event',
         start: event.start_datetime || undefined,
@@ -75,6 +142,65 @@ export default function EventCalendar({ events }: EventCalendarProps) {
                 </HStack>
             </Flex>
 
+            {view === 'list' && (
+                <SimpleGrid columns={{ base: 1, md: 4 }} gap={4} mb={6}>
+                    <Field.Root>
+                        <Field.Label fontSize="sm" color="gray.600">Søk</Field.Label>
+                        <Input
+                            placeholder="Søk i arrangementer"
+                            value={searchTerm}
+                            onChange={(event) => setSearchTerm(event.target.value)}
+                        />
+                    </Field.Root>
+                    <Field.Root>
+                        <Field.Label fontSize="sm" color="gray.600">Sted</Field.Label>
+                        <NativeSelect.Root>
+                            <NativeSelect.Field
+                                value={locationFilter}
+                                onChange={(event) => setLocationFilter(event.target.value)}
+                            >
+                                <option value="all">Alle steder</option>
+                                {locationOptions.map((location) => (
+                                    <option key={location} value={location}>
+                                        {location}
+                                    </option>
+                                ))}
+                            </NativeSelect.Field>
+                            <NativeSelect.Indicator />
+                        </NativeSelect.Root>
+                    </Field.Root>
+                    <Field.Root>
+                        <Field.Label fontSize="sm" color="gray.600">Sorter</Field.Label>
+                        <NativeSelect.Root>
+                            <NativeSelect.Field
+                                value={sortBy}
+                                onChange={(event) => setSortBy(event.target.value as typeof sortBy)}
+                            >
+                                <option value="date-asc">Dato (stigende)</option>
+                                <option value="date-desc">Dato (synkende)</option>
+                                <option value="title-asc">Tittel (A-Å)</option>
+                                <option value="title-desc">Tittel (Å-A)</option>
+                            </NativeSelect.Field>
+                            <NativeSelect.Indicator />
+                        </NativeSelect.Root>
+                    </Field.Root>
+                    <HStack gap={3} pt={{ base: 2, md: 6 }}>
+                        <Switch.Root
+                            checked={includePast}
+                            onCheckedChange={(details: { checked: boolean }) => setIncludePast(details.checked)}
+                        >
+                            <Switch.HiddenInput />
+                            <Switch.Control>
+                                <Switch.Thumb />
+                            </Switch.Control>
+                        </Switch.Root>
+                        <Text fontSize="sm" color="gray.600">
+                            Vis tidligere
+                        </Text>
+                    </HStack>
+                </SimpleGrid>
+            )}
+
             {view === 'calendar' ? (
                 <Box
                     bg="white"
@@ -102,6 +228,12 @@ export default function EventCalendar({ events }: EventCalendarProps) {
                         height="auto"
                         eventColor="#3182ce"
                         eventDisplay="block"
+                        displayEventTime={true}
+                        eventTimeFormat={{
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            hour12: false
+                        }}
                     />
                 </Box>
             ) : (
