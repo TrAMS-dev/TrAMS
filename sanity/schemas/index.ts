@@ -9,7 +9,8 @@ import { firstAidInfoType } from './firstAidInfoType'
 import { akuttCallingType } from './akuttCallingType'
 import { markorPageType } from './markorPageType'
 import { cooperationPartnersType } from './cooperationPartnersType'
+import { firstAidCoursePageType } from './firstAidCoursePageType'
 
-export const schemaTypes = [boardMemberType, carouselSlideType, mediaItemType, courseOfferingType, committeeType, vedtekterType, instruktorLinkType, firstAidInfoType, akuttCallingType, markorPageType, cooperationPartnersType]
+export const schemaTypes = [boardMemberType, carouselSlideType, mediaItemType, courseOfferingType, committeeType, vedtekterType, instruktorLinkType, firstAidInfoType, akuttCallingType, markorPageType, cooperationPartnersType, firstAidCoursePageType]
 
-export const SingletonTypes = ['vedtekter', 'firstAidInfo', 'akuttCalling', 'markorPage', 'cooperationPartners']
+export const SingletonTypes = ['vedtekter', 'firstAidInfo', 'akuttCalling', 'markorPage', 'cooperationPartners', 'firstAidCoursePage']
