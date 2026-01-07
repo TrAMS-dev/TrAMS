@@ -48,7 +48,7 @@ export default function Navbar({ transparent = false }: NavbarProps) {
   const textColor = transparent ? 'white' : 'var(--color-text)';
   const hoverColor = transparent ? 'gray.200' : 'var(--color-primary)';
   const activeColor = transparent ? 'white' : 'var(--color-primary)';
-  const logoSrc = transparent ? '/assets/Logo_white.png' : '/assets/Logo.png';
+  const logoSrc = transparent ? '/assets/Logo_white_small.png' : '/assets/Logo.png';
 
   return (
     <Box
@@ -79,9 +79,6 @@ export default function Navbar({ transparent = false }: NavbarProps) {
             height={50}
             className="h-[50px] w-auto"
           />
-          <Box as="span" fontWeight={700} fontSize="1.1rem" color={textColor}>
-            TrAMS
-          </Box>
         </Link>
 
         {/* Desktop Navigation */}
