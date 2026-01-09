@@ -13,6 +13,32 @@
  */
 
 // Source: schema.json
+export type BookKursPage = {
+  _id: string;
+  _type: "bookKursPage";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  step1Content: Array<{
+    children?: Array<{
+      marks?: Array<string>;
+      text?: string;
+      _type: "span";
+      _key: string;
+    }>;
+    style?: "normal" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "blockquote";
+    listItem?: "bullet" | "number";
+    markDefs?: Array<{
+      href?: string;
+      _type: "link";
+      _key: string;
+    }>;
+    level?: number;
+    _type: "block";
+    _key: string;
+  }>;
+};
+
 export type FirstAidCoursePage = {
   _id: string;
   _type: "firstAidCoursePage";
@@ -611,7 +637,7 @@ export type Geopoint = {
   alt?: number;
 };
 
-export type AllSanitySchemaTypes = FirstAidCoursePage | SanityImageCrop | SanityImageHotspot | CooperationPartners | MarkorPage | AkuttCalling | FirstAidInfo | InstruktorLink | Vedtekter | Committee | Slug | CourseOffering | MediaItem | CarouselSlide | BoardMember | SanityImagePaletteSwatch | SanityImagePalette | SanityImageDimensions | SanityImageMetadata | SanityFileAsset | SanityAssetSourceData | SanityImageAsset | Geopoint;
+export type AllSanitySchemaTypes = BookKursPage | FirstAidCoursePage | SanityImageCrop | SanityImageHotspot | CooperationPartners | MarkorPage | AkuttCalling | FirstAidInfo | InstruktorLink | Vedtekter | Committee | Slug | CourseOffering | MediaItem | CarouselSlide | BoardMember | SanityImagePaletteSwatch | SanityImagePalette | SanityImageDimensions | SanityImageMetadata | SanityFileAsset | SanityAssetSourceData | SanityImageAsset | Geopoint;
 export declare const internalGroqTypeReferenceTo: unique symbol;
 // Source: sanity/lib/queries.ts
 // Variable: BOARD_MEMBERS_QUERY
@@ -1247,6 +1273,29 @@ export type FIRST_AID_COURSE_PAGE_QUERYResult = {
     footerNote: string | null;
   }> | null;
 } | null;
+// Variable: BOOK_KURS_PAGE_QUERY
+// Query: *[_type == "bookKursPage"][0] {  _id,  step1Content}
+export type BOOK_KURS_PAGE_QUERYResult = {
+  _id: string;
+  step1Content: Array<{
+    children?: Array<{
+      marks?: Array<string>;
+      text?: string;
+      _type: "span";
+      _key: string;
+    }>;
+    style?: "blockquote" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "normal";
+    listItem?: "bullet" | "number";
+    markDefs?: Array<{
+      href?: string;
+      _type: "link";
+      _key: string;
+    }>;
+    level?: number;
+    _type: "block";
+    _key: string;
+  }>;
+} | null;
 
 // Query TypeMap
 import "@sanity/client";
@@ -1268,5 +1317,6 @@ declare module "@sanity/client" {
     "*[_type == \"markorPage\"][0] {\n  _id,\n  title,\n  content,\n  gallery,\n  link\n}\n": MARKOR_PAGE_QUERYResult;
     "*[_type == \"cooperationPartners\"][0] {\n  _id,\n  partners[] {\n    _key,\n    name,\n    logo,\n    url,\n    size\n  },\n  sisterOrganizations[] {\n    _key,\n    name,\n    logo,\n    url\n  }\n}": COOPERATION_PARTNERS_QUERYResult;
     "*[_type == \"firstAidCoursePage\"][0] {\n  _id,\n  introText,\n  courses[] {\n    title,\n    description,\n    modules[] {\n      number,\n      title,\n      description,\n      imageSrc,\n      imageAlt,\n      isReversed\n    },\n    footerNote\n  }\n}": FIRST_AID_COURSE_PAGE_QUERYResult;
+    "*[_type == \"bookKursPage\"][0] {\n  _id,\n  step1Content\n}": BOOK_KURS_PAGE_QUERYResult;
   }
 }
