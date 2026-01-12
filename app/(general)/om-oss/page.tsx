@@ -67,7 +67,7 @@ export default async function OmOss() {
                                 <Text mb={4}>
                                     <Box as="span" float="right" ml={4}>
                                         <Image
-                                            src="assets/logo.png"
+                                            src="/assets/Logo.png"
                                             alt="TrAMS logo"
                                             width={100}
                                             height={100}
