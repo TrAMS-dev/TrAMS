@@ -1,6 +1,5 @@
 import Link from 'next/link';
-import { Box, Flex, Image, Text, Button, Stack } from '@chakra-ui/react';
-import { Box, Flex, Heading, Text, Button, Stack, Link as ChakraLink } from '@chakra-ui/react';
+import { Box, Flex, Image, Text, Button, Stack, Link as ChakraLink } from '@chakra-ui/react';
 import Navbar from '@/components/Navbar';
 import { HeartPulse, Calendar, Users } from 'lucide-react';
 import { createClient } from '@/utils/supabase/server';
