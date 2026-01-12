@@ -7,7 +7,7 @@ export default function StyretPage() {
     const router = useRouter();
 
     useEffect(() => {
-        router.replace('/#BoardMembers');
+        router.replace('/om-oss/#BoardMembers');
     }, [router]);
 
     return (

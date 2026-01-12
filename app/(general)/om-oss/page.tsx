@@ -6,6 +6,8 @@ import BoardMemberSection from "@/components/BoardMemberSection";
 import { PartnersSection } from "@/components/CooperationPartners";
 import { COOPERATION_PARTNERS_QUERY } from "@/sanity/lib/queries";
 import { CooperationPartners } from "@/types/sanity.types";
+import HeroImage from "@/components/HeroImage";
+import { getHeroImageUrl } from "@/utils/supabase/storage";
 
 export const metadata = {
     title: "Om Oss | TrAMS",
@@ -31,32 +33,11 @@ export default async function OmOss() {
 
     return (
         <>
-            <Box
-                position="relative"
-                h="25vh"
-                bgImage="url('https://i.imgur.com/rKhkGGT.jpg')"
-                backgroundPosition="center"
-                backgroundSize="cover"
-                backgroundRepeat="no-repeat"
-                color="var(--color-light)"
-                display="flex"
-                flexDirection="column"
-                justifyContent="center"
-                alignItems="center"
-                textAlign="center"
-                p="3rem 1rem"
-                boxShadow="0 10px 20px rgba(0,0,0,0.3)"
-            >
-                <Box position="absolute" inset={0} bg="rgba(0,0,0,0.6)" zIndex={1} />
-                <Box position="relative" zIndex={2} maxW="800px">
-                    <Heading as="h1" fontSize={{ base: '2rem', md: '2.5rem' }} mb={4} fontWeight={700}>
-                        TrAMS
-                    </Heading>
-                    <Text fontSize={{ base: '1rem', md: '1.2rem' }} lineHeight="1.5">
-                        Trondheim Akuttmedisinske Studentforening
-                    </Text>
-                </Box>
-            </Box>
+            <HeroImage
+                imageUrl={getHeroImageUrl("gruppebilde_fly.jpg")}
+                heading="TrAMS"
+                text="Trondheim Akuttmedisinske Studentforening"
+            />
 
             <Container maxW={{ base: "95%", md: "60%" }} p={0} id='about'>
                 <Flex flexDirection="column" align="flex-start" gap={{ base: 4, md: 8 }} maxW="1200px" mx="auto" my={{ base: 4, md: 8 }} bg="var(--color-altBg)" p={{ base: 4, md: 4 }} borderRadius="8px">
@@ -86,7 +67,7 @@ export default async function OmOss() {
                                 <Text mb={4}>
                                     <Box as="span" float="right" ml={4}>
                                         <Image
-                                            src="https://imgur.com/jZBTHbd.png"
+                                            src="/assets/Logo.png"
                                             alt="TrAMS logo"
                                             width={100}
                                             height={100}
@@ -106,7 +87,10 @@ export default async function OmOss() {
                                     - Norsk Akuttmedisinsk Studentforum.
                                 </Text>
                                 <Link
-                                    href="/om-oss/vedtekter">
+                                    href="/om-oss/vedtekter"
+                                    display="block"
+                                    w="100%"
+                                >
                                     <Button
                                         bg="var(--color-primary)"
                                         color="white"
@@ -161,7 +145,7 @@ export default async function OmOss() {
                         </ChakraLink>
                         .
                     </Text>
-                    <Link href="/trams-i-media" alignItems="center">
+                    <Link href="/om-oss/trams-i-media" alignItems="center">
                         <Button
                             bg="var(--color-secondary)"
                             color="black"

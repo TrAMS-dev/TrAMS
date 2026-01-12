@@ -223,3 +223,26 @@ export const COOPERATION_PARTNERS_QUERY = defineQuery(`*[_type == "cooperationPa
     url
   }
 }`)
+
+export const FIRST_AID_COURSE_PAGE_QUERY = defineQuery(`*[_type == "firstAidCoursePage"][0] {
+  _id,
+  introText,
+  courses[] {
+    title,
+    description,
+    modules[] {
+      number,
+      title,
+      description,
+      imageSrc,
+      imageAlt,
+      isReversed
+    },
+    footerNote
+  }
+}`)
+
+export const BOOK_KURS_PAGE_QUERY = defineQuery(`*[_type == "bookKursPage"][0] {
+  _id,
+  step1Content
+}`)

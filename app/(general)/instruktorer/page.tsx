@@ -1,7 +1,9 @@
 import { Box, Flex, Link, Container } from '@chakra-ui/react';
-import { HeroHeading, HeroText, SectionHeading, BodyText, CenteredText } from '@/components/Typography';
+import { SectionHeading, BodyText, CenteredText } from '@/components/Typography';
 import LinkGrid from '@/components/LinkGrid';
-
+import HeroImage from '@/components/HeroImage';
+import { HeroHeading } from '@/components/Typography';
+import { getHeroImageUrl } from '@/utils/supabase/storage';
 
 export const metadata = {
   title: "Instruktører | TrAMS",
@@ -10,34 +12,13 @@ export const metadata = {
 
 export default function Instruktorer() {
 
-
-
   return (
     <>
-      <Box
-        position="relative"
-        h="25vh"
-        bgImage="url('https://i.imgur.com/rKhkGGT.jpg')"
-        backgroundPosition="center"
-        backgroundSize="cover"
-        backgroundRepeat="no-repeat"
-        color="var(--color-light)"
-        display="flex"
-        flexDirection="column"
-        justifyContent="center"
-        alignItems="center"
-        textAlign="center"
-        p="3rem 1rem"
-        boxShadow="0 10px 20px rgba(0,0,0,0.3)"
-      >
-        <Box position="absolute" inset={0} bg="rgba(0,0,0,0.6)" zIndex={1} />
-        <Box position="relative" zIndex={2} maxW="800px">
-          <HeroHeading fontSize="2.2rem">For instruktører</HeroHeading>
-          <HeroText fontSize="1.1rem" lineHeight="1.5">
-            Her kan du lese mer om medlemskap i TrAMS, våre kurs og aktiviteter som er spesielt rettet mot instruktører.
-          </HeroText>
-        </Box>
-      </Box>
+      <HeroImage
+        imageUrl={getHeroImageUrl("gruppebilde.jpg")}
+        heading={<HeroHeading fontSize="2.2rem">For instruktører</HeroHeading>}
+        text="Her kan du lese mer om medlemskap i TrAMS, våre kurs og aktiviteter som er spesielt rettet mot instruktører."
+      />
 
       <Container maxW="1200px" mx="auto" px={4} py={8}>
         <LinkGrid />

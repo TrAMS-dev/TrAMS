@@ -13,6 +13,7 @@ interface BookingRequestBody {
     adresse?: string;
     annet?: string;
     kursbevis?: boolean;
+    engelskKurs?: boolean;
 }
 
 
@@ -33,7 +34,8 @@ export async function POST(req: Request) {
         sted,
         adresse,
         annet,
-        kursbevis
+        kursbevis,
+        engelskKurs
     } = body;
 
     const privateKey = process.env.GOOGLE_PRIVATE_KEY;
@@ -86,7 +88,8 @@ export async function POST(req: Request) {
                     sted ?? "",
                     adresse ?? "",
                     annet ?? "",
-                    kursbevis ? "Ja" : "Nei"
+                    kursbevis ? "Ja" : "Nei",
+                    engelskKurs ? "Ja" : "Nei"
                 ]],
             },
         });

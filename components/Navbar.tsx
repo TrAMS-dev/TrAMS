@@ -48,7 +48,6 @@ export default function Navbar({ transparent = false }: NavbarProps) {
   const textColor = transparent ? 'white' : 'var(--color-text)';
   const hoverColor = transparent ? 'gray.200' : 'var(--color-primary)';
   const activeColor = transparent ? 'white' : 'var(--color-primary)';
-  const logoSrc = transparent ? '/assets/Logo_white.png' : '/assets/Logo.png';
 
   return (
     <Box
@@ -71,17 +70,18 @@ export default function Navbar({ transparent = false }: NavbarProps) {
         py={4}
       >
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-4 no-underline text-inherit">
+        <Link 
+          href="/" 
+          className="flex items-center gap-4 no-underline text-inherit"
+          style={{ visibility: transparent ? 'hidden' : 'visible' }}
+        >
           <Image
-            src={logoSrc}
+            src="/assets/Logo.png"
             alt="TrAMS logo"
             width={50}
             height={50}
             className="h-[50px] w-auto"
           />
-          <Box as="span" fontWeight={700} fontSize="1.1rem" color={textColor}>
-            TrAMS
-          </Box>
         </Link>
 
         {/* Desktop Navigation */}
@@ -161,7 +161,7 @@ export default function Navbar({ transparent = false }: NavbarProps) {
                   </Drawer.CloseTrigger>
                 </Flex>
 
-                {mounted && isMobile && (
+                {((mounted && isMobile) || transparent) && (
                   <VStack align="stretch" gap={2}>
                     {navLinks.map((link) => (
                       <Link

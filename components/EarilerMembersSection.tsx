@@ -64,7 +64,7 @@ export default function EarilerMembersSection() {
                         </Heading>
                         <Flex flexWrap="wrap" gap={8} justify="center">
                             {groupedMembers[period].map((member) => (
-                                <BoardMemberCard key={member._id} member={member} href={`/styret/tidligere-styrer/${member.slug?.current || ''}`} />
+                                <BoardMemberCard key={member._id} member={member} href={`/om-oss/styret/tidligere-styrer/${member.slug?.current || ''}`} />
                             ))}
                         </Flex>
                     </Box>

@@ -1,56 +1,48 @@
-import { Box, Flex, Text, Link, Container, VStack, SimpleGrid, Button } from '@chakra-ui/react';
+import { Box, Flex, Text, Link, Container, VStack, SimpleGrid, Button, Spinner, Center } from '@chakra-ui/react';
 import Image from 'next/image';
 import { SectionHeading, SubsectionHeading } from '@/components/Typography';
-import { Heading } from '@chakra-ui/react';
+import { client } from '@/sanity/lib/client';
+import { FIRST_AID_COURSE_PAGE_QUERY } from '@/sanity/lib/queries';
+import { FIRST_AID_COURSE_PAGE_QUERYResult } from '@/types/sanity.types';
+import { urlFor } from '@/sanity/lib/image';
+import { SanityImageSource } from "@sanity/image-url/lib/types/types";
+import HeroImage from '@/components/HeroImage';
+import { getHeroImageUrl } from '@/utils/supabase/storage';
+
+
 
 export const metadata = {
   title: "Førstehjelpskurs | TrAMS",
   description: "TrAMS tilbyr flere førstehjelpskurs for bedrifter i Trondheim. Lær livreddende førstehjelp i dag.",
 };
 
-export default function Forstehjelpskurs() {
+export default async function Forstehjelpskurs() {
+  const pageData = await client.fetch<FIRST_AID_COURSE_PAGE_QUERYResult>(FIRST_AID_COURSE_PAGE_QUERY);
+
+  if (!pageData) {
+    return (
+      <Center minH="80vh">
+        <Text fontSize="xl" color="gray.600">Kunne ikke laste inn siden. Vennligst prøv igjen senere.</Text>
+      </Center>
+    );
+  }
+
   return (
     <Box>
-      <Box
-        position="relative"
-        h="25vh"
-        bgImage="url('https://i.imgur.com/rKhkGGT.jpg')"
-        backgroundPosition="center"
-        backgroundSize="cover"
-        backgroundRepeat="no-repeat"
-        color="var(--color-light)"
-        display="flex"
-        flexDirection="column"
-        justifyContent="center"
-        alignItems="center"
-        textAlign="center"
-        p="3rem 1rem"
-        boxShadow="0 10px 20px rgba(0,0,0,0.3)"
-      >
-        <Box position="absolute" inset={0} bg="rgba(0,0,0,0.6)" zIndex={1} />
-        <Box position="relative" zIndex={2} maxW="800px">
-          <Heading as="h1" fontSize={{ base: '2rem', md: '2.5rem' }} mb={4} fontWeight={700}>
-            Førstehjelpskurs
-          </Heading>
-          <Text fontSize={{ base: '1rem', md: '1.2rem' }} lineHeight="1.5">
-            TrAMS tilbyr flere førstehjelpskurs for bedrifter i Trondheim. Lær livreddende førstehjelp i dag.
-          </Text>
-        </Box >
-      </Box>
+      {/* HERO SECTION */}
+      <HeroImage
+        imageUrl={getHeroImageUrl("HLR.jpg")}
+        heading="Førstehjelpskurs"
+        text="TrAMS tilbyr flere førstehjelpskurs for bedrifter i Trondheim. Lær livreddende førstehjelp i dag."
+      />
 
       {/* INTRO TEXT */}
-      < Container maxW="container.md" py={{ base: 8, md: 12 }}>
+      <Container maxW="container.md" py={{ base: 8, md: 12 }}>
         <Text fontSize={{ base: "1.1rem", md: "1.25rem" }} lineHeight="1.8" textAlign="center" color="gray.700">
-          Vi tilbyr to ulike førstehjelpskurs som resulterer i to ulike kursbevis. Kursholderene er to medisinstudenter ved NTNU som har gjennomgått instruktørutdanning gjennom TrAMS og følger et standardisert oppsett. Vi stiller med dukker og hjertestartere til den praktiske delen på alle kurs.
+          {pageData.introText}
         </Text>
-        <Flex
-          justifyContent="center"
-          mt={6}
-        >
-          <Link
-            href="/forstehjelpskurs/book-kurs"
-            _hover={{ textDecoration: 'none' }}
-          >
+        <Flex justifyContent="center" mt={6}>
+          <Link href="/forstehjelpskurs/book-kurs" _hover={{ textDecoration: 'none' }}>
             <Button
               height="auto"
               w="280px"
@@ -69,83 +61,48 @@ export default function Forstehjelpskurs() {
             </Button>
           </Link>
         </Flex>
-      </Container >
+      </Container>
 
+      {/* COURSES */}
+      {pageData.courses?.map((course, courseIndex) => (
+        <Box
+          key={courseIndex}
+          bg={courseIndex % 2 === 0 ? 'gray.50' : 'white'}
+          py={{ base: 12, md: 20 }}
+        >
+          <Container maxW="container.xl">
+            <Box textAlign="center" mb={16}>
+              <SectionHeading mb={6}>{course.title}</SectionHeading>
+              <Text maxW="container.md" mx="auto" fontSize="lg" color="gray.600">
+                {course.description}
+              </Text>
+            </Box>
 
+            <VStack gap={{ base: 8, md: 12 }}>
+              {course.modules?.map((module, moduleIndex) => (
+                <CourseModule
+                  key={moduleIndex}
+                  number={module.number || ''}
+                  title={module.title || ''}
+                  description={module.description || ''}
+                  imageSrc={module.imageSrc}
+                  imageAlt={module.imageAlt || ''}
+                  isReversed={module.isReversed || false}
+                />
+              ))}
+            </VStack>
 
-      {/* STANDARD KURS */}
-      < Box bg="gray.50" py={{ base: 12, md: 20 }}>
-        <Container maxW="container.xl">
-          <Box textAlign="center" mb={16}>
-            <SectionHeading mb={6}>Standard oppsett eksternkurs</SectionHeading>
-            <Text maxW="container.md" mx="auto" fontSize="lg" color="gray.600">
-              Dette kurset er utviklet av TrAMS, med utgangspunkt i NRR sine retningslinjer, og er kvalitetssikret av flere anestesileger ved St.Olavs Hospital. Vi kan derfor holde førstehjelpskurs på en forsvarlig, lærerik og casebasert måte. Dette kurset består av tre deler, og varer i totalt tre timer.
-            </Text>
-          </Box>
-
-          <VStack gap={{ base: 8, md: 12 }}>
-            <CourseModule
-              number="1"
-              title="ABC-drillen"
-              description="Vi forklarer ABC-drillen, og lærer bort hvordan den kan brukes på en god måte. Dette er med et formål om at deltakerne skal kunne falle tilbake på en prioritert fremgangsmåte der de mest fatale/kritiske tilstandene behandles først. Instruktørene går blant annet gjennom hvordan man gir en fri luftvei, legger i sideleie, stopper blødninger og hvilke andre tiltak som er viktig å tenke på i en akutt førstehjelpssituasjon."
-              imageSrc="https://imgur.com/mr1fEpu.jpg"
-              imageAlt="ABC-drillen"
-            />
-            <CourseModule
-              number="2"
-              title="HLR"
-              description="Etter innføringen av ABC-drillen, går vi gjennom hvordan hjerte-lungeredning gjøres korrekt, slik at kompresjoner og innblåsninger faktisk har effekt. Nøyaktig og effektiv utførelse av HLR og bruk av hjertestarter er to viktige komponenter når det kommer livredning. Vi etterstreber så mye hands-on-øving som mulig, ettersom vi mener dette er den beste måten å lære på."
-              imageSrc="https://imgur.com/TAoKstN.jpg"
-              imageAlt="HLR"
-              isReversed
-            />
-            <CourseModule
-              number="3"
-              title="Casetrening"
-              description="Etter to timer med mye informasjon og veiledning, får man endelig muligheten til å flette alt sammen. Kursholderene vil dele opp gruppen og legge til rette for å simulere realistiske førstehjelpssituasjoner. Nå må gruppene bruke hva de har lært for å kunne håndtere scenarioene på best mulig måte."
-              imageSrc="https://imgur.com/t7jgYaG.jpg"
-              imageAlt="Casetrening"
-            />
-          </VStack>
-
-          <Text mt={12} textAlign="center" color="gray.500" fontStyle="italic">
-            Etter endt kurs, vil alle registrerte deltakere få godkjent kursbevis gjennom TrAMS, dersom det er ønskelig.
-          </Text>
-        </Container>
-      </Box >
-
-      {/* NRR KURS */}
-      < Box py={{ base: 12, md: 20 }}>
-        <Container maxW="container.xl">
-          <Box textAlign="center" mb={16}>
-            <SectionHeading mb={6}>NRR-sertifisert GHLR kurs</SectionHeading>
-            <Text maxW="container.md" mx="auto" fontSize="lg" color="gray.600">
-              Dette er et grunnleggende hjerte-lungeredningskurs utviklet av Norsk Resuscitasjonsråd i samarbeid med Lærdal Medical AS. Kurset følger norske rettingslinjer for førstehjelp og gjenopplivning og fokuserer på praktisk HLR-opplæring for personer uten forkunnskaper innen hjerte-lungeredning.
-            </Text>
-          </Box>
-
-          <VStack gap={{ base: 8, md: 12 }}>
-            <CourseModule
-              number="1"
-              title="E-læring"
-              description="Ved bestilling av dette kurset, må deltakerne betale for, og utføre, et e-læringskurs på forkant av kurset. Denne kostnaden vil være ekskludert fra hva TrAMS fakturerer for selve kurset, og kommer på 60 kr per deltaker."
-              imageSrc="https://imgur.com/mr1fEpu.jpg" // Using same image as placeholder/standard
-              imageAlt="E-læring"
-            />
-            <CourseModule
-              number="2"
-              title="GHLR"
-              description="Kursholderene forklarer og demonstrerer grunnleggende hjerte-lungeredning, og man vil få et NRR-kursbevis etter at kurset er holdt. Kurset i seg selv vil vare 90 minutter."
-              imageSrc="https://imgur.com/TAoKstN.jpg"
-              imageAlt="GHLR"
-              isReversed
-            />
-          </VStack>
-        </Container>
-      </Box >
+            {course.footerNote && (
+              <Text mt={12} textAlign="center" color="gray.500" fontStyle="italic">
+                {course.footerNote}
+              </Text>
+            )}
+          </Container>
+        </Box>
+      ))}
 
       {/* BOTTOM INFO CARDS */}
-      < Box bg="var(--color-antigravity)" py={{ base: 12, md: 20 }} borderTop="1px solid" borderColor="gray.100" >
+      <Box bg="var(--color-antigravity)" py={{ base: 12, md: 20 }} borderTop="1px solid" borderColor="gray.100">
         <Container maxW="container.xl">
           <SimpleGrid columns={{ base: 1, md: 2 }} gap={8}>
             {/* OTHER COURSES */}
@@ -190,8 +147,8 @@ export default function Forstehjelpskurs() {
             </InfoCard>
           </SimpleGrid>
         </Container>
-      </Box >
-    </Box >
+      </Box>
+    </Box>
   );
 }
 
@@ -199,7 +156,7 @@ export default function Forstehjelpskurs() {
 // SUB-COMPONENTS
 // ---------------------------
 
-function CourseModule({ number, title, description, imageSrc, imageAlt, isReversed = false }: { number: string, title: string, description: string, imageSrc: string, imageAlt: string, isReversed?: boolean }) {
+function CourseModule({ number, title, description, imageSrc, imageAlt, isReversed = false }: { number: string, title: string, description: string, imageSrc: SanityImageSource | undefined, imageAlt: string, isReversed?: boolean }) {
   return (
     <Flex
       direction={{ base: "column-reverse", md: isReversed ? "row-reverse" : "row" }}
@@ -237,12 +194,14 @@ function CourseModule({ number, title, description, imageSrc, imageAlt, isRevers
         </Text>
       </Box>
       <Box w={{ base: "100%", md: "400px" }} h={{ base: "250px", md: "300px" }} flexShrink={0} position="relative" borderRadius="xl" overflow="hidden" boxShadow="md">
-        <Image
-          src={imageSrc}
-          alt={imageAlt}
-          fill
-          style={{ objectFit: 'cover' }}
-        />
+        {imageSrc && (
+          <Image
+            src={urlFor(imageSrc).url()}
+            alt={imageAlt}
+            fill
+            style={{ objectFit: 'cover' }}
+          />
+        )}
       </Box>
     </Flex>
   );

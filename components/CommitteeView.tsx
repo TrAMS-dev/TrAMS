@@ -4,8 +4,10 @@ import { Box, Container, Heading, Text, Link as ChakraLink } from '@chakra-ui/re
 import Image from 'next/image';
 import { urlFor } from '@/sanity/lib/image';
 import { PortableText } from 'next-sanity';
-import { portableTextComponents, HeroHeading } from '@/components/Typography';
+import { portableTextComponents } from '@/components/Typography';
 import { Committee } from '@/types/sanity.types';
+import HeroImage from '@/components/HeroImage';
+import { getHeroImageUrl } from '@/utils/supabase/storage';
 
 export default function CommitteeView({ committee }: { committee: Committee | null }) {
     if (!committee) {
@@ -32,7 +34,7 @@ export default function CommitteeView({ committee }: { committee: Committee | nu
 
     const headerImageUrl = committee.headerImage
         ? urlFor(committee.headerImage).width(1920).height(600).url()
-        : 'https://i.imgur.com/521F3ik.jpg';
+        : getHeroImageUrl("gruppebilde.jpg");
 
     const committeeImageUrl = committee.committeeImage
         ? urlFor(committee.committeeImage).width(1200).height(800).url()
@@ -41,27 +43,10 @@ export default function CommitteeView({ committee }: { committee: Committee | nu
     return (
         <>
             {/* Hero Section */}
-            <Box
-                position="relative"
-                h="25vh"
-                bgImage={`url('${headerImageUrl}')`}
-                backgroundPosition="center"
-                backgroundSize="cover"
-                backgroundRepeat="no-repeat"
-                color="var(--color-light)"
-                display="flex"
-                flexDirection="column"
-                justifyContent="center"
-                alignItems="center"
-                textAlign="center"
-                p={{ base: "1.5rem 1rem", md: "3rem 1rem" }}
-                boxShadow="0 10px 20px rgba(0,0,0,0.3)"
-            >
-                <Box position="absolute" inset={0} bg="rgba(0,0,0,0.6)" zIndex={1} />
-                <Box position="relative" zIndex={2} maxW="800px">
-                    <HeroHeading>{committee.name}</HeroHeading>
-                </Box>
-            </Box>
+            <HeroImage
+                imageUrl={headerImageUrl}
+                heading={committee.name}
+            />
 
             {/* Content Section */}
             <Container maxW="1200px" mx="auto" px={4} py={12}>

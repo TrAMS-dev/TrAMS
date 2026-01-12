@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
     Stack,
     Box,
@@ -15,8 +15,20 @@ import {
     Text,
     Alert,
     NativeSelect,
+    Spinner,
+    Center,
 } from '@chakra-ui/react';
+import { PortableText, PortableTextBlock } from 'next-sanity';
+import { client } from '@/sanity/lib/client';
+import { BOOK_KURS_PAGE_QUERY } from '@/sanity/lib/queries';
+import { portableTextComponents } from './Typography';
 import { SubsectionHeading } from './Typography';
+
+// Temporary type definition - will be replaced when typegen is run
+type BookKursPage = {
+    _id: string;
+    step1Content?: PortableTextBlock[];
+};
 
 export default function BookKursForm() {
     const [step, setStep] = useState(1);
@@ -39,7 +51,24 @@ export default function BookKursForm() {
         adresse: '',
         annet: '',
         kursbevis: false,
+        engelskKurs: false,
     });
+
+    const [pageContent, setPageContent] = useState<BookKursPage | null>(null);
+    const [contentLoading, setContentLoading] = useState(true);
+
+    useEffect(() => {
+        client
+            .fetch<BookKursPage>(BOOK_KURS_PAGE_QUERY)
+            .then((data) => {
+                setPageContent(data);
+                setContentLoading(false);
+            })
+            .catch((error) => {
+                console.error('Error fetching booking page content:', error);
+                setContentLoading(false);
+            });
+    }, []);
 
     const [loading, setLoading] = useState(false);
     const [submissionStatus, setSubmissionStatus] = useState<'idle' | 'success' | 'error'>('idle');
@@ -197,29 +226,41 @@ export default function BookKursForm() {
                 {step === 1 && (
                     <Box animation="fade-in 0.3s">
                         <SubsectionHeading fontSize="1.2rem" mb={4}>Priser og Informasjon</SubsectionHeading>
-                        <Stack gap={4}>
-                            <Box p={4} bg="gray.50" borderRadius="md" border="1px dashed" borderColor="gray.300">
-                                <Text fontWeight="bold" mb={2}>Priser:</Text>
-                                <Text><strong>TrAMS standard oppsett eksternkurs</strong>: 4 850 kr</Text>
-
-                                <Text><strong>NRR-sertifisert GHLR kurs</strong>: 5 000 kr</Text>
-                                <Text fontSize="sm" color="gray.500"> prisende er veiledende for 15 deltagere</Text>
-                            </Box>
-
-                            <Alert.Root status="info">
-                                <Alert.Indicator />
-                                <Alert.Title>Avbestilling</Alert.Title>
-                                <Alert.Description>
-                                    Avbestilling må skje senest to uker før oppdraget.
-                                </Alert.Description>
-                            </Alert.Root>
-
-                            <Box fontSize="sm" color="gray.600">
-                                <Text mb={2}>
-                                    Vi gjør oppmerksom på at vi vil kunne lagre informasjonen i bestillingsskjemaet i opptil 2 år etter innsending.
-                                </Text>
-                            </Box>
-                        </Stack>
+                        {contentLoading ? (
+                            <Center minH="200px">
+                                <Spinner size="xl" color="var(--color-primary)" />
+                            </Center>
+                        ) : pageContent?.step1Content ? (
+                            <Stack gap={4}>
+                                <Box p={4} bg="gray.50" borderRadius="md" border="1px dashed" borderColor="gray.300">
+                                    <PortableText
+                                        value={pageContent.step1Content}
+                                        components={portableTextComponents}
+                                    />
+                                </Box>
+                                <Alert.Root status="info">
+                                    <Alert.Title>Avbestilling</Alert.Title>
+                                    <Alert.Description>
+                                        Avbestilling må skje senest to uker før oppdraget.
+                                    </Alert.Description>
+                                </Alert.Root>
+                                <Box fontSize="sm" color="gray.600">
+                                    <Text mb={2}>
+                                        Vi gjør oppmerksom på at vi vil kunne lagre informasjonen i bestillingsskjemaet i opptil 2 år etter innsending.
+                                    </Text>
+                                </Box>
+                            </Stack>
+                        ) : (
+                            <Stack gap={4}>
+                                <Alert.Root status="warning">
+                                    <Alert.Indicator />
+                                    <Alert.Title>Innhold ikke tilgjengelig</Alert.Title>
+                                    <Alert.Description>
+                                        Kunne ikke laste inn innhold. Vennligst prøv igjen senere.
+                                    </Alert.Description>
+                                </Alert.Root>
+                            </Stack>
+                        )}
                     </Box>
                 )}
 
@@ -410,6 +451,17 @@ export default function BookKursForm() {
                                 <Checkbox.HiddenInput />
                                 <Checkbox.Control />
                                 <Checkbox.Label>Vi ønsker kursbevis til deltakerne</Checkbox.Label>
+                            </Checkbox.Root>
+
+                            <Checkbox.Root
+                                name="engelskKurs"
+                                checked={formData.engelskKurs}
+                                onCheckedChange={(details) => setFormData(prev => ({ ...prev, engelskKurs: !!details.checked }))}
+                                mt={2}
+                            >
+                                <Checkbox.HiddenInput />
+                                <Checkbox.Control />
+                                <Checkbox.Label>Kurset skal holdes på engelsk</Checkbox.Label>
                             </Checkbox.Root>
                         </Stack>
                     </Box>
