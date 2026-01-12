@@ -164,7 +164,7 @@ export default async function OmOss() {
                         </ChakraLink>
                         .
                     </Text>
-                    <Link href="/trams-i-media" alignItems="center">
+                    <Link href="/om-oss/trams-i-media" alignItems="center">
                         <Button
                             bg="var(--color-secondary)"
                             color="black"

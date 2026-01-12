@@ -44,11 +44,11 @@ export default function BoardMemberSection() {
                 style={{ scrollSnapType: 'x mandatory' }}
             >
                 {boardMembers.map((member) => (
-                    <BoardMemberCard key={member._id} member={member} href={`/styret/${member.role?.toLowerCase() || ''}`} />
+                    <BoardMemberCard key={member._id} member={member} href={`/om-oss/styret/${member.role?.toLowerCase() || ''}`} />
                 ))}
             </HStack>
             <Box textAlign="center" mb={6}>
-                <Link href="/styret/tidligere-styrer">
+                <Link href="/om-oss/styret/tidligere-styrer">
                     <Text as="span" color="var(--color-primary)" _hover={{ textDecoration: 'underline' }} cursor="pointer">
                         Se tidligere styrer
                     </Text>

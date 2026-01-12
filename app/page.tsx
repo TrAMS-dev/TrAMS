@@ -158,7 +158,7 @@ export default async function Home() {
             </Link>
 
             {/* Card 3: Om Oss */}
-                        <Link href="/for-medisinstudenter" style={{ textDecoration: 'none' }}>
+            <Link href="/for-medisinstudenter" style={{ textDecoration: 'none' }}>
               <Button
                 height="auto"
                 w="280px"
