@@ -177,7 +177,7 @@ export default async function Home() {
               >
                 <Flex direction="column" align="center" gap={3}>
                   <HeartPulse size={32} />
-                  <Text fontSize="xl" fontWeight="bold">Medisinstudenter</Text>
+                  <Text fontSize="xl" fontWeight="bold">For Medisinstudenter</Text>
                   <Text fontSize="sm" opacity={0.8} fontWeight="normal">Se informasjon for medisinstudenter</Text>
                 </Flex>
               </Button>
