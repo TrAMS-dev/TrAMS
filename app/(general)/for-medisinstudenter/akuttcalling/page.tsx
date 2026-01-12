@@ -7,6 +7,8 @@ import { portableTextComponents, HeroHeading } from '@/components/Typography';
 import { urlFor } from '@/sanity/lib/image';
 import Image from 'next/image';
 import { SanityImageSource } from "@sanity/image-url/lib/types/types";
+import HeroImage from '@/components/HeroImage';
+import { getHeroImageUrl } from '@/utils/supabase/storage';
 
 
 export const metadata = {
@@ -31,28 +33,11 @@ export default async function AkuttCallingPage() {
 
     return (
         <>
-            <Box
-                position="relative"
-                h="25vh"
-                bgImage='url("https://i.imgur.com/oc9gbos.png")'
-                backgroundPosition="center"
-                backgroundSize="cover"
-                backgroundRepeat="no-repeat"
-                display="flex"
-                flexDirection="column"
-                justifyContent="center"
-                alignItems="center"
-                textAlign="center"
-                p={{ base: "2rem 1rem", md: "3rem 1rem" }}
-                boxShadow="0 10px 20px rgba(0,0,0,0.3)"
-            >
-                <Box position="absolute" inset={0} bg="rgba(0,0,0,0.6)" zIndex={1} />
-                <Box position="relative" zIndex={2} maxW="800px" color="var(--color-light)">
-                    <HeroHeading fontSize={{ base: "2rem", md: "2.5rem" }}>{data.title.toUpperCase()}</HeroHeading>
-                </Box>
-                <Box h="10px" bg="var(--color-primary)" mx="auto" mt={4} w='70%' zIndex={2} />
-
-            </Box>
+            <HeroImage
+                imageUrl={getHeroImageUrl("ambulanse.png")}
+                heading={<HeroHeading fontSize={{ base: "2rem", md: "2.5rem" }}>{data.title.toUpperCase()}</HeroHeading>}
+                showDecorativeBar={true}
+            />
             <Container maxW="80%" py={12}>
                 <Box
                     textAlign="center"

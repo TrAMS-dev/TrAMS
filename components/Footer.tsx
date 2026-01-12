@@ -21,7 +21,7 @@ export default function Footer() {
         <Box flex="1 1 200px">
           <Flex align="center" gap={4} mb={4}>
             <Image
-              src="https://i.imgur.com/jZBTHbd.png"
+              src="/assets/logo.png"
               alt="TrAMS logo"
               width={60}
               height={60}

@@ -1,7 +1,9 @@
 import { Box, Flex, Link, Container, Text } from '@chakra-ui/react';
-import { HeroHeading, HeroText, PageHeading, SectionHeading, SubsectionHeading, BodyText, CenteredText } from '@/components/Typography';
+import { PageHeading, SectionHeading, SubsectionHeading, BodyText, CenteredText } from '@/components/Typography';
 import CommiteeCards from '@/components/CommiteeCards';
 import CourseCards from '@/components/CourseCards';
+import HeroImage from '@/components/HeroImage';
+import { getHeroImageUrl } from '@/utils/supabase/storage';
 
 export const metadata = {
   title: "For Medisinstudenter | TrAMS",
@@ -12,31 +14,11 @@ export default function ForMedisinstudenter() {
   return (
     <>
       {/* HERO */}
-      <Box
-        position="relative"
-        h="25vh"
-        bgImage="url('https://i.imgur.com/521F3ik.jpg')"
-        backgroundPosition="center"
-        backgroundSize="cover"
-        backgroundRepeat="no-repeat"
-        color="var(--color-light)"
-        display="flex"
-        flexDirection="column"
-        justifyContent="center"
-        alignItems="center"
-        textAlign="center"
-        p={{ base: "1.5rem 1rem", md: "3rem 1rem" }}
-        boxShadow="0 10px 20px rgba(0,0,0,0.3)"
-      >
-        <Box position="absolute" inset={0} bg="rgba(0,0,0,0.6)" zIndex={1} />
-        <Box position="relative" zIndex={2} maxW="800px">
-          <HeroHeading>For Medisinstudenter</HeroHeading>
-          <HeroText>
-            Her kan du lese mer om medlemskap i TrAMS, våre kurs og aktiviteter som er spesielt rettet mot
-            medisinstudenter.
-          </HeroText>
-        </Box>
-      </Box>
+      <HeroImage
+        imageUrl={getHeroImageUrl("gruppebilde_fly.jpg")}
+        heading="For Medisinstudenter"
+        text="Her kan du lese mer om medlemskap i TrAMS, våre kurs og aktiviteter som er spesielt rettet mot medisinstudenter."
+      />
 
       {/* MEMBERSHIP SECTION */}
       <Container maxW="1200px" my={8}>

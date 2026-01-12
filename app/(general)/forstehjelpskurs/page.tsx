@@ -1,12 +1,13 @@
 import { Box, Flex, Text, Link, Container, VStack, SimpleGrid, Button, Spinner, Center } from '@chakra-ui/react';
 import Image from 'next/image';
 import { SectionHeading, SubsectionHeading } from '@/components/Typography';
-import { Heading } from '@chakra-ui/react';
 import { client } from '@/sanity/lib/client';
 import { FIRST_AID_COURSE_PAGE_QUERY } from '@/sanity/lib/queries';
 import { FIRST_AID_COURSE_PAGE_QUERYResult } from '@/types/sanity.types';
 import { urlFor } from '@/sanity/lib/image';
 import { SanityImageSource } from "@sanity/image-url/lib/types/types";
+import HeroImage from '@/components/HeroImage';
+import { getHeroImageUrl } from '@/utils/supabase/storage';
 
 
 
@@ -29,32 +30,11 @@ export default async function Forstehjelpskurs() {
   return (
     <Box>
       {/* HERO SECTION */}
-      <Box
-        position="relative"
-        h="25vh"
-        bgImage="url('https://i.imgur.com/rKhkGGT.jpg')"
-        backgroundPosition="center"
-        backgroundSize="cover"
-        backgroundRepeat="no-repeat"
-        color="var(--color-light)"
-        display="flex"
-        flexDirection="column"
-        justifyContent="center"
-        alignItems="center"
-        textAlign="center"
-        p="3rem 1rem"
-        boxShadow="0 10px 20px rgba(0,0,0,0.3)"
-      >
-        <Box position="absolute" inset={0} bg="rgba(0,0,0,0.6)" zIndex={1} />
-        <Box position="relative" zIndex={2} maxW="800px">
-          <Heading as="h1" fontSize={{ base: '2rem', md: '2.5rem' }} mb={4} fontWeight={700}>
-            Førstehjelpskurs
-          </Heading>
-          <Text fontSize={{ base: '1rem', md: '1.2rem' }} lineHeight="1.5">
-            TrAMS tilbyr flere førstehjelpskurs for bedrifter i Trondheim. Lær livreddende førstehjelp i dag.
-          </Text>
-        </Box>
-      </Box>
+      <HeroImage
+        imageUrl={getHeroImageUrl("HLR.jpg")}
+        heading="Førstehjelpskurs"
+        text="TrAMS tilbyr flere førstehjelpskurs for bedrifter i Trondheim. Lær livreddende førstehjelp i dag."
+      />
 
       {/* INTRO TEXT */}
       <Container maxW="container.md" py={{ base: 8, md: 12 }}>
