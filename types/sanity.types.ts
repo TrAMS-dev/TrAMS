@@ -13,6 +13,130 @@
  */
 
 // Source: schema.json
+export type BookKursPage = {
+  _id: string;
+  _type: "bookKursPage";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  step1Content: Array<{
+    children?: Array<{
+      marks?: Array<string>;
+      text?: string;
+      _type: "span";
+      _key: string;
+    }>;
+    style?: "normal" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "blockquote";
+    listItem?: "bullet" | "number";
+    markDefs?: Array<{
+      href?: string;
+      _type: "link";
+      _key: string;
+    }>;
+    level?: number;
+    _type: "block";
+    _key: string;
+  }>;
+};
+
+export type FirstAidCoursePage = {
+  _id: string;
+  _type: "firstAidCoursePage";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  introText: string;
+  courses?: Array<{
+    title: string;
+    description: string;
+    modules: Array<{
+      number: string;
+      title: string;
+      description: string;
+      imageSrc: {
+        asset?: {
+          _ref: string;
+          _type: "reference";
+          _weak?: boolean;
+          [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+        };
+        media?: unknown;
+        hotspot?: SanityImageHotspot;
+        crop?: SanityImageCrop;
+        _type: "image";
+      };
+      imageAlt: string;
+      isReversed?: boolean;
+      _type: "module";
+      _key: string;
+    }>;
+    footerNote?: string;
+    _type: "course";
+    _key: string;
+  }>;
+};
+
+export type SanityImageCrop = {
+  _type: "sanity.imageCrop";
+  top: number;
+  bottom: number;
+  left: number;
+  right: number;
+};
+
+export type SanityImageHotspot = {
+  _type: "sanity.imageHotspot";
+  x: number;
+  y: number;
+  height: number;
+  width: number;
+};
+
+export type CooperationPartners = {
+  _id: string;
+  _type: "cooperationPartners";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  partners?: Array<{
+    name?: string;
+    logo?: {
+      asset?: {
+        _ref: string;
+        _type: "reference";
+        _weak?: boolean;
+        [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+      };
+      media?: unknown;
+      hotspot?: SanityImageHotspot;
+      crop?: SanityImageCrop;
+      _type: "image";
+    };
+    url?: string;
+    size?: "small" | "medium" | "large";
+    _type: "partner";
+    _key: string;
+  }>;
+  sisterOrganizations?: Array<{
+    name?: string;
+    logo?: {
+      asset?: {
+        _ref: string;
+        _type: "reference";
+        _weak?: boolean;
+        [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+      };
+      media?: unknown;
+      hotspot?: SanityImageHotspot;
+      crop?: SanityImageCrop;
+      _type: "image";
+    };
+    url?: string;
+    _type: "organization";
+    _key: string;
+  }>;
+};
+
 export type MarkorPage = {
   _id: string;
   _type: "markorPage";
@@ -52,22 +176,6 @@ export type MarkorPage = {
     _key: string;
   }>;
   link?: string;
-};
-
-export type SanityImageCrop = {
-  _type: "sanity.imageCrop";
-  top: number;
-  bottom: number;
-  left: number;
-  right: number;
-};
-
-export type SanityImageHotspot = {
-  _type: "sanity.imageHotspot";
-  x: number;
-  y: number;
-  height: number;
-  width: number;
 };
 
 export type AkuttCalling = {
@@ -529,7 +637,7 @@ export type Geopoint = {
   alt?: number;
 };
 
-export type AllSanitySchemaTypes = MarkorPage | SanityImageCrop | SanityImageHotspot | AkuttCalling | FirstAidInfo | InstruktorLink | Vedtekter | Committee | Slug | CourseOffering | MediaItem | CarouselSlide | BoardMember | SanityImagePaletteSwatch | SanityImagePalette | SanityImageDimensions | SanityImageMetadata | SanityFileAsset | SanityAssetSourceData | SanityImageAsset | Geopoint;
+export type AllSanitySchemaTypes = BookKursPage | FirstAidCoursePage | SanityImageCrop | SanityImageHotspot | CooperationPartners | MarkorPage | AkuttCalling | FirstAidInfo | InstruktorLink | Vedtekter | Committee | Slug | CourseOffering | MediaItem | CarouselSlide | BoardMember | SanityImagePaletteSwatch | SanityImagePalette | SanityImageDimensions | SanityImageMetadata | SanityFileAsset | SanityAssetSourceData | SanityImageAsset | Geopoint;
 export declare const internalGroqTypeReferenceTo: unique symbol;
 // Source: sanity/lib/queries.ts
 // Variable: BOARD_MEMBERS_QUERY
@@ -1095,6 +1203,99 @@ export type MARKOR_PAGE_QUERYResult = {
   }> | null;
   link: string | null;
 } | null;
+// Variable: COOPERATION_PARTNERS_QUERY
+// Query: *[_type == "cooperationPartners"][0] {  _id,  partners[] {    _key,    name,    logo,    url,    size  },  sisterOrganizations[] {    _key,    name,    logo,    url  }}
+export type COOPERATION_PARTNERS_QUERYResult = {
+  _id: string;
+  partners: Array<{
+    _key: string;
+    name: string | null;
+    logo: {
+      asset?: {
+        _ref: string;
+        _type: "reference";
+        _weak?: boolean;
+        [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+      };
+      media?: unknown;
+      hotspot?: SanityImageHotspot;
+      crop?: SanityImageCrop;
+      _type: "image";
+    } | null;
+    url: string | null;
+    size: "large" | "medium" | "small" | null;
+  }> | null;
+  sisterOrganizations: Array<{
+    _key: string;
+    name: string | null;
+    logo: {
+      asset?: {
+        _ref: string;
+        _type: "reference";
+        _weak?: boolean;
+        [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+      };
+      media?: unknown;
+      hotspot?: SanityImageHotspot;
+      crop?: SanityImageCrop;
+      _type: "image";
+    } | null;
+    url: string | null;
+  }> | null;
+} | null;
+// Variable: FIRST_AID_COURSE_PAGE_QUERY
+// Query: *[_type == "firstAidCoursePage"][0] {  _id,  introText,  courses[] {    title,    description,    modules[] {      number,      title,      description,      imageSrc,      imageAlt,      isReversed    },    footerNote  }}
+export type FIRST_AID_COURSE_PAGE_QUERYResult = {
+  _id: string;
+  introText: string;
+  courses: Array<{
+    title: string;
+    description: string;
+    modules: Array<{
+      number: string;
+      title: string;
+      description: string;
+      imageSrc: {
+        asset?: {
+          _ref: string;
+          _type: "reference";
+          _weak?: boolean;
+          [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+        };
+        media?: unknown;
+        hotspot?: SanityImageHotspot;
+        crop?: SanityImageCrop;
+        _type: "image";
+      };
+      imageAlt: string;
+      isReversed: boolean | null;
+    }>;
+    footerNote: string | null;
+  }> | null;
+} | null;
+// Variable: BOOK_KURS_PAGE_QUERY
+// Query: *[_type == "bookKursPage"][0] {  _id,  step1Content}
+export type BOOK_KURS_PAGE_QUERYResult = {
+  _id: string;
+  step1Content: Array<{
+    children?: Array<{
+      marks?: Array<string>;
+      text?: string;
+      _type: "span";
+      _key: string;
+    }>;
+    style?: "blockquote" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "normal";
+    listItem?: "bullet" | "number";
+    markDefs?: Array<{
+      href?: string;
+      _type: "link";
+      _key: string;
+    }>;
+    level?: number;
+    _type: "block";
+    _key: string;
+  }>;
+} | null;
 
 // Query TypeMap
 import "@sanity/client";
@@ -1113,6 +1314,9 @@ declare module "@sanity/client" {
     "*[_type == \"firstAidInfo\"][0] {\n  _id,\n  col1,\n  col2\n}": FIRST_AID_INFO_QUERYResult;
     "*[_type == \"instruktorLink\"] | order(rank asc, _createdAt asc) {\n  _id,\n  title,\n  description,\n  link,\n  linkText,\n  rank\n}": INSTRUKT_LINKS_QUERYResult;
     "*[_type == \"akuttCalling\"][0] {\n  _id,\n  title,\n  content,\n  gallery,\n  link\n}": AKUTTKALLING_QUERYResult;
-    "*[_type == \"markorPage\"][0] {\n  _id,\n  title,\n  content,\n  gallery,\n  link\n}": MARKOR_PAGE_QUERYResult;
+    "*[_type == \"markorPage\"][0] {\n  _id,\n  title,\n  content,\n  gallery,\n  link\n}\n": MARKOR_PAGE_QUERYResult;
+    "*[_type == \"cooperationPartners\"][0] {\n  _id,\n  partners[] {\n    _key,\n    name,\n    logo,\n    url,\n    size\n  },\n  sisterOrganizations[] {\n    _key,\n    name,\n    logo,\n    url\n  }\n}": COOPERATION_PARTNERS_QUERYResult;
+    "*[_type == \"firstAidCoursePage\"][0] {\n  _id,\n  introText,\n  courses[] {\n    title,\n    description,\n    modules[] {\n      number,\n      title,\n      description,\n      imageSrc,\n      imageAlt,\n      isReversed\n    },\n    footerNote\n  }\n}": FIRST_AID_COURSE_PAGE_QUERYResult;
+    "*[_type == \"bookKursPage\"][0] {\n  _id,\n  step1Content\n}": BOOK_KURS_PAGE_QUERYResult;
   }
 }

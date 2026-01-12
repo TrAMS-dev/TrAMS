@@ -122,6 +122,28 @@ export function SubsectionHeading({ children, ...props }: SubsectionHeadingProps
     </Heading>
   );
 }
+export function NavbarHeading({ children, ...props }: SubsectionHeadingProps) {
+  return (
+    <Heading
+      as="h4"
+      fontSize="1rem"
+      {...props}
+    >
+      {children}
+    </Heading>
+  );
+}
+export function DrawerHeading({ children, ...props }: SubsectionHeadingProps) {
+  return (
+    <Heading
+      as="h3"
+      fontSize="1.2rem"
+      {...props}
+    >
+      {children}
+    </Heading>
+  );
+}
 
 interface BodyTextProps extends TextProps {
   children: React.ReactNode;

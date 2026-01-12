@@ -1,11 +1,14 @@
-import NextLink from 'next/link';
+import Link from 'next/link';
 import { Box, HStack, Button, Link as ChakraLink } from '@chakra-ui/react';
 import { PageHeading, CenteredText } from '../components/Typography';
+
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 
 export default function NotFound() {
   return (
     <>
-
+      <Navbar />
       <Box as="main" className="container" py={40}>
         <Box maxW="680px" mx="auto" textAlign="center">
 
@@ -16,11 +19,11 @@ export default function NotFound() {
           </CenteredText>
 
           <HStack justify="center" flexWrap="wrap">
-            <ChakraLink as={NextLink} href="/" _hover={{ textDecoration: 'none' }}>
+            <Link href="/" style={{ textDecoration: 'none' }}>
               <Button bg="var(--color-primary)" color="white" _hover={{ opacity: 0.95 }}>
                 Gå til startsiden
               </Button>
-            </ChakraLink>
+            </Link>
 
             <ChakraLink href="mailto:web@trams.no" _hover={{ textDecoration: 'none' }}>
               <Button variant="ghost" color="var(--color-text)">Kontakt oss</Button>
@@ -32,7 +35,7 @@ export default function NotFound() {
           </Box>
         </Box>
       </Box>
-
+      <Footer />
     </>
   );
 }
