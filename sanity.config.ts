@@ -13,7 +13,7 @@ import { structure } from './sanity/structure'
 import { schemaTypes } from './sanity/schemas'
 
 export default defineConfig({
-  basePath: '/studio',
+  basePath: '/admin/studio',
   title: 'Endre innhold',
   subtitle: 'Her kan du endre innhold på nettstedet',
   projectId,
