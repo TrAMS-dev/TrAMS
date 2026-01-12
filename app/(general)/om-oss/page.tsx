@@ -106,7 +106,10 @@ export default async function OmOss() {
                                     - Norsk Akuttmedisinsk Studentforum.
                                 </Text>
                                 <Link
-                                    href="/om-oss/vedtekter">
+                                    href="/om-oss/vedtekter"
+                                    display="block"
+                                    w="100%"
+                                >
                                     <Button
                                         bg="var(--color-primary)"
                                         color="white"
