@@ -75,21 +75,21 @@ export default async function Home() {
       >
         <Flex direction="column" justify="space-between" align="center" h="100%">
 
-            <Flex direction="column" align="center" gap={6} pt={{ base: 10, md: 40 }}>
+            <Flex direction="column" align="center" gap={6} pt={{ base: 10, lg: 40 }}>
             <Image
               src="/assets/Logo_white.png"
               alt="TrAMS"
-              maxW={{ base: "160px", md: "240px", lg: "320px" }}
+              maxW={{ base: "80px", sm: "120px", lg: "240px" }}
               w="60%"
               h="auto"
               mb={2}
-              mt={{ base: 10, md: 0 }}
+              mt={{ base: 10, lg: 0 }}
               filter="drop-shadow(0 0 20px rgba(0,0,0,0.5))"
             />
             <Text
-              fontSize="xl"
+              fontSize={{ base: "md", sm: "lg", lg: "xl" }}
               maxW="2xl"
-              mb={{ base: 2, md: 8 }}
+              mb={{ base: 2, lg: 8 }}
               opacity={0.9}
               textShadow="0 0 10px rgba(0,0,0,0.5)"
             >
@@ -99,9 +99,9 @@ export default async function Home() {
             </Flex>
 
           <Stack
-            direction={{ base: 'column', md: 'row' }}
-            gap={{ base: 2, md: 6 }}
-            mt={{ base: 0, md: 8 }}
+            direction={{ base: 'column', lg: 'row' }}
+            gap={{ base: 2, lg: 6 }}
+            mt={{ base: 0, lg: 12 }}
             w="full"
             justify="center"
             align="center"
@@ -112,7 +112,7 @@ export default async function Home() {
               <Button
                 height="auto"
                 w="280px"
-                p={{ base: 4, md: 8 }}
+                p={{ base: 2,sm: 4, lg: 8  }}
                 bg="whiteAlpha.200"
                 backdropFilter="blur(10px)"
                 border="1px solid"
@@ -138,7 +138,7 @@ export default async function Home() {
               <Button
                 height="auto"
                 w="280px"
-                p={{ base: 4, md: 8 }}
+                p={{ base: 4, lg: 8 }}
                 bg="var(--color-primary)"
                 _hover={{
                   bg: 'red.600',
@@ -162,7 +162,7 @@ export default async function Home() {
               <Button
                 height="auto"
                 w="280px"
-                p={{ base: 4, md: 8 }}
+                p={{ base: 2,sm: 4, lg: 8  }}
                 bg="whiteAlpha.200"
                 backdropFilter="blur(10px)"
                 border="1px solid"
