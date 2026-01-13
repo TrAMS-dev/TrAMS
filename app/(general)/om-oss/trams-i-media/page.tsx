@@ -1,7 +1,6 @@
 import { Box } from '@chakra-ui/react';
 import MediaGrid from '@/components/MediaGrid';
 import HeroImage from '@/components/HeroImage';
-import { getHeroImageUrl } from '@/utils/supabase/storage';
 
 export const metadata = {
     title: "TrAMS i Media | TrAMS",
@@ -14,7 +13,7 @@ export default function TramsIMedia() {
         <>
             {/* Hero Section */}
             <HeroImage
-                imageUrl={getHeroImageUrl("gruppebilde.jpg")}
+                imageUrl="/assets/images/gruppebilde_2.jpg"
                 heading="TrAMS i media"
                 text="Se hva vi har gjort og hvordan vi har blitt omtalt i media"
             />

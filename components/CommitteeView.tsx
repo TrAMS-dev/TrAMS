@@ -7,7 +7,6 @@ import { PortableText } from 'next-sanity';
 import { portableTextComponents } from '@/components/Typography';
 import { Committee } from '@/types/sanity.types';
 import HeroImage from '@/components/HeroImage';
-import { getHeroImageUrl } from '@/utils/supabase/storage';
 
 export default function CommitteeView({ committee }: { committee: Committee | null }) {
     if (!committee) {
@@ -34,7 +33,7 @@ export default function CommitteeView({ committee }: { committee: Committee | nu
 
     const headerImageUrl = committee.headerImage
         ? urlFor(committee.headerImage).width(1920).height(600).url()
-        : getHeroImageUrl("gruppebilde.jpg");
+        : "/assets/images/kirurgi.jpg";
 
     const committeeImageUrl = committee.committeeImage
         ? urlFor(committee.committeeImage).width(1200).height(800).url()

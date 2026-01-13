@@ -7,7 +7,6 @@ import { PartnersSection } from "@/components/CooperationPartners";
 import { COOPERATION_PARTNERS_QUERY } from "@/sanity/lib/queries";
 import { CooperationPartners } from "@/types/sanity.types";
 import HeroImage from "@/components/HeroImage";
-import { getHeroImageUrl } from "@/utils/supabase/storage";
 
 export const metadata = {
     title: "Om Oss | TrAMS",
@@ -34,7 +33,7 @@ export default async function OmOss() {
     return (
         <>
             <HeroImage
-                imageUrl={getHeroImageUrl("gruppebilde_fly.jpg")}
+                imageUrl="/assets/images/gruppebilde.jpg"
                 heading="TrAMS"
                 text="Trondheim Akuttmedisinske Studentforening"
             />

@@ -1,7 +1,6 @@
 import { Box } from "@chakra-ui/react";
 import Calendar from "@/components/Calendar";
 import HeroImage from "@/components/HeroImage";
-import { getHeroImageUrl } from "@/utils/supabase/storage";
 
 export const metadata = {
     title: "Arrangementer | TrAMS",
@@ -14,7 +13,7 @@ export default function Arrangementer() {
         <>
             {/* HERO */}
             <HeroImage
-                imageUrl={getHeroImageUrl("HLR.jpg")}
+                imageUrl="/assets/images/kirurgi.jpg"
                 heading="Arrangementer"
                 text="Her kan du se alle våre arrangementer for å se hva som er planlagt."
             />

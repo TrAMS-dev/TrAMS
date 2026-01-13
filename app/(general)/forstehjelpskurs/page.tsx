@@ -7,7 +7,6 @@ import { FIRST_AID_COURSE_PAGE_QUERYResult } from '@/types/sanity.types';
 import { urlFor } from '@/sanity/lib/image';
 import { SanityImageSource } from "@sanity/image-url/lib/types/types";
 import HeroImage from '@/components/HeroImage';
-import { getHeroImageUrl } from '@/utils/supabase/storage';
 
 
 
@@ -31,7 +30,7 @@ export default async function Forstehjelpskurs() {
     <Box>
       {/* HERO SECTION */}
       <HeroImage
-        imageUrl={getHeroImageUrl("HLR.jpg")}
+        imageUrl="/assets/images/markor_2.jpg"
         heading="Førstehjelpskurs"
         text="TrAMS tilbyr flere førstehjelpskurs for bedrifter i Trondheim. Lær livreddende førstehjelp i dag."
       />

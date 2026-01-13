@@ -20,7 +20,7 @@ export default async function Home() {
         muted
         playsInline
         src={video.data.publicUrl}
-        poster="/assets/poster.jpg"
+        poster="/assets/images/gruppebilde_fly.jpg"
         style={{
           position: 'absolute',
           top: 0,
