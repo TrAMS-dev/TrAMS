@@ -1,6 +1,7 @@
 import { Box, BoxProps } from '@chakra-ui/react';
 import { HeroHeading, HeroText } from './Typography';
 import { ReactNode } from 'react';
+import Image from 'next/image';
 
 interface HeroImageProps extends Omit<BoxProps, 'bgImage'> {
   /**
@@ -23,12 +24,18 @@ interface HeroImageProps extends Omit<BoxProps, 'bgImage'> {
    * Height of the hero section. Defaults to "25vh"
    */
   height?: string | { base?: string; md?: string; lg?: string };
+  /**
+   * Priority loading for the image. Defaults to true for hero images.
+   * When true, Next.js will preload the image and add a <link rel="preload"> tag.
+   */
+  priority?: boolean;
 }
 
 /**
  * Reusable HeroImage component for consistent hero section styling across all pages.
  * 
  * Features:
+ * - Uses Next.js Image component with priority preloading (standard Next.js approach)
  * - Consistent styling with dark overlay
  * - Responsive design
  * - Optional decorative bar
@@ -47,16 +54,13 @@ export default function HeroImage({
   text,
   showDecorativeBar = false,
   height = "25vh",
+  priority = true,
   ...boxProps
 }: HeroImageProps) {
   return (
     <Box
       position="relative"
       h={height}
-      bgImage={`url('${imageUrl}')`}
-      backgroundPosition="center"
-      backgroundSize="cover"
-      backgroundRepeat="no-repeat"
       color="var(--color-light)"
       display="flex"
       flexDirection="column"
@@ -65,8 +69,28 @@ export default function HeroImage({
       textAlign="center"
       p={{ base: "1.5rem 1rem", md: "3rem 1rem" }}
       boxShadow="0 10px 20px rgba(0,0,0,0.3)"
+      overflow="hidden"
       {...boxProps}
     >
+      {/* Background Image */}
+      <Box
+        position="absolute"
+        inset={0}
+        zIndex={0}
+      >
+        <Image
+          src={imageUrl}
+          alt=""
+          fill
+          priority={priority}
+          style={{
+            objectFit: 'cover',
+            objectPosition: 'center',
+          }}
+          sizes="100vw"
+        />
+      </Box>
+
       {/* Dark overlay */}
       <Box position="absolute" inset={0} bg="rgba(0,0,0,0.6)" zIndex={1} />
       
