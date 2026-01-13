@@ -3,7 +3,6 @@ import { PageHeading, SectionHeading, SubsectionHeading, BodyText, CenteredText 
 import CommiteeCards from '@/components/CommiteeCards';
 import CourseCards from '@/components/CourseCards';
 import HeroImage from '@/components/HeroImage';
-import { getHeroImageUrl } from '@/utils/supabase/storage';
 
 export const metadata = {
   title: "For Medisinstudenter | TrAMS",
@@ -15,7 +14,7 @@ export default function ForMedisinstudenter() {
     <>
       {/* HERO */}
       <HeroImage
-        imageUrl={getHeroImageUrl("gruppebilde_fly.jpg")}
+        imageUrl="/assets/images/cbrn.jpg"
         heading="For Medisinstudenter"
         text="Her kan du lese mer om medlemskap i TrAMS, våre kurs og aktiviteter som er spesielt rettet mot medisinstudenter."
       />

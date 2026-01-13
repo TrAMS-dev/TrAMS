@@ -27,14 +27,4 @@ export function getSupabaseImageUrl(path: string): string {
   return `${SUPABASE_URL}/storage/v1/object/public/${STORAGE_BUCKET}/${cleanPath}`;
 }
 
-/**
- * Get the public URL for a hero image
- * This is a convenience wrapper around getSupabaseImageUrl
- * 
- * @param filename - Name of the hero image file (e.g., "rKhkGGT.jpg")
- * @returns Full public URL to the hero image
- */
-export function getHeroImageUrl(filename: string): string {
-  return getSupabaseImageUrl(filename);
-}
 

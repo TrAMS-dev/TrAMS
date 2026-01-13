@@ -3,7 +3,6 @@ import { SectionHeading, BodyText, CenteredText } from '@/components/Typography'
 import LinkGrid from '@/components/LinkGrid';
 import HeroImage from '@/components/HeroImage';
 import { HeroHeading } from '@/components/Typography';
-import { getHeroImageUrl } from '@/utils/supabase/storage';
 
 export const metadata = {
   title: "Instruktører | TrAMS",
@@ -15,7 +14,7 @@ export default function Instruktorer() {
   return (
     <>
       <HeroImage
-        imageUrl={getHeroImageUrl("gruppebilde.jpg")}
+        imageUrl="/assets/images/gruppebilde_2.jpg"
         heading={<HeroHeading fontSize="2.2rem">For instruktører</HeroHeading>}
         text="Her kan du lese mer om medlemskap i TrAMS, våre kurs og aktiviteter som er spesielt rettet mot instruktører."
       />
