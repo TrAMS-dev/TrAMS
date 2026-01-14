@@ -7,6 +7,7 @@ import { PartnersSection } from "@/components/CooperationPartners";
 import { COOPERATION_PARTNERS_QUERY } from "@/sanity/lib/queries";
 import { CooperationPartners } from "@/types/sanity.types";
 import HeroImage from "@/components/HeroImage";
+import PreloadHeroImage from "@/components/PreloadHeroImage";
 
 export const metadata = {
     title: "Om Oss | TrAMS",
@@ -32,6 +33,7 @@ export default async function OmOss() {
 
     return (
         <>
+            <PreloadHeroImage imageUrl="/assets/images/gruppebilde.jpg" />
             <HeroImage
                 imageUrl="/assets/images/gruppebilde.jpg"
                 heading="TrAMS"

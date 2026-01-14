@@ -1,6 +1,7 @@
 import { Box } from "@chakra-ui/react";
 import Calendar from "@/components/Calendar";
 import HeroImage from "@/components/HeroImage";
+import PreloadHeroImage from "@/components/PreloadHeroImage";
 
 export const metadata = {
     title: "Arrangementer | TrAMS",
@@ -11,6 +12,7 @@ export default function Arrangementer() {
 
     return (
         <>
+            <PreloadHeroImage imageUrl="/assets/images/kirurgi.jpg" />
             {/* HERO */}
             <HeroImage
                 imageUrl="/assets/images/kirurgi.jpg"

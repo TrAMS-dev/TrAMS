@@ -8,6 +8,7 @@ import { urlFor } from '@/sanity/lib/image';
 import Image from 'next/image';
 import { SanityImageSource } from "@sanity/image-url/lib/types/types";
 import HeroImage from '@/components/HeroImage';
+import PreloadHeroImage from '@/components/PreloadHeroImage';
 
 
 export const metadata = {
@@ -32,6 +33,7 @@ export default async function AkuttCallingPage() {
 
     return (
         <>
+            <PreloadHeroImage imageUrl="/assets/images/ambulanse.png" />
             <HeroImage
                 imageUrl="/assets/images/ambulanse.png"
                 heading={<HeroHeading fontSize={{ base: "2rem", md: "2.5rem" }}>{data.title.toUpperCase()}</HeroHeading>}

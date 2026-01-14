@@ -3,6 +3,7 @@ import { SectionHeading, BodyText, CenteredText } from '@/components/Typography'
 import LinkGrid from '@/components/LinkGrid';
 import HeroImage from '@/components/HeroImage';
 import { HeroHeading } from '@/components/Typography';
+import PreloadHeroImage from '@/components/PreloadHeroImage';
 
 export const metadata = {
   title: "Instruktører | TrAMS",
@@ -13,9 +14,10 @@ export default function Instruktorer() {
 
   return (
     <>
+      <PreloadHeroImage imageUrl="/assets/images/gruppebilde_2.jpg" />
       <HeroImage
         imageUrl="/assets/images/gruppebilde_2.jpg"
-        heading={<HeroHeading fontSize="2.2rem">For instruktører</HeroHeading>}
+        heading="For instruktører"
         text="Her kan du lese mer om medlemskap i TrAMS, våre kurs og aktiviteter som er spesielt rettet mot instruktører."
       />
 

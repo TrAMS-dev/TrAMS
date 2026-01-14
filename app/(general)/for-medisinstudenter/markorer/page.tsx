@@ -6,6 +6,7 @@ import { MARKOR_PAGE_QUERY } from '@/sanity/lib/queries';
 import { portableTextComponents, HeroHeading } from '@/components/Typography';
 import Gallery from '@/components/Gallery';
 import HeroImage from '@/components/HeroImage';
+import PreloadHeroImage from '@/components/PreloadHeroImage';
 
 
 export const metadata = {
@@ -29,6 +30,7 @@ export default async function MarkorerPage() {
     }
     return (
         <>
+            <PreloadHeroImage imageUrl="/assets/images/markor.jpg" />
             <HeroImage
                 imageUrl="/assets/images/markor.jpg"
                 heading={<HeroHeading fontSize={{ base: "2rem", md: "2.5rem" }}>{data.title.toUpperCase()}</HeroHeading>}

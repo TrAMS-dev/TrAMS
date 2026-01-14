@@ -7,6 +7,7 @@ import { FIRST_AID_COURSE_PAGE_QUERYResult } from '@/types/sanity.types';
 import { urlFor } from '@/sanity/lib/image';
 import { SanityImageSource } from "@sanity/image-url/lib/types/types";
 import HeroImage from '@/components/HeroImage';
+import PreloadHeroImage from '@/components/PreloadHeroImage';
 
 
 
@@ -28,6 +29,7 @@ export default async function Forstehjelpskurs() {
 
   return (
     <Box>
+      <PreloadHeroImage imageUrl="/assets/images/markor_2.jpg" />
       {/* HERO SECTION */}
       <HeroImage
         imageUrl="/assets/images/markor_2.jpg"

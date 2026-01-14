@@ -29,6 +29,10 @@ interface HeroImageProps extends Omit<BoxProps, 'bgImage'> {
    * When true, Next.js will preload the image and add a <link rel="preload"> tag.
    */
   priority?: boolean;
+  /**
+   * Whether to use unoptimized images. Set to true for local images to skip optimization.
+   */
+  unoptimized?: boolean;
 }
 
 /**
@@ -55,8 +59,12 @@ export default function HeroImage({
   showDecorativeBar = false,
   height = "25vh",
   priority = true,
+  unoptimized = false,
   ...boxProps
 }: HeroImageProps) {
+  // Determine if image is local (starts with /) or external
+  const isLocalImage = imageUrl.startsWith('/');
+  
   return (
     <Box
       position="relative"
@@ -83,11 +91,14 @@ export default function HeroImage({
           alt=""
           fill
           priority={priority}
+          unoptimized={unoptimized || isLocalImage}
+          quality={90}
           style={{
             objectFit: 'cover',
             objectPosition: 'center',
           }}
           sizes="100vw"
+          fetchPriority={priority ? 'high' : 'auto'}
         />
       </Box>
 

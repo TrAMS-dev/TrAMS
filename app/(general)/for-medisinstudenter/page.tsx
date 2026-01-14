@@ -3,6 +3,7 @@ import { PageHeading, SectionHeading, SubsectionHeading, BodyText, CenteredText 
 import CommiteeCards from '@/components/CommiteeCards';
 import CourseCards from '@/components/CourseCards';
 import HeroImage from '@/components/HeroImage';
+import PreloadHeroImage from '@/components/PreloadHeroImage';
 
 export const metadata = {
   title: "For Medisinstudenter | TrAMS",
@@ -12,6 +13,7 @@ export const metadata = {
 export default function ForMedisinstudenter() {
   return (
     <>
+      <PreloadHeroImage imageUrl="/assets/images/cbrn.jpg" />
       {/* HERO */}
       <HeroImage
         imageUrl="/assets/images/cbrn.jpg"
