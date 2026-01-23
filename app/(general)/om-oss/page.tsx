@@ -9,9 +9,18 @@ import { CooperationPartners } from "@/types/sanity.types";
 import HeroImage from "@/components/HeroImage";
 import PreloadHeroImage from "@/components/PreloadHeroImage";
 
-export const metadata = {
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
     title: "Om Oss | TrAMS",
-    description: "Lær mer om TrAMS - Trondheim Akuttmedisinske Studentforening, vårt styre, samarbeidspartnere og historie.",
+    description: "TrAMS er en ideell studentorganisasjon som tilbyr førstehjelpskurs i Trondheim. Vi fremmer akuttmedisin og livreddende ferdigheter blant medisinstudenter og lekfolk.",
+    keywords: ["TrAMS", "trondheim akuttmedisinske studentforening", "akuttmedisin", "medisinstudenter NTNU", "førstehjelpskurs trondheim"],
+    openGraph: {
+        title: "Om TrAMS - Trondheim Akuttmedisinske Studentforening",
+        description: "TrAMS er en ideell studentorganisasjon som tilbyr førstehjelpskurs i Trondheim og fremmer akuttmedisin.",
+        url: "https://www.trams.no/om-oss",
+        images: [{ url: "/assets/images/gruppebilde.jpg", width: 1200, height: 630, alt: "TrAMS styret" }],
+    },
 };
 
 export default async function OmOss() {

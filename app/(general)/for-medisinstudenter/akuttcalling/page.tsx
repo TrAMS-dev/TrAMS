@@ -11,9 +11,18 @@ import HeroImage from '@/components/HeroImage';
 import PreloadHeroImage from '@/components/PreloadHeroImage';
 
 
-export const metadata = {
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
     title: "Akuttcalling | TrAMS",
-    description: "Les om Akuttcalling via TrAMS",
+    description: "Akuttcalling er TrAMS sin hospiteringsordning for medisinstudenter interessert i akuttmedisin. Få praktisk erfaring med ambulansetjenesten i Trondheim.",
+    keywords: ["akuttcalling", "akuttmedisin", "hospitering ambulanse", "medisinstudent praksis", "ambulansetjeneste trondheim"],
+    openGraph: {
+        title: "Akuttcalling - Akuttmedisinsk Hospiteringsordning | TrAMS",
+        description: "Akuttcalling er TrAMS sin hospiteringsordning for medisinstudenter interessert i akuttmedisin.",
+        url: "https://www.trams.no/for-medisinstudenter/akuttcalling",
+        images: [{ url: "/assets/images/ambulanse.png", width: 1200, height: 630, alt: "Akuttcalling - TrAMS" }],
+    },
 };
 
 export default async function AkuttCallingPage() {

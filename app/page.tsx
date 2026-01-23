@@ -4,9 +4,18 @@ import Navbar from '@/components/Navbar';
 import { HeartPulse, Calendar, Users } from 'lucide-react';
 import { createClient } from '@/utils/supabase/server';
 
-export const metadata = {
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
   title: "TrAMS | Trondheim Akuttmedisinske Studentforening",
-  description: "Trondheim Akuttmedisinske Studentforening (TrAMS) er en studentforening for medisinstudenter som er interessert i akuttmedisin. Vi organiserer kurs, aktiviteter og samarbeid med andre studentforeninger og organisasjoner.",
+  description: "TrAMS er Trondheims ledende tilbyder av førstehjelpskurs for bedrifter. Lær akuttmedisin, HLR og livreddende førstehjelp fra medisinstudenter ved NTNU. Book first aid course in Trondheim today.",
+  keywords: ["førstehjelpskurs trondheim", "akuttmedisin", "HLR kurs trondheim", "first aid course trondheim", "førstehjelp bedrift", "TrAMS"],
+  openGraph: {
+    title: "TrAMS | Førstehjelpskurs Trondheim - Akuttmedisin og HLR",
+    description: "TrAMS er Trondheims ledende tilbyder av førstehjelpskurs for bedrifter. Lær akuttmedisin, HLR og livreddende førstehjelp fra medisinstudenter.",
+    url: "https://www.trams.no",
+    images: [{ url: "/assets/images/gruppebilde_fly.jpg", width: 1200, height: 630, alt: "TrAMS førstehjelpskurs" }],
+  },
 }
 export default async function Home() {
   const supabase = await createClient()

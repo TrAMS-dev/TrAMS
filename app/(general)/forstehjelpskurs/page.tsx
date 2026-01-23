@@ -11,9 +11,18 @@ import PreloadHeroImage from '@/components/PreloadHeroImage';
 
 
 
-export const metadata = {
-  title: "Førstehjelpskurs | TrAMS",
-  description: "TrAMS tilbyr flere førstehjelpskurs for bedrifter i Trondheim. Lær livreddende førstehjelp i dag.",
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Førstehjelpskurs i Trondheim | TrAMS",
+  description: "Book førstehjelpskurs i Trondheim for din bedrift. TrAMS tilbyr profesjonelle kurs i HLR, akuttmedisin og livreddende førstehjelp. First aid course Trondheim for businesses - learn CPR and emergency medicine.",
+  keywords: ["førstehjelpskurs trondheim", "førstehjelpskurs bedrift", "HLR kurs", "akuttmedisin kurs", "first aid course trondheim", "CPR course", "førstehjelp opplæring"],
+  openGraph: {
+    title: "Førstehjelpskurs Trondheim - HLR og Akuttmedisin Kurs | TrAMS",
+    description: "Book førstehjelpskurs i Trondheim for din bedrift. TrAMS tilbyr profesjonelle kurs i HLR, akuttmedisin og livreddende førstehjelp.",
+    url: "https://www.trams.no/forstehjelpskurs",
+    images: [{ url: "/assets/images/markor_2.jpg", width: 1200, height: 630, alt: "Førstehjelpskurs Trondheim - TrAMS" }],
+  },
 };
 
 export default async function Forstehjelpskurs() {

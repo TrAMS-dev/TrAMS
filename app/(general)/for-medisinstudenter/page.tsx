@@ -5,9 +5,18 @@ import CourseCards from '@/components/CourseCards';
 import HeroImage from '@/components/HeroImage';
 import PreloadHeroImage from '@/components/PreloadHeroImage';
 
-export const metadata = {
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
   title: "For Medisinstudenter | TrAMS",
-  description: "Informasjon for medisinstudenter om medlemskap, kurs, komiteer og andre tilbud fra TrAMS.",
+  description: "Bli medlem i TrAMS - Trondheims akuttmedisinske studentforening. Lær akuttmedisin, delta på HLR-kurs og bli instruktør. For medical students interested in emergency medicine in Trondheim.",
+  keywords: ["akuttmedisin", "medisinstudenter trondheim", "NTNU medisin", "akuttmedisinsk studentforening", "HLR instruktør", "emergency medicine students"],
+  openGraph: {
+    title: "For Medisinstudenter - Akuttmedisin og Medlemskap | TrAMS",
+    description: "Bli medlem i TrAMS - Trondheims akuttmedisinske studentforening. Lær akuttmedisin og delta på kurs.",
+    url: "https://www.trams.no/for-medisinstudenter",
+    images: [{ url: "/assets/images/cbrn.jpg", width: 1200, height: 630, alt: "TrAMS for medisinstudenter" }],
+  },
 };
 
 export default function ForMedisinstudenter() {
