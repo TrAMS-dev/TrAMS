@@ -21,7 +21,7 @@ export default async function Home() {
   const supabase = await createClient()
   const video = supabase.storage.from('assets').getPublicUrl('TrAMS_intro.mp4')
   return (
-    <Box as="section" position="relative" h="100vh" w="100vw" overflow="hidden" bg="gray.900">
+    <Box as="section" position="relative" h="100dvh" w="100%" overflow="hidden" bg="gray.900">
       {/* Background Video */}
       <video
         autoPlay
@@ -74,13 +74,14 @@ export default async function Home() {
       <Flex
         position="relative"
         zIndex={10}
-        h="calc(100vh - 80px)" // Adjust based on navbar height approx
+        h="calc(100dvh - 80px)"
+        minH="0"
         align="center"
         justify="center"
         direction="column"
         color="white"
         textAlign="center"
-        px={4}
+        px={{ base: 2, sm: 4 }}
       >
         <Flex direction="column" justify="space-between" align="center" h="100%">
 
@@ -109,19 +110,24 @@ export default async function Home() {
 
           <Stack
             direction={{ base: 'column', lg: 'row' }}
-            gap={{ base: 2, lg: 6 }}
+            gap={{ base: 2, sm: 3, lg: 6 }}
             mt={{ base: 0, lg: 12 }}
             w="full"
+            maxW="100%"
             justify="center"
             align="center"
+            px={{ base: 2, sm: 4 }}
+            flexShrink={1}
           >
 
             {/* Card 1: Medisinstudenter */}
-            <Link href="/om-oss" style={{ textDecoration: 'none' }}>
+            <Link href="/om-oss" style={{ textDecoration: 'none', width: '100%', maxWidth: '280px' }}>
               <Button
                 height="auto"
-                w="280px"
-                p={{ base: 2,sm: 4, lg: 8  }}
+                w="100%"
+                maxW="280px"
+                minW={{ base: '200px', sm: '240px' }}
+                p={{ base: 2, sm: 4, lg: 8 }}
                 bg="whiteAlpha.200"
                 backdropFilter="blur(10px)"
                 border="1px solid"
@@ -143,10 +149,12 @@ export default async function Home() {
             </Link>
 
             {/* Card 2: Book Kurs */}
-            <Link href="/forstehjelpskurs/" style={{ textDecoration: 'none' }}>
+            <Link href="/forstehjelpskurs/" style={{ textDecoration: 'none', width: '100%', maxWidth: '280px' }}>
               <Button
                 height="auto"
-                w="280px"
+                w="100%"
+                maxW="280px"
+                minW={{ base: '200px', sm: '240px' }}
                 p={{ base: 4, lg: 8 }}
                 bg="var(--color-primary)"
                 _hover={{
@@ -167,11 +175,13 @@ export default async function Home() {
             </Link>
 
             {/* Card 3: Om Oss */}
-            <Link href="/for-medisinstudenter" style={{ textDecoration: 'none' }}>
+            <Link href="/for-medisinstudenter" style={{ textDecoration: 'none', width: '100%', maxWidth: '280px' }}>
               <Button
                 height="auto"
-                w="280px"
-                p={{ base: 2,sm: 4, lg: 8  }}
+                w="100%"
+                maxW="280px"
+                minW={{ base: '200px', sm: '240px' }}
+                p={{ base: 2, sm: 4, lg: 8 }}
                 bg="whiteAlpha.200"
                 backdropFilter="blur(10px)"
                 border="1px solid"
