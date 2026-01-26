@@ -4,7 +4,7 @@ import HeroImage from '@/components/HeroImage';
 import PreloadHeroImage from '@/components/PreloadHeroImage';
 
 export const metadata = {
-    title: "TrAMS i Media | TrAMS",
+    title: "TrAMS i Media",
     description: "Se oversikt over medieomtale og nyhetsartikler om TrAMS og våre aktiviteter.",
 };
 

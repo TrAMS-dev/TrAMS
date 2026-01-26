@@ -14,7 +14,7 @@ import PreloadHeroImage from '@/components/PreloadHeroImage';
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Førstehjelpskurs i Trondheim | TrAMS",
+  title: "Førstehjelpskurs i Trondheim",
   description: "Book førstehjelpskurs i Trondheim for din bedrift. TrAMS tilbyr profesjonelle kurs i HLR, akuttmedisin og livreddende førstehjelp. First aid course Trondheim for businesses - learn CPR and emergency medicine.",
   keywords: ["førstehjelpskurs trondheim", "førstehjelpskurs bedrift", "HLR kurs", "akuttmedisin kurs", "first aid course trondheim", "CPR course", "førstehjelp opplæring"],
   openGraph: {

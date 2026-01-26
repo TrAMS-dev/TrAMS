@@ -42,6 +42,9 @@ export default function BookKursForm() {
         kontaktpersonNavn: '',
         kontaktpersonTelefon: '',
         kontaktpersonEpost: '',
+        datoType: 'fleksibel' as 'spesifikk' | 'fleksibel',
+        spesifikkDato: '',
+        spesifikkTid: '',
         fraDato: '',
         tilDato: '',
         antallDeltakere: '',
@@ -89,12 +92,15 @@ export default function BookKursForm() {
 
         const payload = {
             ...formData,
-            datoer: `${formData.fraDato} til ${formData.tilDato}`,
+            datoer: formData.datoType === 'spesifikk'
+                ? `${formData.spesifikkDato} kl. ${formData.spesifikkTid}`
+                : `${formData.fraDato} til ${formData.tilDato}`,
         };
 
         console.log('Form Submitted:', payload);
 
         try {
+            // 1. Submit to Google Cloud (data storage)
             const response = await fetch("/api/gcloud", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -107,10 +113,21 @@ export default function BookKursForm() {
                 throw new Error(errData.error || response.statusText);
             }
 
+            // 2. Send confirmation emails (to customer and admin)
+            try {
+                await fetch("/api/send", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(formData),
+                });
+            } catch (emailError) {
+                // Log email error but don't fail the submission
+                console.error("Email sending failed:", emailError);
+            }
+
             setLoading(false);
             setSubmissionStatus('success');
-            setSubmissionMessage('Takk for din henvendelse! Vi tar kontakt med deg så snart som mulig.');
-            // Optional: reset form or redirect here if needed
+            setSubmissionMessage('Takk for din henvendelse! Du vil motta en bekreftelse på e-post. Vi tar kontakt med deg så snart som mulig.');
         } catch (error) {
             console.error(error);
             setLoading(false);
@@ -159,9 +176,20 @@ export default function BookKursForm() {
             }
         }
         if (step === 4) {
-            if (!formData.fraDato || !formData.tilDato) {
-                setValidationError('Vennligst oppgi datoer.');
-                return;
+            if (formData.datoType === 'spesifikk') {
+                if (!formData.spesifikkDato) {
+                    setValidationError('Vennligst oppgi ønsket dato.');
+                    return;
+                }
+                if (!formData.spesifikkTid) {
+                    setValidationError('Vennligst oppgi ønsket tidspunkt.');
+                    return;
+                }
+            } else {
+                if (!formData.fraDato || !formData.tilDato) {
+                    setValidationError('Vennligst oppgi datoer.');
+                    return;
+                }
             }
             if (!formData.sted) {
                 setValidationError('Vennligst oppgi sted.');
@@ -367,28 +395,76 @@ export default function BookKursForm() {
                         <SubsectionHeading fontSize="1.2rem" mb={4}>Tid og Sted</SubsectionHeading>
                         <Stack gap={4}>
                             <Field.Root>
-                                <Field.Label>Når passer det?<Text as="span" color="red.500">*</Text></Field.Label>
-                                <HStack gap={4}>
-                                    <Box width="100%">
-                                        <Text fontSize="sm" mb={1} color="gray.600">Tidligste dato</Text>
-                                        <Input
-                                            type="date"
-                                            name="fraDato"
-                                            value={formData.fraDato}
-                                            onChange={handleChange}
-                                        />
-                                    </Box>
-                                    <Box width="100%">
-                                        <Text fontSize="sm" mb={1} color="gray.600">Seneste dato</Text>
-                                        <Input
-                                            type="date"
-                                            name="tilDato"
-                                            value={formData.tilDato}
-                                            onChange={handleChange}
-                                        />
-                                    </Box>
-                                </HStack>
+                                <Field.Label mb={2}>Hvordan vil du oppgi tidspunkt?<Text as="span" color="red.500">*</Text></Field.Label>
+                                <RadioGroup.Root
+                                    name="datoType"
+                                    value={formData.datoType}
+                                    onValueChange={(details) => setFormData(prev => ({ ...prev, datoType: (details.value as 'spesifikk' | 'fleksibel') || 'fleksibel' }))}
+                                >
+                                    <Stack gap={2}>
+                                        <RadioGroup.Item value="spesifikk">
+                                            <RadioGroup.ItemHiddenInput />
+                                            <RadioGroup.ItemIndicator />
+                                            <RadioGroup.ItemText>Jeg har en spesifikk dato og tid</RadioGroup.ItemText>
+                                        </RadioGroup.Item>
+                                        <RadioGroup.Item value="fleksibel">
+                                            <RadioGroup.ItemHiddenInput />
+                                            <RadioGroup.ItemIndicator />
+                                            <RadioGroup.ItemText>Jeg er fleksibel innenfor en periode</RadioGroup.ItemText>
+                                        </RadioGroup.Item>
+                                    </Stack>
+                                </RadioGroup.Root>
                             </Field.Root>
+
+                            {formData.datoType === 'spesifikk' ? (
+                                <Field.Root>
+                                    <Field.Label>Ønsket dato og tid<Text as="span" color="red.500">*</Text></Field.Label>
+                                    <HStack gap={4}>
+                                        <Box width="100%">
+                                            <Text fontSize="sm" mb={1} color="gray.600">Dato</Text>
+                                            <Input
+                                                type="date"
+                                                name="spesifikkDato"
+                                                value={formData.spesifikkDato}
+                                                onChange={handleChange}
+                                            />
+                                        </Box>
+                                        <Box width="100%">
+                                            <Text fontSize="sm" mb={1} color="gray.600">Tidspunkt</Text>
+                                            <Input
+                                                type="time"
+                                                name="spesifikkTid"
+                                                value={formData.spesifikkTid}
+                                                onChange={handleChange}
+                                            />
+                                        </Box>
+                                    </HStack>
+                                </Field.Root>
+                            ) : (
+                                <Field.Root>
+                                    <Field.Label>Når passer det?<Text as="span" color="red.500">*</Text></Field.Label>
+                                    <HStack gap={4}>
+                                        <Box width="100%">
+                                            <Text fontSize="sm" mb={1} color="gray.600">Tidligste dato</Text>
+                                            <Input
+                                                type="date"
+                                                name="fraDato"
+                                                value={formData.fraDato}
+                                                onChange={handleChange}
+                                            />
+                                        </Box>
+                                        <Box width="100%">
+                                            <Text fontSize="sm" mb={1} color="gray.600">Seneste dato</Text>
+                                            <Input
+                                                type="date"
+                                                name="tilDato"
+                                                value={formData.tilDato}
+                                                onChange={handleChange}
+                                            />
+                                        </Box>
+                                    </HStack>
+                                </Field.Root>
+                            )}
 
                             <Field.Root>
                                 <Field.Label mb={2}>Hvor ønsker dere kurset?<Text as="span" color="red.500">*</Text></Field.Label>

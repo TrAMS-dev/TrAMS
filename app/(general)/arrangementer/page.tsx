@@ -4,7 +4,7 @@ import HeroImage from "@/components/HeroImage";
 import PreloadHeroImage from "@/components/PreloadHeroImage";
 
 export const metadata = {
-    title: "Arrangementer | TrAMS",
+    title: "Arrangementer",
     description: "Se oversikt over alle kommende arrangementer hos TrAMS - Trondheim Akuttmedisinske Studentforening.",
 };
 
