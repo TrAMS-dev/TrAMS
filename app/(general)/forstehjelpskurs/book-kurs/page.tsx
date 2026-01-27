@@ -5,7 +5,7 @@ import { Box, Container } from '@chakra-ui/react';
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-    title: "Book Kurs | TrAMS",
+    title: "Book Kurs",
     description: "Bestill førstehjelpskurs i Trondheim for din bedrift. TrAMS tilbyr skreddersydde kurs i HLR, akuttmedisin og førstehjelp. Book your first aid course in Trondheim today.",
     keywords: ["book førstehjelpskurs", "førstehjelpskurs trondheim", "bestill førstehjelp kurs", "HLR kurs bedrift", "akuttmedisin opplæring", "first aid course booking"],
     openGraph: {

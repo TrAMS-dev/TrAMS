@@ -3,6 +3,8 @@ import { Box, Flex, Image, Text, Button, Stack } from '@chakra-ui/react';
 import Navbar from '@/components/Navbar';
 import { HeartPulse, Calendar, Users } from 'lucide-react';
 import { createClient } from '@/utils/supabase/server';
+import { client } from '@/sanity/lib/client';
+import { HOME_PAGE_QUERY } from '@/sanity/lib/queries';
 
 import type { Metadata } from "next";
 
@@ -18,8 +20,8 @@ export const metadata: Metadata = {
   },
 }
 export default async function Home() {
-  const supabase = await createClient()
-  const video = supabase.storage.from('assets').getPublicUrl('TrAMS_intro.mp4')
+  const homePageData = await client.fetch<{ videoUrl: string }>(HOME_PAGE_QUERY);
+  const videoUrl = homePageData?.videoUrl 
   return (
     <Box as="section" position="relative" h="100dvh" w="100%" overflow="hidden" bg="gray.900">
       {/* Background Video */}
@@ -28,7 +30,7 @@ export default async function Home() {
         loop
         muted
         playsInline
-        src={video.data.publicUrl}
+        src={videoUrl}
         poster="/assets/images/gruppebilde_fly.jpg"
         style={{
           position: 'absolute',
@@ -121,12 +123,10 @@ export default async function Home() {
           >
 
             {/* Card 1: Medisinstudenter */}
-            <Link href="/om-oss" style={{ textDecoration: 'none', width: '100%', maxWidth: '280px' }}>
+            <Link href="/om-oss" style={{ textDecoration: 'none', width: '280px', flexShrink: 0 }}>
               <Button
                 height="auto"
                 w="100%"
-                maxW="280px"
-                minW={{ base: '200px', sm: '240px' }}
                 p={{ base: 2, sm: 4, lg: 8 }}
                 bg="whiteAlpha.200"
                 backdropFilter="blur(10px)"
@@ -149,12 +149,10 @@ export default async function Home() {
             </Link>
 
             {/* Card 2: Book Kurs */}
-            <Link href="/forstehjelpskurs/" style={{ textDecoration: 'none', width: '100%', maxWidth: '280px' }}>
+            <Link href="/forstehjelpskurs/" style={{ textDecoration: 'none', width: '280px', flexShrink: 0 }}>
               <Button
                 height="auto"
                 w="100%"
-                maxW="280px"
-                minW={{ base: '200px', sm: '240px' }}
                 p={{ base: 4, lg: 8 }}
                 bg="var(--color-primary)"
                 _hover={{
@@ -174,13 +172,11 @@ export default async function Home() {
               </Button>
             </Link>
 
-            {/* Card 3: Om Oss */}
-            <Link href="/for-medisinstudenter" style={{ textDecoration: 'none', width: '100%', maxWidth: '280px' }}>
+            {/* Card 3: For Medisinstudenter */}
+            <Link href="/for-medisinstudenter" style={{ textDecoration: 'none', width: '280px', flexShrink: 0 }}>
               <Button
                 height="auto"
                 w="100%"
-                maxW="280px"
-                minW={{ base: '200px', sm: '240px' }}
                 p={{ base: 2, sm: 4, lg: 8 }}
                 bg="whiteAlpha.200"
                 backdropFilter="blur(10px)"

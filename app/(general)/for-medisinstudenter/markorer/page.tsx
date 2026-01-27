@@ -10,7 +10,7 @@ import PreloadHeroImage from '@/components/PreloadHeroImage';
 
 
 export const metadata = {
-    title: "Markører | TrAMS",
+    title: "Markører",
     description: "Bli med som markør for TrAMS og bidra til realistisk ferdighetstrening for medisinstudenter.",
 };
 

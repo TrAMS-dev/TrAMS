@@ -6,7 +6,7 @@ import { HeroHeading } from '@/components/Typography';
 import PreloadHeroImage from '@/components/PreloadHeroImage';
 
 export const metadata = {
-  title: "Instruktører | TrAMS",
+  title: "Instruktører",
   description: "Er du instruktør eller ønsker å bli det? Her finner du informasjon og ressurser for TrAMS-instruktører.",
 };
 

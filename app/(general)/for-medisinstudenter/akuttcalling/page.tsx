@@ -14,7 +14,7 @@ import PreloadHeroImage from '@/components/PreloadHeroImage';
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-    title: "Akuttcalling | TrAMS",
+    title: "Akuttcalling",
     description: "Akuttcalling er TrAMS sin hospiteringsordning for medisinstudenter interessert i akuttmedisin. Få praktisk erfaring med ambulansetjenesten i Trondheim.",
     keywords: ["akuttcalling", "akuttmedisin", "hospitering ambulanse", "medisinstudent praksis", "ambulansetjeneste trondheim"],
     openGraph: {

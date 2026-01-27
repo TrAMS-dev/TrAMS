@@ -12,7 +12,7 @@ import PreloadHeroImage from "@/components/PreloadHeroImage";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-    title: "Om Oss | TrAMS",
+    title: "Om Oss",
     description: "TrAMS er en ideell studentorganisasjon som tilbyr førstehjelpskurs i Trondheim. Vi fremmer akuttmedisin og livreddende ferdigheter blant medisinstudenter og lekfolk.",
     keywords: ["TrAMS", "trondheim akuttmedisinske studentforening", "akuttmedisin", "medisinstudenter NTNU", "førstehjelpskurs trondheim"],
     openGraph: {

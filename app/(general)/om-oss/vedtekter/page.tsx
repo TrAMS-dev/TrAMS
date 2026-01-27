@@ -3,7 +3,7 @@ import VedtekterContent from '@/components/VedtekterContent';
 import PreloadHeroImage from '@/components/PreloadHeroImage';
 
 export const metadata = {
-    title: "Vedtekter | TrAMS",
+    title: "Vedtekter",
     description: "Les vedtektene for Trondheim Akuttmedisinske Studentforening (TrAMS).",
 };
 

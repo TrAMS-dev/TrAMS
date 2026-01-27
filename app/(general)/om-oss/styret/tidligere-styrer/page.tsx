@@ -3,7 +3,7 @@ import EarilerMembersSection from "@/components/EarilerMembersSection";
 
 
 export const metadata = {
-    title: "Tidligere Styrer | TrAMS",
+    title: "Tidligere Styrer",
     description: "Oversikt over tidligere styremedlemmer og styrer i TrAMS gjennom årene.",
 };
 
