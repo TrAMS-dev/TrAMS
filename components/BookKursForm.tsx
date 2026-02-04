@@ -113,7 +113,19 @@ export default function BookKursForm() {
                 throw new Error(errData.error || response.statusText);
             }
 
-            // 2. Send confirmation emails (to customer and admin)
+            // 2. Save to Supabase
+            try {
+                await fetch("/api/supabase", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload),
+                });
+            } catch (supabaseError) {
+                // Log Supabase error but don't fail the submission
+                console.error("Supabase save failed:", supabaseError);
+            }
+
+            // 3. Send confirmation emails (to customer and admin)
             try {
                 await fetch("/api/send", {
                     method: "POST",
