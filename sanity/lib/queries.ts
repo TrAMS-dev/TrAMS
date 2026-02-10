@@ -246,3 +246,8 @@ export const BOOK_KURS_PAGE_QUERY = defineQuery(`*[_type == "bookKursPage"][0] {
   _id,
   step1Content
 }`)
+
+export const HOME_PAGE_QUERY = defineQuery(`*[_type == "homePage"][0] {
+  _id,
+  videoUrl
+}`)

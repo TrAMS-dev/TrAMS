@@ -26,7 +26,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     }
 
     return {
-        title: `${boardMember.name} - ${translateRole(boardMember.role)} | TrAMS`,
+        title: `${boardMember.name} - ${translateRole(boardMember.role)}`,
         description: `${translateRole(boardMember.role)} i TrAMS - Trondheim Akuttmedisinske Studentforening`,
     }
 }

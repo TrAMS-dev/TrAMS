@@ -7,7 +7,7 @@ import { portableTextComponents } from '@/components/Typography'
 import { getBoardMemberByRole } from '@/utils/sanity/boardMembers'
 
 export const metadata = {
-    title: 'Mentorgruppen | TrAMS',
+    title: 'Mentorgruppen',
     description: 'Mentorgruppen i TrAMS - Trondheim Akuttmedisinske Studentforening',
 }
 

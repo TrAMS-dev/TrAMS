@@ -7,7 +7,7 @@ import { portableTextComponents } from '@/components/Typography'
 import { getBoardMemberByRole } from '@/utils/sanity/boardMembers'
 
 export const metadata = {
-    title: 'Sponsoransvarlig | TrAMS',
+    title: 'Sponsoransvarlig',
     description: 'Sponsoransvarlig i TrAMS - Trondheim Akuttmedisinske Studentforening',
 }
 

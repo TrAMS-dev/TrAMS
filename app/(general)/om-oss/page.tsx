@@ -7,11 +7,20 @@ import { PartnersSection } from "@/components/CooperationPartners";
 import { COOPERATION_PARTNERS_QUERY } from "@/sanity/lib/queries";
 import { CooperationPartners } from "@/types/sanity.types";
 import HeroImage from "@/components/HeroImage";
-import { getHeroImageUrl } from "@/utils/supabase/storage";
+import PreloadHeroImage from "@/components/PreloadHeroImage";
 
-export const metadata = {
-    title: "Om Oss | TrAMS",
-    description: "Lær mer om TrAMS - Trondheim Akuttmedisinske Studentforening, vårt styre, samarbeidspartnere og historie.",
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+    title: "Om Oss",
+    description: "TrAMS er en ideell studentorganisasjon som tilbyr førstehjelpskurs i Trondheim. Vi fremmer akuttmedisin og livreddende ferdigheter blant medisinstudenter og lekfolk.",
+    keywords: ["TrAMS", "trondheim akuttmedisinske studentforening", "akuttmedisin", "medisinstudenter NTNU", "førstehjelpskurs trondheim"],
+    openGraph: {
+        title: "Om TrAMS - Trondheim Akuttmedisinske Studentforening",
+        description: "TrAMS er en ideell studentorganisasjon som tilbyr førstehjelpskurs i Trondheim og fremmer akuttmedisin.",
+        url: "https://www.trams.no/om-oss",
+        images: [{ url: "/assets/images/gruppebilde.jpg", width: 1200, height: 630, alt: "TrAMS styret" }],
+    },
 };
 
 export default async function OmOss() {
@@ -33,8 +42,9 @@ export default async function OmOss() {
 
     return (
         <>
+            <PreloadHeroImage imageUrl="/assets/images/gruppebilde.jpg" />
             <HeroImage
-                imageUrl={getHeroImageUrl("gruppebilde_fly.jpg")}
+                imageUrl="/assets/images/gruppebilde.jpg"
                 heading="TrAMS"
                 text="Trondheim Akuttmedisinske Studentforening"
             />

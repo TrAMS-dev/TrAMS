@@ -19,7 +19,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     }
 
     return {
-        title: `${committee.name} | TrAMS`,
+        title: `${committee.name}`,
         description: `Les om ${committee.name} i TrAMS - Trondheim Akuttmedisinske Studentforening.`,
     };
 }

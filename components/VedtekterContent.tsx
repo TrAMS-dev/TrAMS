@@ -9,7 +9,6 @@ import { portableTextComponents } from '@/components/Typography';
 import { Vedtekter } from '@/types/sanity.types';
 import { formatNorwegianDate } from '@/sanity/lib/date';
 import HeroImage from '@/components/HeroImage';
-import { getHeroImageUrl } from '@/utils/supabase/storage';
 
 export default function VedtekterContent() {
 
@@ -29,7 +28,7 @@ export default function VedtekterContent() {
             });
     }, []);
 
-    const heroText = loading 
+    const lastUpdated = loading 
         ? "Laster inn..."
         : !vedtekter 
             ? "Ingen vedtekter funnet"
@@ -37,11 +36,7 @@ export default function VedtekterContent() {
 
     return (
         <>
-            <HeroImage
-                imageUrl={getHeroImageUrl("gruppebilde.jpg")}
-                heading="Vedtekter"
-                text={heroText}
-            />
+
 
             {/* Content Section */}
             <Container maxW="900px" mx="auto" px={4} py={12}>
@@ -60,7 +55,12 @@ export default function VedtekterContent() {
                     </>
                 ) : (
 
-                    <PortableText value={vedtekter.content} components={portableTextComponents} />
+                    <>
+                        <Text fontSize="1.2rem" color="gray.600" mb={4}>
+                            Sist oppdatert {formatNorwegianDate(vedtekter.lastUpdated)}
+                        </Text>
+                        <PortableText value={vedtekter.content} components={portableTextComponents} />
+                    </>
                 )}
             </Container>
         </>

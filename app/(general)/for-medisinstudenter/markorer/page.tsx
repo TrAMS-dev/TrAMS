@@ -6,11 +6,11 @@ import { MARKOR_PAGE_QUERY } from '@/sanity/lib/queries';
 import { portableTextComponents, HeroHeading } from '@/components/Typography';
 import Gallery from '@/components/Gallery';
 import HeroImage from '@/components/HeroImage';
-import { getHeroImageUrl } from '@/utils/supabase/storage';
+import PreloadHeroImage from '@/components/PreloadHeroImage';
 
 
 export const metadata = {
-    title: "Markører | TrAMS",
+    title: "Markører",
     description: "Bli med som markør for TrAMS og bidra til realistisk ferdighetstrening for medisinstudenter.",
 };
 
@@ -30,8 +30,9 @@ export default async function MarkorerPage() {
     }
     return (
         <>
+            <PreloadHeroImage imageUrl="/assets/images/markor.jpg" />
             <HeroImage
-                imageUrl={getHeroImageUrl("markor.jpg")}
+                imageUrl="/assets/images/markor.jpg"
                 heading={<HeroHeading fontSize={{ base: "2rem", md: "2.5rem" }}>{data.title.toUpperCase()}</HeroHeading>}
                 showDecorativeBar={true}
             />

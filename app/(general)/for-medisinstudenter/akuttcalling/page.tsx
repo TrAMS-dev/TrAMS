@@ -8,12 +8,21 @@ import { urlFor } from '@/sanity/lib/image';
 import Image from 'next/image';
 import { SanityImageSource } from "@sanity/image-url/lib/types/types";
 import HeroImage from '@/components/HeroImage';
-import { getHeroImageUrl } from '@/utils/supabase/storage';
+import PreloadHeroImage from '@/components/PreloadHeroImage';
 
 
-export const metadata = {
-    title: "Akuttcalling | TrAMS",
-    description: "Les om Akuttcalling via TrAMS",
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+    title: "Akuttcalling",
+    description: "Akuttcalling er TrAMS sin hospiteringsordning for medisinstudenter interessert i akuttmedisin. Få praktisk erfaring med ambulansetjenesten i Trondheim.",
+    keywords: ["akuttcalling", "akuttmedisin", "hospitering ambulanse", "medisinstudent praksis", "ambulansetjeneste trondheim"],
+    openGraph: {
+        title: "Akuttcalling - Akuttmedisinsk Hospiteringsordning | TrAMS",
+        description: "Akuttcalling er TrAMS sin hospiteringsordning for medisinstudenter interessert i akuttmedisin.",
+        url: "https://www.trams.no/for-medisinstudenter/akuttcalling",
+        images: [{ url: "/assets/images/ambulanse.png", width: 1200, height: 630, alt: "Akuttcalling - TrAMS" }],
+    },
 };
 
 export default async function AkuttCallingPage() {
@@ -33,8 +42,9 @@ export default async function AkuttCallingPage() {
 
     return (
         <>
+            <PreloadHeroImage imageUrl="/assets/images/ambulanse.png" />
             <HeroImage
-                imageUrl={getHeroImageUrl("ambulanse.png")}
+                imageUrl="/assets/images/ambulanse.png"
                 heading={<HeroHeading fontSize={{ base: "2rem", md: "2.5rem" }}>{data.title.toUpperCase()}</HeroHeading>}
                 showDecorativeBar={true}
             />

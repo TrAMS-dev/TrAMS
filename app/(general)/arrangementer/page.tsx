@@ -1,11 +1,11 @@
 import { Box } from "@chakra-ui/react";
 import EventCalendar from "@/components/EventCalendar";
 import HeroImage from "@/components/HeroImage";
-import { getHeroImageUrl } from "@/utils/supabase/storage";
+import PreloadHeroImage from "@/components/PreloadHeroImage";
 import { createClient } from '@/utils/supabase/server';
 
 export const metadata = {
-    title: "Arrangementer | TrAMS",
+    title: "Arrangementer",
     description: "Se oversikt over alle kommende arrangementer hos TrAMS - Trondheim Akuttmedisinske Studentforening.",
 };
 
@@ -27,9 +27,10 @@ export default async function Arrangementer() {
 
     return (
         <>
+            <PreloadHeroImage imageUrl="/assets/images/kirurgi.jpg" />
             {/* HERO */}
             <HeroImage
-                imageUrl={getHeroImageUrl("HLR.jpg")}
+                imageUrl="/assets/images/kirurgi.jpg"
                 heading="Arrangementer"
                 text="Her kan du se alle våre arrangementer for å se hva som er planlagt."
             />
