@@ -2,7 +2,7 @@ name: Supabase Keepalive
 
 on:
   schedule:
-    # Every 3 days at 09:00 UTC (adjust as you like)
+    # Every 3 days at 09:00 UTC (keeps free-tier project from pausing after 7 days)
     - cron: "0 9 */3 * *"
   workflow_dispatch:
 
@@ -10,9 +10,43 @@ jobs:
   keepalive:
     runs-on: ubuntu-latest
     steps:
-      - name: Ping Supabase REST
+      - name: Ping Supabase REST (real DB query)
+        id: rest
         run: |
-          curl -sS -o /dev/null -w "%{http_code}\n" \
-            "${{ secrets.SUPABASE_URL }}/rest/v1/" \
+          URL="${{ secrets.SUPABASE_URL }}"
+          KEY="${{ secrets.SUPABASE_ANON_KEY }}"
+          if [ -z "$URL" ] || [ -z "$KEY" ]; then
+            echo "::error::SUPABASE_URL and SUPABASE_ANON_KEY secrets must be set"
+            exit 1
+          fi
+          # Trigger a real DB query so the project stays active (root /rest/v1/ is not enough)
+          CODE=$(curl -sS -o /tmp/rest.json -w "%{http_code}" \
+            "${URL}/rest/v1/CourseSubmissions?select=id&limit=1" \
+            -H "apikey: ${KEY}" \
+            -H "Authorization: Bearer ${KEY}" \
+            -H "Accept: application/json" \
+            -H "Content-Type: application/json")
+          echo "rest_code=$CODE" >> $GITHUB_OUTPUT
+          echo "REST response: $CODE"
+          # 200/206 = success; 403 = RLS blocked but project was reached (still counts as keepalive)
+          case "$CODE" in
+            200|206|403) echo "REST keepalive OK" ;;
+            *)
+              echo "::error::REST ping failed with HTTP $CODE"
+              cat /tmp/rest.json 2>/dev/null || true
+              exit 1
+              ;;
+          esac
+
+      - name: Ping Supabase Auth (optional health check)
+        run: |
+          CODE=$(curl -sS -o /dev/null -w "%{http_code}" \
+            "${{ secrets.SUPABASE_URL }}/auth/v1/health" \
             -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
-            -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}"
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}")
+          echo "Auth health: $CODE"
+          # Auth may return 200 or 404 depending on project; don't fail job
+
+      - name: Summarize
+        run: |
+          echo "Keepalive completed. REST returned ${{ steps.rest.outputs.rest_code }}."
