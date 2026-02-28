@@ -76,7 +76,7 @@ export default function CourseCards() {
             {Array.from(grouped.entries()).map(([category, categoryOffers]) => (
                 <Box key={category} mb={12}>
                     <SectionHeading mb={6}>{CATEGORY_TITLES[category]}</SectionHeading>
-                    <Flex gap={8} overflowX="auto" className="scroll-smooth" pb={2}>
+                    <Flex gap={8} overflowX="auto" className="scroll-smooth" pb={2} justify="center">
                         {categoryOffers.map((offer) => {
                             const imageUrl = offer.image
                                 ? urlFor(offer.image).width(800).height(800).url()
