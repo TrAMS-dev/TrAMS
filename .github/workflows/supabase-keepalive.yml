@@ -1,52 +1,51 @@
-name: Supabase Keepalive
+name: Ping Supabase to Prevent Pausing
 
 on:
   schedule:
-    # Every 3 days at 09:00 UTC (keeps free-tier project from pausing after 7 days)
-    - cron: "0 9 */3 * *"
+    - cron: '0 9 * * 1,4' # 09:00 UTC every Monday and Thursday
   workflow_dispatch:
 
 jobs:
-  keepalive:
+  ping:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Ping Supabase REST (real DB query)
-        id: rest
-        run: |
-          URL="${{ secrets.SUPABASE_URL }}"
-          KEY="${{ secrets.SUPABASE_ANON_KEY }}"
-          if [ -z "$URL" ] || [ -z "$KEY" ]; then
-            echo "::error::SUPABASE_URL and SUPABASE_ANON_KEY secrets must be set"
-            exit 1
-          fi
-          # Trigger a real DB query so the project stays active (root /rest/v1/ is not enough)
-          CODE=$(curl -sS -o /tmp/rest.json -w "%{http_code}" \
-            "${URL}/rest/v1/CourseSubmissions?select=id&limit=1" \
-            -H "apikey: ${KEY}" \
-            -H "Authorization: Bearer ${KEY}" \
-            -H "Accept: application/json" \
-            -H "Content-Type: application/json")
-          echo "rest_code=$CODE" >> $GITHUB_OUTPUT
-          echo "REST response: $CODE"
-          # 200/206 = success; 403 = RLS blocked but project was reached (still counts as keepalive)
-          case "$CODE" in
-            200|206|403) echo "REST keepalive OK" ;;
-            *)
-              echo "::error::REST ping failed with HTTP $CODE"
-              cat /tmp/rest.json 2>/dev/null || true
-              exit 1
-              ;;
-          esac
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
 
-      - name: Ping Supabase Auth (optional health check)
-        run: |
-          CODE=$(curl -sS -o /dev/null -w "%{http_code}" \
-            "${{ secrets.SUPABASE_URL }}/auth/v1/health" \
-            -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
-            -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}")
-          echo "Auth health: $CODE"
-          # Auth may return 200 or 404 depending on project; don't fail job
+      - name: Install Supabase client
+        run: npm install @supabase/supabase-js
 
-      - name: Summarize
+      - name: Ping Supabase
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
         run: |
-          echo "Keepalive completed. REST returned ${{ steps.rest.outputs.rest_code }}."
+          node -e "
+          const { createClient } = require('@supabase/supabase-js');
+
+          if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) {
+            console.error('Missing Supabase secrets');
+            process.exit(1);
+          }
+
+          const supabase = createClient(
+            process.env.SUPABASE_URL,
+            process.env.SUPABASE_ANON_KEY
+          );
+
+          supabase
+            .from('CourseSubmissions') // <-- change to a real table
+            .select('id')
+            .limit(1)
+            .then(({ data, error }) => {
+              if (error) {
+                console.error('Ping failed:', error);
+                process.exit(1);
+              }
+              console.log('Supabase keepalive successful');
+              process.exit(0);
+            });
+          "
