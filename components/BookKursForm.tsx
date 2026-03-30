@@ -127,7 +127,7 @@ export default function BookKursForm() {
 
             // 3. Send confirmation emails (to customer and admin)
             try {
-                await fetch("/api/send", {
+                await fetch("/api/send/form-complete", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(formData),

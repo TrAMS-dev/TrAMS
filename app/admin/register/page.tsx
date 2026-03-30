@@ -45,6 +45,12 @@ export default function RegisterPage() {
             if (authData.user) {
                 // Profile creation is handled by Database Trigger
 
+                void fetch('/api/send/user-registration', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ fullName, email }),
+                }).catch((err) => console.error('New user notification mail failed:', err))
+
                 setMessage({
                     type: 'success',
                     text: 'Registrering vellykket! Kontoen venter på godkjenning fra administrator.',
