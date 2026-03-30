@@ -1,18 +1,51 @@
-name: Supabase Keepalive
+name: Ping Supabase to Prevent Pausing
 
 on:
   schedule:
-    # Every 3 days at 09:00 UTC (adjust as you like)
-    - cron: "0 9 */3 * *"
+    - cron: '0 9 * * *'
   workflow_dispatch:
 
 jobs:
-  keepalive:
+  ping:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Ping Supabase REST
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install Supabase client
+        run: npm install @supabase/supabase-js
+
+      - name: Ping Supabase
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
         run: |
-          curl -sS -o /dev/null -w "%{http_code}\n" \
-            "${{ secrets.SUPABASE_URL }}/rest/v1/" \
-            -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
-            -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}"
+          node -e "
+          const { createClient } = require('@supabase/supabase-js');
+
+          if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) {
+            console.error('Missing Supabase secrets');
+            process.exit(1);
+          }
+
+          const supabase = createClient(
+            process.env.SUPABASE_URL,
+            process.env.SUPABASE_ANON_KEY
+          );
+
+          supabase
+            .from('CourseSubmissions') // <-- change to a real table
+            .select('id')
+            .limit(1)
+            .then(({ data, error }) => {
+              if (error) {
+                console.error('Ping failed:', error);
+                process.exit(1);
+              }
+              console.log('Supabase keepalive successful');
+              process.exit(0);
+            });
+          "
