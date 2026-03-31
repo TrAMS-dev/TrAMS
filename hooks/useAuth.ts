@@ -58,7 +58,7 @@ export function useAuth() {
         }
     }
 
-    // Check current user and their profile
+    // Sync session + profile; never call this from inside onAuthStateChange (Supabase holds a lock there).
     const checkUser = async () => {
         try {
             const { data: { user } } = await supabase.auth.getUser()
@@ -78,17 +78,16 @@ export function useAuth() {
     }
 
     useEffect(() => {
-        // Initial auth check
-        checkUser()
-
-        // Listen for auth state changes
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-            if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-                if (session?.user) {
-                    const profile = await fetchProfile(session.user.id)
-                    updateAuthState(session.user, profile)
-                }
-                setIsLoading(false)
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+            if (
+                event === 'INITIAL_SESSION' ||
+                event === 'SIGNED_IN' ||
+                event === 'TOKEN_REFRESHED' ||
+                event === 'USER_UPDATED'
+            ) {
+                queueMicrotask(() => {
+                    void checkUser()
+                })
             } else if (event === 'SIGNED_OUT') {
                 updateAuthState(null, null)
                 setIsLoading(false)
