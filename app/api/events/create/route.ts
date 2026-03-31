@@ -23,7 +23,9 @@ export async function POST(request: Request) {
             image,
             max_attendees,
             reg_deadline,
+            reg_opens,
             author,
+            contact_email,
         } = body
 
         // Validate required fields
@@ -68,7 +70,9 @@ export async function POST(request: Request) {
                 image: image || null,
                 max_attendees: max_attendees || null,
                 reg_deadline: reg_deadline || null,
+                reg_opens: reg_opens || null,
                 author: author || null,
+                contact_email: contact_email?.trim() || null,
                 slug,
             })
             .select()

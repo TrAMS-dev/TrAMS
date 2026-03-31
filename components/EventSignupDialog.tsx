@@ -71,11 +71,15 @@ export default function EventSignupDialog({
                 throw new Error(data.error || 'Failed to sign up')
             }
 
+            const onWaitlist = data.registrationStatus === 'waitlist'
+
             toaster.create({
-                title: 'Påmelding vellykket!',
+                title: onWaitlist ? 'Du står på venteliste' : 'Påmelding vellykket!',
                 type: 'success',
-                description: 'Du er nå påmeldt ' + eventTitle,
-                duration: 5000,
+                description: onWaitlist
+                    ? `Arrangementet er fullt. Du er satt på venteliste for ${eventTitle}. Du får en bekreftelse på e-post.`
+                    : `Du er påmeldt ${eventTitle}. Du får en bekreftelse på e-post.`,
+                duration: 6000,
             })
 
             // Reset form

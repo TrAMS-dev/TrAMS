@@ -1,10 +1,25 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { Box, Heading, Table, Button, Spinner, Flex } from '@chakra-ui/react'
+import { useState, useEffect, useMemo } from 'react'
+import { Box, Heading, Table, Button, Spinner, Flex, Badge, NativeSelect, Text } from '@chakra-ui/react'
 import { useParams, useRouter } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
 import type { Tables } from '@/types/supabase'
+import { toaster } from '@/components/ui/toaster'
+
+function isConfirmedParticipant(p: Tables<'EventParticipants'>) {
+    return p.status !== 'waitlist'
+}
+
+function attendedSelectValue(attended: boolean | null) {
+    if (attended === null) return ''
+    return attended ? 'true' : 'false'
+}
+
+function parseAttended(value: string): boolean | null {
+    if (value === '') return null
+    return value === 'true'
+}
 
 export default function AdminParticipantsPage() {
     const params = useParams()
@@ -13,6 +28,13 @@ export default function AdminParticipantsPage() {
     const [participants, setParticipants] = useState<Tables<'EventParticipants'>[]>([])
     const [eventTitle, setEventTitle] = useState('')
     const [loading, setLoading] = useState(true)
+    const [savingId, setSavingId] = useState<number | null>(null)
+
+    const attendanceSummary = useMemo(() => {
+        const confirmed = participants.filter(isConfirmedParticipant)
+        const attended = confirmed.filter((p) => p.attended === true).length
+        return { confirmedCount: confirmed.length, attendedCount: attended }
+    }, [participants])
 
     useEffect(() => {
         const fetchData = async () => {
@@ -50,9 +72,51 @@ export default function AdminParticipantsPage() {
         fetchData()
     }, [slug])
 
+    const handleAttendanceChange = async (
+        participantId: number,
+        value: string
+    ) => {
+        const attended = parseAttended(value)
+        setSavingId(participantId)
+        const supabase = createClient()
+        const { error } = await supabase
+            .from('EventParticipants')
+            .update({ attended })
+            .eq('id', participantId)
+
+        if (error) {
+            console.error('Error updating attendance:', error)
+            toaster.create({
+                title: 'Kunne ikke lagre oppmøte',
+                type: 'error',
+                duration: 5000,
+            })
+        } else {
+            setParticipants((prev) =>
+                prev.map((p) =>
+                    p.id === participantId ? { ...p, attended } : p
+                )
+            )
+        }
+        setSavingId(null)
+    }
+
     const handleExport = () => {
         // Simple CSV export
-        const headers = ['Navn', 'E-post', 'Kull', 'Allergier', 'Påmeldt']
+        const headers = [
+            'Navn',
+            'E-post',
+            'Kull',
+            'Allergier',
+            'Status',
+            'Oppmøte',
+            'Påmeldt',
+        ]
+        const oppmoteLabel = (p: Tables<'EventParticipants'>) => {
+            if (p.attended === true) return 'Møtt'
+            if (p.attended === false) return 'Ikke møtt'
+            return 'Ikke registrert'
+        }
         const csvContent = [
             headers.join(','),
             ...participants.map(p => [
@@ -60,6 +124,8 @@ export default function AdminParticipantsPage() {
                 `"${p.email}"`,
                 `"${p.kull}"`,
                 `"${p.allergies || ''}"`,
+                `"${p.status === 'waitlist' ? 'Venteliste' : 'Påmeldt'}"`,
+                `"${oppmoteLabel(p)}"`,
                 `"${new Date(p.created_at).toLocaleString()}"`
             ].join(','))
         ].join('\n')
@@ -91,6 +157,13 @@ export default function AdminParticipantsPage() {
                 </Button>
             </Flex>
 
+            {participants.length > 0 && (
+                <Text color="gray.600" mb={4}>
+                    Oppmøte (bekreftede): {attendanceSummary.attendedCount} av{' '}
+                    {attendanceSummary.confirmedCount} registrert som møtt
+                </Text>
+            )}
+
             <Box bg="white" shadow="sm" rounded="lg" overflow="hidden">
                 <Table.Root striped>
                     <Table.Header>
@@ -99,13 +172,15 @@ export default function AdminParticipantsPage() {
                             <Table.ColumnHeader>E-post</Table.ColumnHeader>
                             <Table.ColumnHeader>Kull</Table.ColumnHeader>
                             <Table.ColumnHeader>Allergier</Table.ColumnHeader>
+                            <Table.ColumnHeader>Status</Table.ColumnHeader>
+                            <Table.ColumnHeader>Oppmøte</Table.ColumnHeader>
                             <Table.ColumnHeader>Påmeldt</Table.ColumnHeader>
                         </Table.Row>
                     </Table.Header>
                     <Table.Body>
                         {participants.length === 0 && (
                             <Table.Row>
-                                <Table.Cell colSpan={5} textAlign="center" py={8} color="gray.500">
+                                <Table.Cell colSpan={7} textAlign="center" py={8} color="gray.500">
                                     Ingen påmeldte enda.
                                 </Table.Cell>
                             </Table.Row>
@@ -116,6 +191,33 @@ export default function AdminParticipantsPage() {
                                 <Table.Cell>{p.email}</Table.Cell>
                                 <Table.Cell>{p.kull}</Table.Cell>
                                 <Table.Cell>{p.allergies || '-'}</Table.Cell>
+                                <Table.Cell>
+                                    {p.status === 'waitlist' ? (
+                                        <Badge colorPalette="orange">Venteliste</Badge>
+                                    ) : (
+                                        <Badge colorPalette="green">Påmeldt</Badge>
+                                    )}
+                                </Table.Cell>
+                                <Table.Cell maxW="200px">
+                                    <NativeSelect.Root
+                                        size="sm"
+                                        w="full"
+                                        opacity={savingId === p.id ? 0.6 : 1}
+                                        pointerEvents={savingId === p.id ? 'none' : 'auto'}
+                                    >
+                                        <NativeSelect.Field
+                                            value={attendedSelectValue(p.attended ?? null)}
+                                            onChange={(e) =>
+                                                handleAttendanceChange(p.id, e.target.value)
+                                            }
+                                        >
+                                            <option value="">Ikke registrert</option>
+                                            <option value="true">Møtt</option>
+                                            <option value="false">Ikke møtt</option>
+                                        </NativeSelect.Field>
+                                        <NativeSelect.Indicator />
+                                    </NativeSelect.Root>
+                                </Table.Cell>
                                 <Table.Cell color="gray.500" fontSize="sm">
                                     {new Date(p.created_at).toLocaleString('nb-NO')}
                                 </Table.Cell>

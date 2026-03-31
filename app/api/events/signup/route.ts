@@ -1,5 +1,18 @@
 import { createClient } from '@/utils/supabase/server'
+import { sendEventSignupEmail } from '@/lib/eventSignupEmail'
 import { NextResponse } from 'next/server'
+
+/** Rows that count toward max_attendees (excludes waitlist). */
+function confirmedParticipantsQuery(
+    supabase: Awaited<ReturnType<typeof createClient>>,
+    eventId: number
+) {
+    return supabase
+        .from('EventParticipants')
+        .select('*', { count: 'exact', head: true })
+        .eq('eventId', eventId)
+        .or('status.eq.confirmed,status.is.null')
+}
 
 export async function POST(request: Request) {
     try {
@@ -30,10 +43,21 @@ export async function POST(request: Request) {
             )
         }
 
+        const now = new Date()
+
+        if (event.reg_opens) {
+            const opensAt = new Date(event.reg_opens)
+            if (now < opensAt) {
+                return NextResponse.json(
+                    { error: 'Påmeldingen er ikke åpnet ennå' },
+                    { status: 400 }
+                )
+            }
+        }
+
         // Check registration deadline
         if (event.reg_deadline) {
             const deadline = new Date(event.reg_deadline)
-            const now = new Date()
             if (now > deadline) {
                 return NextResponse.json(
                     { error: 'Påmeldingsfristen har gått ut' },
@@ -42,24 +66,7 @@ export async function POST(request: Request) {
             }
         }
 
-        // Check if event is full
-        if (event.max_attendees) {
-            const { count, error: countError } = await supabase
-                .from('EventParticipants')
-                .select('*', { count: 'exact', head: true })
-                .eq('eventId', eventId)
-
-            if (countError) {
-                console.error('Error counting participants:', countError)
-            } else if (count !== null && count >= event.max_attendees) {
-                return NextResponse.json(
-                    { error: 'Arrangementet er fullt' },
-                    { status: 400 }
-                )
-            }
-        }
-
-        // Check if user is already registered
+        // Check if user is already registered (confirmed or waitlist)
         const { data: existingParticipant } = await supabase
             .from('EventParticipants')
             .select('id')
@@ -74,6 +81,21 @@ export async function POST(request: Request) {
             )
         }
 
+        let status: 'confirmed' | 'waitlist' = 'confirmed'
+
+        if (event.max_attendees) {
+            const { count, error: countError } = await confirmedParticipantsQuery(
+                supabase,
+                eventId
+            )
+
+            if (countError) {
+                console.error('Error counting participants:', countError)
+            } else if (count !== null && count >= event.max_attendees) {
+                status = 'waitlist'
+            }
+        }
+
         // Insert participant
         const { data: participant, error: insertError } = await supabase
             .from('EventParticipants')
@@ -83,6 +105,7 @@ export async function POST(request: Request) {
                 kull,
                 allergies: allergies || null,
                 eventId,
+                status,
             })
             .select()
             .single()
@@ -95,9 +118,25 @@ export async function POST(request: Request) {
             )
         }
 
+        try {
+            await sendEventSignupEmail(status, {
+                recipientName: name,
+                recipientEmail: email,
+                eventTitle: event.title || 'Arrangement',
+                eventSlug: event.slug,
+                startDatetime: event.start_datetime,
+                location: event.location,
+                regDeadline: event.reg_deadline,
+                contactEmail: event.contact_email,
+            })
+        } catch (mailErr) {
+            console.error('Event signup confirmation email failed:', mailErr)
+        }
+
         return NextResponse.json({
             success: true,
             participant,
+            registrationStatus: status,
         })
     } catch (error) {
         console.error('Error in signup API:', error)

@@ -27,6 +27,14 @@ interface EventCalendarProps {
     events: Tables<'Events'>[]
 }
 
+function isRegistrationWindowOpen(event: Tables<'Events'>): boolean {
+    const t = new Date()
+    const pastOpens = !event.reg_opens || t >= new Date(event.reg_opens)
+    const beforeDeadline = !event.reg_deadline || t <= new Date(event.reg_deadline)
+    const hasWindow = Boolean(event.reg_deadline) || Boolean(event.reg_opens)
+    return hasWindow && pastOpens && beforeDeadline
+}
+
 export default function EventCalendar({ events }: EventCalendarProps) {
     const [view, setView] = useState<'calendar' | 'list'>('list')
     const [searchTerm, setSearchTerm] = useState('')
@@ -113,6 +121,7 @@ export default function EventCalendar({ events }: EventCalendarProps) {
             author: event.author,
             maxAttendees: event.max_attendees,
             regDeadline: event.reg_deadline,
+            regOpens: event.reg_opens,
         }
     }))
 
@@ -270,8 +279,12 @@ export default function EventCalendar({ events }: EventCalendarProps) {
                                                 <Badge colorScheme="blue" mb={2} borderRadius="full" px={2}>
                                                     {event.start_datetime ? new Date(event.start_datetime).toLocaleDateString('nb-NO', { month: 'short', day: 'numeric' }) : 'Dato kommer'}
                                                 </Badge>
-                                                {event.reg_deadline && new Date(event.reg_deadline) > new Date() && (
-                                                    <Badge colorScheme="green" variant="subtle" borderRadius="full">
+                                                {isRegistrationWindowOpen(event) && (
+                                                    <Badge
+                                                        colorScheme="green"
+                                                        variant="subtle"
+                                                        borderRadius="full"
+                                                    >
                                                         Påmelding åpen
                                                     </Badge>
                                                 )}

@@ -14,33 +14,108 @@ export type Database = {
   }
   public: {
     Tables: {
+      CourseSubmissions: {
+        Row: {
+          adresse: string | null
+          annet: string | null
+          antall_deltakere: number | null
+          created_at: string | null
+          dato_type: string | null
+          datoer: string | null
+          deltakermasse: string | null
+          engelsk_kurs: boolean | null
+          fra_dato: string | null
+          id: number
+          kontaktperson_epost: string | null
+          kontaktperson_navn: string | null
+          kontaktperson_telefon: string | null
+          kurs_type: string | null
+          kurs_type_annet: string | null
+          kursbevis: boolean | null
+          spesifikk_dato: string | null
+          spesifikk_tid: string | null
+          sted: string | null
+          til_dato: string | null
+        }
+        Insert: {
+          adresse?: string | null
+          annet?: string | null
+          antall_deltakere?: number | null
+          created_at?: string | null
+          dato_type?: string | null
+          datoer?: string | null
+          deltakermasse?: string | null
+          engelsk_kurs?: boolean | null
+          fra_dato?: string | null
+          id?: number
+          kontaktperson_epost?: string | null
+          kontaktperson_navn?: string | null
+          kontaktperson_telefon?: string | null
+          kurs_type?: string | null
+          kurs_type_annet?: string | null
+          kursbevis?: boolean | null
+          spesifikk_dato?: string | null
+          spesifikk_tid?: string | null
+          sted?: string | null
+          til_dato?: string | null
+        }
+        Update: {
+          adresse?: string | null
+          annet?: string | null
+          antall_deltakere?: number | null
+          created_at?: string | null
+          dato_type?: string | null
+          datoer?: string | null
+          deltakermasse?: string | null
+          engelsk_kurs?: boolean | null
+          fra_dato?: string | null
+          id?: number
+          kontaktperson_epost?: string | null
+          kontaktperson_navn?: string | null
+          kontaktperson_telefon?: string | null
+          kurs_type?: string | null
+          kurs_type_annet?: string | null
+          kursbevis?: boolean | null
+          spesifikk_dato?: string | null
+          spesifikk_tid?: string | null
+          sted?: string | null
+          til_dato?: string | null
+        }
+        Relationships: []
+      }
       EventParticipants: {
         Row: {
           allergies: string | null
+          attended: boolean | null
           created_at: string
           email: string | null
           eventId: number | null
           id: number
           kull: number | null
           name: string | null
+          status: string
         }
         Insert: {
           allergies?: string | null
+          attended?: boolean | null
           created_at?: string
           email?: string | null
           eventId?: number | null
           id?: number
           kull?: number | null
           name?: string | null
+          status?: string
         }
         Update: {
           allergies?: string | null
+          attended?: boolean | null
           created_at?: string
           email?: string | null
           eventId?: number | null
           id?: number
           kull?: number | null
           name?: string | null
+          status?: string
         }
         Relationships: [
           {
@@ -55,6 +130,7 @@ export type Database = {
       Events: {
         Row: {
           author: string | null
+          contact_email: string | null
           created_at: string
           description: string | null
           end_datetime: string | null
@@ -63,12 +139,14 @@ export type Database = {
           location: string | null
           max_attendees: number | null
           reg_deadline: string | null
+          reg_opens: string | null
           slug: string | null
           start_datetime: string | null
           title: string | null
         }
         Insert: {
           author?: string | null
+          contact_email?: string | null
           created_at?: string
           description?: string | null
           end_datetime?: string | null
@@ -77,12 +155,14 @@ export type Database = {
           location?: string | null
           max_attendees?: number | null
           reg_deadline?: string | null
+          reg_opens?: string | null
           slug?: string | null
           start_datetime?: string | null
           title?: string | null
         }
         Update: {
           author?: string | null
+          contact_email?: string | null
           created_at?: string
           description?: string | null
           end_datetime?: string | null
@@ -91,6 +171,7 @@ export type Database = {
           location?: string | null
           max_attendees?: number | null
           reg_deadline?: string | null
+          reg_opens?: string | null
           slug?: string | null
           start_datetime?: string | null
           title?: string | null
@@ -137,7 +218,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_admin: { Args: never; Returns: boolean }
     }
     Enums: {
       [_ in never]: never

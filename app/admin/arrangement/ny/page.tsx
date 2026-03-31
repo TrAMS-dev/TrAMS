@@ -13,8 +13,10 @@ interface EventFormData {
     start_datetime: string
     end_datetime: string
     location: string
+    contact_email: string
     image: string
     max_attendees: string
+    reg_opens: string
     reg_deadline: string
     author: string
 }
@@ -28,8 +30,10 @@ export default function AdminCreateEventPage() {
         start_datetime: '',
         end_datetime: '',
         location: '',
+        contact_email: '',
         image: '',
         max_attendees: '',
+        reg_opens: '',
         reg_deadline: '',
         author: '',
     })
@@ -162,12 +166,37 @@ export default function AdminCreateEventPage() {
                     </Field.Root>
 
                     <Field.Root>
+                        <Field.Label>Kontakt e-post</Field.Label>
+                        <Input
+                            name="contact_email"
+                            type="email"
+                            value={formData.contact_email}
+                            onChange={handleChange}
+                            placeholder="f.eks. arrangement@trams.no"
+                        />
+                        <Field.HelperText>
+                            Vises på arrangementssiden. Brukes også som svar-adresse på påmeldingsbekreftelser.
+                        </Field.HelperText>
+                    </Field.Root>
+
+                    <Field.Root>
                         <Field.Label>Bilde</Field.Label>
                         <Field.HelperText>Last opp et bilde som representerer arrangementet</Field.HelperText>
                         <ImageUploader
                             value={formData.image}
                             onChange={(url) => setFormData((prev) => ({ ...prev, image: url }))}
                         />
+                    </Field.Root>
+
+                    <Field.Root>
+                        <Field.Label>Påmelding åpner</Field.Label>
+                        <Input
+                            name="reg_opens"
+                            type="datetime-local"
+                            value={formData.reg_opens}
+                            onChange={handleChange}
+                        />
+                        <Field.HelperText>Valgfritt. Tomt betyr at påmelding er åpen med en gang.</Field.HelperText>
                     </Field.Root>
 
                     <Box

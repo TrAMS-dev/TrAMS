@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Box, Heading, Text, Stack, Badge, Flex, Spinner, Button } from '@chakra-ui/react'
+import { Box, Heading, Text, Stack, Badge, Flex, Spinner, Button, Link } from '@chakra-ui/react'
 import EventSignupDialog from '@/components/EventSignupDialog'
 import { createClient } from '@/utils/supabase/client'
 import type { Tables } from '@/types/supabase'
@@ -35,11 +35,12 @@ export default function EventDetailPage() {
 
         setEvent(eventData)
 
-        // Fetch participant count
+        // Confirmed participants only (excludes waitlist) for capacity display
         const { count, error: countError } = await supabase
             .from('EventParticipants')
             .select('*', { count: 'exact', head: true })
             .eq('eventId', eventData.id)
+            .or('status.eq.confirmed,status.is.null')
 
         if (!countError && count !== null) {
             setParticipantCount(count)
@@ -79,12 +80,14 @@ export default function EventDetailPage() {
 
     const startDate = event.start_datetime ? new Date(event.start_datetime) : null
     const endDate = event.end_datetime ? new Date(event.end_datetime) : null
+    const regOpens = event.reg_opens ? new Date(event.reg_opens) : null
     const regDeadline = event.reg_deadline ? new Date(event.reg_deadline) : null
     const now = new Date()
 
+    const isRegistrationNotYetOpen = regOpens ? now < regOpens : false
     const isRegistrationClosed = regDeadline ? now > regDeadline : false
     const isFull = event.max_attendees ? participantCount >= event.max_attendees : false
-    const canSignup = !isRegistrationClosed && !isFull
+    const canSignup = !isRegistrationNotYetOpen && !isRegistrationClosed
 
     return (
         <>
@@ -198,6 +201,32 @@ export default function EventDetailPage() {
                                 <Text fontSize="lg">{event.location}</Text>
                             </Box>
                         )}
+
+                        {event.contact_email && (
+                            <Box
+                                flex="1"
+                                minW="250px"
+                                p={4}
+                                bg="white"
+                                borderRadius="md"
+                                boxShadow="sm"
+                                borderLeft="4px solid"
+                                borderColor="teal.500"
+                            >
+                                <Text fontWeight="bold" fontSize="sm" color="gray.600" mb={1}>
+                                    KONTAKT
+                                </Text>
+                                <Text fontSize="lg">
+                                    <Link
+                                        href={`mailto:${encodeURIComponent(event.contact_email)}`}
+                                        color="blue.600"
+                                        textDecoration="underline"
+                                    >
+                                        {event.contact_email}
+                                    </Link>
+                                </Text>
+                            </Box>
+                        )}
                     </Flex>
 
                     {/* Registration Info */}
@@ -213,7 +242,24 @@ export default function EventDetailPage() {
                                             <strong>Plasser:</strong> {participantCount} / {event.max_attendees}
                                             {isFull && (
                                                 <Badge ml={2} colorPalette="red">
-                                                    Fullt
+                                                    Fullt – venteliste
+                                                </Badge>
+                                            )}
+                                        </Text>
+                                    )}
+                                    {regOpens && (
+                                        <Text>
+                                            <strong>Påmelding åpner:</strong>{' '}
+                                            {regOpens.toLocaleDateString('nb-NO', {
+                                                year: 'numeric',
+                                                month: 'long',
+                                                day: 'numeric',
+                                                hour: '2-digit',
+                                                minute: '2-digit',
+                                            })}
+                                            {isRegistrationNotYetOpen && (
+                                                <Badge ml={2} colorPalette="orange">
+                                                    Ikke åpnet
                                                 </Badge>
                                             )}
                                         </Text>
@@ -244,7 +290,13 @@ export default function EventDetailPage() {
                                 onClick={() => setSignupOpen(true)}
                                 disabled={!canSignup}
                             >
-                                {isFull ? 'Fullt' : isRegistrationClosed ? 'Påmelding stengt' : 'Meld deg på'}
+                                {isRegistrationNotYetOpen
+                                    ? 'Påmelding ikke åpnet'
+                                    : isRegistrationClosed
+                                      ? 'Påmelding stengt'
+                                      : isFull
+                                        ? 'Meld deg på venteliste'
+                                        : 'Meld deg på'}
                             </Button>
                         </Flex>
                     </Box>
