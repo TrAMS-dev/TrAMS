@@ -29,6 +29,7 @@ export default function AdminParticipantsPage() {
     const [eventTitle, setEventTitle] = useState('')
     const [loading, setLoading] = useState(true)
     const [savingId, setSavingId] = useState<number | null>(null)
+    const [deletingId, setDeletingId] = useState<number | null>(null)
 
     const attendanceSummary = useMemo(() => {
         const confirmed = participants.filter(isConfirmedParticipant)
@@ -77,28 +78,88 @@ export default function AdminParticipantsPage() {
         value: string
     ) => {
         const attended = parseAttended(value)
+        const previous = participants.find((p) => p.id === participantId)?.attended ?? null
+
+        setParticipants((prev) =>
+            prev.map((p) => (p.id === participantId ? { ...p, attended } : p))
+        )
         setSavingId(participantId)
+
+        try {
+            const res = await fetch('/api/admin/event-participants/attendance', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ participantId, attended }),
+            })
+            const payload = (await res.json().catch(() => ({}))) as {
+                error?: string
+                participant?: { id: number; attended: boolean | null }
+            }
+
+            if (!res.ok) {
+                throw new Error(payload.error || 'Kunne ikke lagre oppmøte')
+            }
+
+            if (payload.participant) {
+                setParticipants((prev) =>
+                    prev.map((p) =>
+                        p.id === participantId
+                            ? { ...p, attended: payload.participant!.attended }
+                            : p
+                    )
+                )
+            }
+        } catch (e) {
+            console.error('Error updating attendance:', e)
+            setParticipants((prev) =>
+                prev.map((p) =>
+                    p.id === participantId ? { ...p, attended: previous } : p
+                )
+            )
+            toaster.create({
+                title: 'Kunne ikke lagre oppmøte',
+                description:
+                    e instanceof Error ? e.message : 'Prøv igjen eller kontakt administrator.',
+                type: 'error',
+                duration: 7000,
+            })
+        } finally {
+            setSavingId(null)
+        }
+    }
+
+    const handleRemoveParticipant = async (participantId: number, displayName: string) => {
+        const ok = window.confirm(
+            `Fjerne «${displayName}» fra arrangementet? Dette kan ikke angres.`
+        )
+        if (!ok) return
+
+        setDeletingId(participantId)
         const supabase = createClient()
         const { error } = await supabase
             .from('EventParticipants')
-            .update({ attended })
+            .delete()
             .eq('id', participantId)
 
         if (error) {
-            console.error('Error updating attendance:', error)
+            console.error('Error removing participant:', error)
+            const description =
+                typeof error.message === 'string' ? error.message : undefined
             toaster.create({
-                title: 'Kunne ikke lagre oppmøte',
+                title: 'Kunne ikke fjerne deltaker',
+                description,
                 type: 'error',
                 duration: 5000,
             })
         } else {
-            setParticipants((prev) =>
-                prev.map((p) =>
-                    p.id === participantId ? { ...p, attended } : p
-                )
-            )
+            setParticipants((prev) => prev.filter((p) => p.id !== participantId))
+            toaster.create({
+                title: 'Deltaker fjernet',
+                type: 'success',
+                duration: 4000,
+            })
         }
-        setSavingId(null)
+        setDeletingId(null)
     }
 
     const handleExport = () => {
@@ -175,12 +236,13 @@ export default function AdminParticipantsPage() {
                             <Table.ColumnHeader>Status</Table.ColumnHeader>
                             <Table.ColumnHeader>Oppmøte</Table.ColumnHeader>
                             <Table.ColumnHeader>Påmeldt</Table.ColumnHeader>
+                            <Table.ColumnHeader textAlign="right">Handling</Table.ColumnHeader>
                         </Table.Row>
                     </Table.Header>
                     <Table.Body>
                         {participants.length === 0 && (
                             <Table.Row>
-                                <Table.Cell colSpan={7} textAlign="center" py={8} color="gray.500">
+                                <Table.Cell colSpan={8} textAlign="center" py={8} color="gray.500">
                                     Ingen påmeldte enda.
                                 </Table.Cell>
                             </Table.Row>
@@ -220,6 +282,23 @@ export default function AdminParticipantsPage() {
                                 </Table.Cell>
                                 <Table.Cell color="gray.500" fontSize="sm">
                                     {new Date(p.created_at).toLocaleString('nb-NO')}
+                                </Table.Cell>
+                                <Table.Cell textAlign="right">
+                                    <Button
+                                        size="sm"
+                                        variant="outline"
+                                        colorPalette="red"
+                                        loading={deletingId === p.id}
+                                        disabled={deletingId !== null}
+                                        onClick={() =>
+                                            handleRemoveParticipant(
+                                                p.id,
+                                                p.name?.trim() || p.email || 'Deltaker'
+                                            )
+                                        }
+                                    >
+                                        Fjern
+                                    </Button>
                                 </Table.Cell>
                             </Table.Row>
                         ))}

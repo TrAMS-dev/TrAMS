@@ -49,20 +49,29 @@ export default function AdminLayout({
                                                     Oversikt
                                                 </Link>
                                                 <Link
-                                                    href="/admin/studio"
+                                                    href="/admin/oppmote"
                                                     fontWeight="medium"
                                                     _hover={{ color: 'var(--color-primary)' }}
                                                 >
-                                                    Rediger nettsideinnhold
+                                                    Oppmøte
                                                 </Link>
                                                 {isAdmin && (
-                                                    <Link
-                                                        href="/admin/users"
-                                                        fontWeight="medium"
-                                                        _hover={{ color: 'var(--color-primary)' }}
-                                                    >
-                                                        Brukere
-                                                    </Link>
+                                                    <>
+                                                        <Link
+                                                            href="/admin/studio"
+                                                            fontWeight="medium"
+                                                            _hover={{ color: 'var(--color-primary)' }}
+                                                        >
+                                                            Rediger nettsideinnhold
+                                                        </Link>
+                                                        <Link
+                                                            href="/admin/users"
+                                                            fontWeight="medium"
+                                                            _hover={{ color: 'var(--color-primary)' }}
+                                                        >
+                                                            Brukere
+                                                        </Link>
+                                                    </>
                                                 )}
                                                 <Link
                                                     href="/"

@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { ImageUploader } from '@/components/admin/ImageUploader'
 import { useAuth } from '@/hooks/useAuth'
 import { toaster } from '@/components/ui/toaster'
+import { datetimeLocalToUtcIso } from '@/lib/datetimeLocal'
 
 interface EventFormData {
     title: string
@@ -60,6 +61,60 @@ export default function AdminCreateEventPage() {
 
         setIsSubmitting(true)
 
+        const rawMax = formData.max_attendees.trim()
+        let max_attendees: number | null = null
+        if (rawMax !== '') {
+            const n = Number.parseInt(rawMax, 10)
+            if (!Number.isFinite(n) || n < 1) {
+                toaster.create({
+                    title: 'Ugyldig maks antall deltakere',
+                    description: 'Oppgi et heltall større enn 0, eller la feltet stå tomt.',
+                    type: 'error',
+                    duration: 5000,
+                })
+                setIsSubmitting(false)
+                return
+            }
+            max_attendees = n
+        }
+
+        const startUtc = datetimeLocalToUtcIso(formData.start_datetime)
+        const endUtc = datetimeLocalToUtcIso(formData.end_datetime)
+        if (!startUtc || !endUtc) {
+            toaster.create({
+                title: 'Ugyldig start- eller sluttidspunkt',
+                type: 'error',
+                duration: 5000,
+            })
+            setIsSubmitting(false)
+            return
+        }
+
+        const regOpensUtc = formData.reg_opens.trim()
+            ? datetimeLocalToUtcIso(formData.reg_opens)
+            : null
+        const regDeadlineUtc = formData.reg_deadline.trim()
+            ? datetimeLocalToUtcIso(formData.reg_deadline)
+            : null
+        if (formData.reg_opens.trim() && !regOpensUtc) {
+            toaster.create({
+                title: 'Ugyldig tidspunkt for «Påmelding åpner»',
+                type: 'error',
+                duration: 5000,
+            })
+            setIsSubmitting(false)
+            return
+        }
+        if (formData.reg_deadline.trim() && !regDeadlineUtc) {
+            toaster.create({
+                title: 'Ugyldig påmeldingsfrist',
+                type: 'error',
+                duration: 5000,
+            })
+            setIsSubmitting(false)
+            return
+        }
+
         try {
             const response = await fetch('/api/events/create', {
                 method: 'POST',
@@ -68,7 +123,11 @@ export default function AdminCreateEventPage() {
                 },
                 body: JSON.stringify({
                     ...formData,
-                    max_attendees: formData.max_attendees ? parseInt(formData.max_attendees) : null,
+                    start_datetime: startUtc,
+                    end_datetime: endUtc,
+                    reg_opens: regOpensUtc,
+                    reg_deadline: regDeadlineUtc,
+                    max_attendees,
                     author: user.id
                 }),
             })

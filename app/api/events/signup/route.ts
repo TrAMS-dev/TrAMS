@@ -19,12 +19,25 @@ export async function POST(request: Request) {
         const body = await request.json()
         const { name, email, kull, allergies, eventId } = body
 
-        // Validate required fields
-        if (!name || !email || !kull || !eventId) {
+        const nameStr = typeof name === 'string' ? name.trim() : ''
+        const emailStr = typeof email === 'string' ? email.trim() : ''
+        const kullStr =
+            kull !== undefined && kull !== null && String(kull).trim() !== ''
+                ? String(kull).trim()
+                : ''
+        const eventIdNum = Number(eventId)
+
+        // Validate required fields (kull can be 0 in theory; do not use !kull)
+        if (!nameStr || !emailStr || !kullStr || !Number.isInteger(eventIdNum) || eventIdNum < 1) {
             return NextResponse.json(
                 { error: 'Navn, e-post, kull og eventId er påkrevd' },
                 { status: 400 }
             )
+        }
+
+        const kullNum = Number.parseInt(kullStr, 10)
+        if (!Number.isFinite(kullNum)) {
+            return NextResponse.json({ error: 'Ugyldig kull' }, { status: 400 })
         }
 
         const supabase = await createClient()
@@ -33,7 +46,7 @@ export async function POST(request: Request) {
         const { data: event, error: eventError } = await supabase
             .from('Events')
             .select('*')
-            .eq('id', eventId)
+            .eq('id', eventIdNum)
             .single()
 
         if (eventError || !event) {
@@ -70,9 +83,9 @@ export async function POST(request: Request) {
         const { data: existingParticipant } = await supabase
             .from('EventParticipants')
             .select('id')
-            .eq('eventId', eventId)
-            .eq('email', email)
-            .single()
+            .eq('eventId', eventIdNum)
+            .eq('email', emailStr)
+            .maybeSingle()
 
         if (existingParticipant) {
             return NextResponse.json(
@@ -86,7 +99,7 @@ export async function POST(request: Request) {
         if (event.max_attendees) {
             const { count, error: countError } = await confirmedParticipantsQuery(
                 supabase,
-                eventId
+                eventIdNum
             )
 
             if (countError) {
@@ -100,11 +113,14 @@ export async function POST(request: Request) {
         const { data: participant, error: insertError } = await supabase
             .from('EventParticipants')
             .insert({
-                name,
-                email,
-                kull,
-                allergies: allergies || null,
-                eventId,
+                name: nameStr,
+                email: emailStr,
+                kull: kullNum,
+                allergies:
+                    typeof allergies === 'string' && allergies.trim() !== ''
+                        ? allergies.trim()
+                        : null,
+                eventId: eventIdNum,
                 status,
             })
             .select()
@@ -120,8 +136,8 @@ export async function POST(request: Request) {
 
         try {
             await sendEventSignupEmail(status, {
-                recipientName: name,
-                recipientEmail: email,
+                recipientName: nameStr,
+                recipientEmail: emailStr,
                 eventTitle: event.title || 'Arrangement',
                 eventSlug: event.slug,
                 startDatetime: event.start_datetime,

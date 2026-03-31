@@ -51,6 +51,15 @@ export default function EventSignupDialog({
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
+        if (!formData.kull.trim()) {
+            toaster.create({
+                title: 'Velg kull',
+                type: 'error',
+                description: 'Du må velge kull for å melde deg på.',
+                duration: 5000,
+            })
+            return
+        }
         setIsSubmitting(true)
 
         try {
@@ -68,7 +77,11 @@ export default function EventSignupDialog({
             const data = await response.json()
 
             if (!response.ok) {
-                throw new Error(data.error || 'Failed to sign up')
+                throw new Error(
+                    typeof data.error === 'string' && data.error
+                        ? data.error
+                        : 'Påmelding feilet'
+                )
             }
 
             const onWaitlist = data.registrationStatus === 'waitlist'
@@ -93,10 +106,12 @@ export default function EventSignupDialog({
             onSuccess?.()
             onClose()
         } catch (error) {
+            const message =
+                error instanceof Error ? error.message : 'Noe gikk galt'
             toaster.create({
                 title: 'Påmelding feilet!',
                 type: 'error',
-                description: 'Noe gikk galt',
+                description: message,
                 duration: 5000,
             })
         } finally {

@@ -12,7 +12,7 @@ function escapeHtml(text: string): string {
         .replace(/"/g, '&quot;')
 }
 
-export type EventSignupEmailKind = 'confirmed' | 'waitlist'
+export type EventSignupEmailKind = 'confirmed' | 'waitlist' | 'promotedFromWaitlist'
 
 export interface EventSignupEmailContext {
     recipientName: string
@@ -46,85 +46,89 @@ function eventPageUrl(slug: string | null): string | null {
     return `${base}/arrangementer/${encodeURIComponent(slug)}`
 }
 
-/** Replace subjects and HTML bodies below when you have final copy. */
-const SUBJECT_CONFIRMED = (title: string) => `Du er påmeldt: ${title}`
+/** Kurs + dato + sted fragment: «på/til <strong>tittel</strong> <dato> på <strong>sted</strong>». */
+function courseWhenWhereFragment(
+    title: string,
+    when: string | null,
+    where: string | null,
+    preposition: 'på' | 'til'
+): string {
+    const t = escapeHtml(title.trim())
+    const whenPart = when ? ` ${escapeHtml(when)}` : ''
+    const wherePart = where ? ` på <strong>${where}</strong>` : ''
+    return `${preposition} <strong>${t}</strong>${whenPart}${wherePart}`
+}
 
-const SUBJECT_WAITLIST = (title: string) => `Du står på venteliste: ${title}`
+function linkParagraph(link: string | null): string {
+    if (!link) {
+        return '<p style="color:#555;line-height:1.6;">Her er lenke med informasjon om arrangementet: (lenke er ikke tilgjengelig)</p>'
+    }
+    const safe = escapeHtml(link)
+    return `<p style="color:#555;line-height:1.6;">Her er lenke med informasjon om arrangementet: <a href="${safe}" style="color:#c41e3a;">${safe}</a></p>`
+}
 
-function confirmedEmailHtml(ctx: EventSignupEmailContext): string {
-    const name = escapeHtml(ctx.recipientName.trim())
-    const title = escapeHtml(ctx.eventTitle.trim())
-    const when = formatNbDate(ctx.startDatetime)
-    const where = ctx.location ? escapeHtml(ctx.location.trim()) : null
-    const deadline = formatNbDate(ctx.regDeadline)
-    const link = eventPageUrl(ctx.eventSlug)
-    const whenRow = when
-        ? `<tr><td style="padding:8px 0;color:#666;font-weight:bold;vertical-align:top;">Tid</td><td style="padding:8px 0;color:#333;">${escapeHtml(when)}</td></tr>`
-        : ''
-    const whereRow = where
-        ? `<tr><td style="padding:8px 0;color:#666;font-weight:bold;vertical-align:top;">Sted</td><td style="padding:8px 0;color:#333;">${where}</td></tr>`
-        : ''
-    const deadlineRow = deadline
-        ? `<tr><td style="padding:8px 0;color:#666;font-weight:bold;vertical-align:top;">Påmeldingsfrist</td><td style="padding:8px 0;color:#333;">${escapeHtml(deadline)}</td></tr>`
-        : ''
-    const linkBlock = link
-        ? `<p style="margin:16px 0 0;"><a href="${escapeHtml(link)}" style="color:#c41e3a;">Se arrangementet på trams.no</a></p>`
-        : ''
-
+function emailShell(inner: string): string {
     return `<!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
 <body style="margin:0;padding:0;background-color:#f4f4f4;">
   <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
-    <div style="background-color:#c41e3a;padding:20px;border-radius:8px 8px 0 0;">
-      <h1 style="color:white;margin:0;font-size:20px;">Påmelding bekreftet</h1>
-    </div>
-    <div style="background-color:#f9f9f9;padding:24px;border-radius:0 0 8px 8px;border:1px solid #e0e0e0;">
-      <p style="color:#555;line-height:1.6;margin-top:0;">Hei ${name},</p>
-      <p style="color:#555;line-height:1.6;">Takk for din påmelding! Du er registrert som deltaker på <strong>${title}</strong>.</p>
-      <table style="width:100%;border-collapse:collapse;margin-top:12px;">${whenRow}${whereRow}${deadlineRow}</table>
-      ${linkBlock}
-      <p style="color:#888;font-size:13px;margin-top:24px;line-height:1.5;">Med vennlig hilsen<br/>TrAMS</p>
+    <div style="background-color:#f9f9f9;padding:24px;border-radius:8px;border:1px solid #e0e0e0;">
+      ${inner}
+      <p style="color:#888;font-size:13px;margin-top:24px;line-height:1.5;">Med akuttmedisinsk hilsen,<br/>TrAMS</p>
     </div>
   </div>
 </body>
 </html>`
 }
 
-function waitlistEmailHtml(ctx: EventSignupEmailContext): string {
-    const name = escapeHtml(ctx.recipientName.trim())
-    const title = escapeHtml(ctx.eventTitle.trim())
+const SUBJECT_CONFIRMED = (title: string) => `Plass på kurs: ${title}`
+
+const SUBJECT_WAITLIST = (title: string) => `Venteliste: ${title}`
+
+const SUBJECT_PROMOTED = (title: string) => `Plass fra venteliste: ${title}`
+
+function confirmedEmailHtml(ctx: EventSignupEmailContext): string {
+    const title = ctx.eventTitle.trim()
     const when = formatNbDate(ctx.startDatetime)
     const where = ctx.location ? escapeHtml(ctx.location.trim()) : null
     const link = eventPageUrl(ctx.eventSlug)
-    const whenRow = when
-        ? `<tr><td style="padding:8px 0;color:#666;font-weight:bold;vertical-align:top;">Tid</td><td style="padding:8px 0;color:#333;">${escapeHtml(when)}</td></tr>`
-        : ''
-    const whereRow = where
-        ? `<tr><td style="padding:8px 0;color:#666;font-weight:bold;vertical-align:top;">Sted</td><td style="padding:8px 0;color:#333;">${where}</td></tr>`
-        : ''
-    const linkBlock = link
-        ? `<p style="margin:16px 0 0;"><a href="${escapeHtml(link)}" style="color:#c41e3a;">Se arrangementet på trams.no</a></p>`
-        : ''
+    const detail = courseWhenWhereFragment(title, when, where, 'på')
 
-    return `<!DOCTYPE html>
-<html>
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
-<body style="margin:0;padding:0;background-color:#f4f4f4;">
-  <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
-    <div style="background-color:#c41e3a;padding:20px;border-radius:8px 8px 0 0;">
-      <h1 style="color:white;margin:0;font-size:20px;">Du står på venteliste</h1>
-    </div>
-    <div style="background-color:#f9f9f9;padding:24px;border-radius:0 0 8px 8px;border:1px solid #e0e0e0;">
-      <p style="color:#555;line-height:1.6;margin-top:0;">Hei ${name},</p>
-      <p style="color:#555;line-height:1.6;">Takk for din påmelding til <strong>${title}</strong>. Arrangementet er fulltegnet, så du er satt på <strong>venteliste</strong>. Vi tar kontakt på e-post dersom det blir ledig plass.</p>
-      <table style="width:100%;border-collapse:collapse;margin-top:12px;">${whenRow}${whereRow}</table>
-      ${linkBlock}
-      <p style="color:#888;font-size:13px;margin-top:24px;line-height:1.5;">Med vennlig hilsen<br/>TrAMS</p>
-    </div>
-  </div>
-</body>
-</html>`
+    const body = `<p style="color:#555;line-height:1.6;margin-top:0;">Hei! Du som har fått denne mailen har fått plass ${detail}.</p>
+${linkParagraph(link)}
+<p style="color:#555;line-height:1.6;">Vi gleder oss til å se dere på kurs!</p>
+<p style="color:#555;line-height:1.6;">Dersom du ikke kan komme på kurset ønsker vi at du gir beskjed på denne mailen så fort som mulig for å kunne gi plass til de som står på evt. venteliste, og informerer om at du vil bli nedprioritert på fremtidige TrAMS kurs dersom du gir beskjed senere enn et døgn før kurset.</p>`
+
+    return emailShell(body)
+}
+
+function waitlistEmailHtml(ctx: EventSignupEmailContext): string {
+    const title = ctx.eventTitle.trim()
+    const when = formatNbDate(ctx.startDatetime)
+    const where = ctx.location ? escapeHtml(ctx.location.trim()) : null
+    const link = eventPageUrl(ctx.eventSlug)
+    const detail = courseWhenWhereFragment(title, when, where, 'til')
+
+    const body = `<p style="color:#555;line-height:1.6;margin-top:0;">Hei! Du som har fått denne mailen er satt på venteliste ${detail}.</p>
+<p style="color:#555;line-height:1.6;">Dersom det åpner seg plass på kurset vil du få umiddelbar beskjed slik at du kan få mulighet til å delta på kurset!</p>
+${linkParagraph(link)}`
+
+    return emailShell(body)
+}
+
+function promotedFromWaitlistEmailHtml(ctx: EventSignupEmailContext): string {
+    const title = ctx.eventTitle.trim()
+    const when = formatNbDate(ctx.startDatetime)
+    const where = ctx.location ? escapeHtml(ctx.location.trim()) : null
+    const link = eventPageUrl(ctx.eventSlug)
+    const detail = courseWhenWhereFragment(title, when, where, 'på')
+
+    const body = `<p style="color:#555;line-height:1.6;margin-top:0;">Hei! Du som har fått denne mailen har fått plass ${detail} da det har åpnet seg plasser fra ventelisten. Vi ønsker at du melder deg på så fort som mulig om du kan delta på kurset, ellers vil plassen gå til nestemann på listen.</p>
+${linkParagraph(link)}
+<p style="color:#555;line-height:1.6;">Vi gleder oss til å se deg på kurs!</p>`
+
+    return emailShell(body)
 }
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -147,8 +151,16 @@ export async function sendEventSignupEmail(
     const subject =
         kind === 'confirmed'
             ? SUBJECT_CONFIRMED(ctx.eventTitle.trim())
-            : SUBJECT_WAITLIST(ctx.eventTitle.trim())
-    const html = kind === 'confirmed' ? confirmedEmailHtml(ctx) : waitlistEmailHtml(ctx)
+            : kind === 'waitlist'
+              ? SUBJECT_WAITLIST(ctx.eventTitle.trim())
+              : SUBJECT_PROMOTED(ctx.eventTitle.trim())
+
+    const html =
+        kind === 'confirmed'
+            ? confirmedEmailHtml(ctx)
+            : kind === 'waitlist'
+              ? waitlistEmailHtml(ctx)
+              : promotedFromWaitlistEmailHtml(ctx)
 
     const replyToRaw = ctx.contactEmail?.trim().toLowerCase()
     const replyTo =

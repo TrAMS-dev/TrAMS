@@ -6,6 +6,7 @@ import { useRouter, useParams } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
 import { ImageUploader } from '@/components/admin/ImageUploader'
 import { toaster } from '@/components/ui/toaster'
+import { datetimeLocalToUtcIso, utcIsoToDatetimeLocalValue } from '@/lib/datetimeLocal'
 
 interface EventFormData {
     title: string
@@ -54,14 +55,14 @@ export default function AdminEditEventPage() {
             setFormData({
                 title: data.title || '',
                 description: data.description || '',
-                start_datetime: data.start_datetime ? data.start_datetime.slice(0, 16) : '',
-                end_datetime: data.end_datetime ? data.end_datetime.slice(0, 16) : '',
+                start_datetime: utcIsoToDatetimeLocalValue(data.start_datetime),
+                end_datetime: utcIsoToDatetimeLocalValue(data.end_datetime),
                 location: data.location || '',
                 contact_email: data.contact_email || '',
                 image: data.image || '',
                 max_attendees: data.max_attendees?.toString() || '',
-                reg_opens: data.reg_opens ? data.reg_opens.slice(0, 16) : '',
-                reg_deadline: data.reg_deadline ? data.reg_deadline.slice(0, 16) : '',
+                reg_opens: utcIsoToDatetimeLocalValue(data.reg_opens),
+                reg_deadline: utcIsoToDatetimeLocalValue(data.reg_deadline),
                 author: data.author || '',
             })
             setLoading(false)
@@ -83,6 +84,60 @@ export default function AdminEditEventPage() {
         if (!formData || !eventId) return
         setIsSubmitting(true)
 
+        const rawMax = formData.max_attendees.trim()
+        let max_attendees: number | null = null
+        if (rawMax !== '') {
+            const n = Number.parseInt(rawMax, 10)
+            if (!Number.isFinite(n) || n < 1) {
+                toaster.create({
+                    title: 'Ugyldig maks antall deltakere',
+                    description: 'Oppgi et heltall større enn 0, eller la feltet stå tomt.',
+                    type: 'error',
+                    duration: 5000,
+                })
+                setIsSubmitting(false)
+                return
+            }
+            max_attendees = n
+        }
+
+        const startUtc = datetimeLocalToUtcIso(formData.start_datetime)
+        const endUtc = datetimeLocalToUtcIso(formData.end_datetime)
+        if (!startUtc || !endUtc) {
+            toaster.create({
+                title: 'Ugyldig start- eller sluttidspunkt',
+                type: 'error',
+                duration: 5000,
+            })
+            setIsSubmitting(false)
+            return
+        }
+
+        const regOpensUtc = formData.reg_opens.trim()
+            ? datetimeLocalToUtcIso(formData.reg_opens)
+            : null
+        const regDeadlineUtc = formData.reg_deadline.trim()
+            ? datetimeLocalToUtcIso(formData.reg_deadline)
+            : null
+        if (formData.reg_opens.trim() && !regOpensUtc) {
+            toaster.create({
+                title: 'Ugyldig tidspunkt for «Påmelding åpner»',
+                type: 'error',
+                duration: 5000,
+            })
+            setIsSubmitting(false)
+            return
+        }
+        if (formData.reg_deadline.trim() && !regDeadlineUtc) {
+            toaster.create({
+                title: 'Ugyldig påmeldingsfrist',
+                type: 'error',
+                duration: 5000,
+            })
+            setIsSubmitting(false)
+            return
+        }
+
         try {
             const supabase = createClient()
 
@@ -91,14 +146,14 @@ export default function AdminEditEventPage() {
                 .update({
                     title: formData.title,
                     description: formData.description || null,
-                    start_datetime: formData.start_datetime,
-                    end_datetime: formData.end_datetime,
+                    start_datetime: startUtc,
+                    end_datetime: endUtc,
                     location: formData.location,
                     contact_email: formData.contact_email.trim() || null,
                     image: formData.image || null,
-                    max_attendees: formData.max_attendees ? parseInt(formData.max_attendees) : null,
-                    reg_opens: formData.reg_opens || null,
-                    reg_deadline: formData.reg_deadline || null,
+                    max_attendees,
+                    reg_opens: regOpensUtc,
+                    reg_deadline: regDeadlineUtc,
                     author: formData.author || null,
                 })
                 .eq('id', eventId)
@@ -114,8 +169,16 @@ export default function AdminEditEventPage() {
             router.push('/admin')
             router.refresh()
         } catch (error) {
+            const description =
+                error &&
+                typeof error === 'object' &&
+                'message' in error &&
+                typeof (error as { message: unknown }).message === 'string'
+                    ? (error as { message: string }).message
+                    : undefined
             toaster.create({
                 title: 'Kunne ikke oppdatere arrangement',
+                description,
                 type: 'error',
                 duration: 5000,
             })

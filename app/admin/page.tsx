@@ -1,6 +1,7 @@
 import { createClient } from '@/utils/supabase/server'
 import { Box, Heading, Table, Button, Flex, Badge, Link as ChakraLink } from '@chakra-ui/react'
 import Link from 'next/link'
+import { APP_TIME_ZONE } from '@/lib/datetimeLocal'
 
 export default async function AdminDashboard() {
     const supabase = await createClient()
@@ -13,6 +14,29 @@ export default async function AdminDashboard() {
     if (error) {
         console.error('Error fetching events:', error)
         return <Box>Feil ved henting av arrangementer</Box>
+    }
+
+    const eventList = events ?? []
+    const eventIds = eventList.map((e) => e.id)
+
+    /** Confirmed signups only (excludes waitlist) — same filter as arrangementer/[slug]. */
+    const confirmedCountByEventId = new Map<number, number>()
+    if (eventIds.length > 0) {
+        const { data: participantRows, error: participantsError } = await supabase
+            .from('EventParticipants')
+            .select('eventId')
+            .in('eventId', eventIds)
+            .or('status.eq.confirmed,status.is.null')
+
+        if (participantsError) {
+            console.error('Error fetching participant counts:', participantsError)
+        } else {
+            for (const row of participantRows ?? []) {
+                const eid = row.eventId
+                if (eid == null) continue
+                confirmedCountByEventId.set(eid, (confirmedCountByEventId.get(eid) ?? 0) + 1)
+            }
+        }
     }
 
     return (
@@ -38,15 +62,21 @@ export default async function AdminDashboard() {
                         </Table.Row>
                     </Table.Header>
                     <Table.Body>
-                        {events?.map((event) => {
+                        {eventList.map((event) => {
                             const startDate = new Date(event.start_datetime || '')
                             const isPast = startDate < new Date()
+                            const confirmed = confirmedCountByEventId.get(event.id) ?? 0
+                            const attendeesLabel =
+                                event.max_attendees != null
+                                    ? `${confirmed} / ${event.max_attendees}`
+                                    : String(confirmed)
 
                             return (
                                 <Table.Row key={event.id}>
                                     <Table.Cell fontWeight="medium">{event.title}</Table.Cell>
                                     <Table.Cell>
                                         {startDate.toLocaleDateString('nb-NO', {
+                                            timeZone: APP_TIME_ZONE,
                                             day: '2-digit',
                                             month: '2-digit',
                                             year: 'numeric',
@@ -54,10 +84,7 @@ export default async function AdminDashboard() {
                                             minute: '2-digit'
                                         })}
                                     </Table.Cell>
-                                    <Table.Cell>
-                                        {/* Placeholder for count - would need a join or separate query in real app for efficiency if list is long */}
-                                        {event.max_attendees ? `? / ${event.max_attendees}` : '?'}
-                                    </Table.Cell>
+                                    <Table.Cell>{attendeesLabel}</Table.Cell>
                                     <Table.Cell>
                                         <Badge colorPalette={isPast ? 'gray' : 'green'}>
                                             {isPast ? 'Fullført' : 'Kommende'}

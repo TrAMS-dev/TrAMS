@@ -22,6 +22,7 @@ import {
 } from '@chakra-ui/react'
 import { Calendar, List, MapPin, Clock, Users } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { APP_TIME_ZONE } from '@/lib/datetimeLocal'
 
 interface EventCalendarProps {
     events: Tables<'Events'>[]
@@ -277,7 +278,7 @@ export default function EventCalendar({ events }: EventCalendarProps) {
                                         <Box>
                                             <Flex justify="space-between" align="start">
                                                 <Badge colorScheme="blue" mb={2} borderRadius="full" px={2}>
-                                                    {event.start_datetime ? new Date(event.start_datetime).toLocaleDateString('nb-NO', { month: 'short', day: 'numeric' }) : 'Dato kommer'}
+                                                    {event.start_datetime ? new Date(event.start_datetime).toLocaleDateString('nb-NO', { timeZone: APP_TIME_ZONE, month: 'short', day: 'numeric' }) : 'Dato kommer'}
                                                 </Badge>
                                                 {isRegistrationWindowOpen(event) && (
                                                     <Badge
@@ -299,7 +300,7 @@ export default function EventCalendar({ events }: EventCalendarProps) {
                                             <HStack color="gray.500" fontSize="sm">
                                                 <Clock size={16} />
                                                 <Text>
-                                                    {event.start_datetime ? new Date(event.start_datetime).toLocaleTimeString('nb-NO', { hour: '2-digit', minute: '2-digit' }) : 'Tid kommer'}
+                                                    {event.start_datetime ? new Date(event.start_datetime).toLocaleTimeString('nb-NO', { timeZone: APP_TIME_ZONE, hour: '2-digit', minute: '2-digit' }) : 'Tid kommer'}
                                                 </Text>
                                             </HStack>
                                             <HStack color="gray.500" fontSize="sm">
