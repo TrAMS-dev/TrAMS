@@ -79,19 +79,116 @@ export async function POST(request: Request) {
             }
         }
 
-        // Check if user is already registered (confirmed or waitlist)
         const { data: existingParticipant } = await supabase
             .from('EventParticipants')
-            .select('id')
+            .select('id, status')
             .eq('eventId', eventIdNum)
             .eq('email', emailStr)
             .maybeSingle()
 
         if (existingParticipant) {
-            return NextResponse.json(
-                { error: 'Du er allerede påmeldt dette arrangementet' },
-                { status: 400 }
-            )
+            if (existingParticipant.status !== 'waitlist') {
+                return NextResponse.json(
+                    { error: 'Du er allerede påmeldt dette arrangementet' },
+                    { status: 400 }
+                )
+            }
+
+            if (event.max_attendees) {
+                const { count, error: countError } = await confirmedParticipantsQuery(
+                    supabase,
+                    eventIdNum
+                )
+                if (countError) {
+                    console.error('Error counting participants (promote):', countError)
+                }
+                if (count !== null && count >= event.max_attendees) {
+                    return NextResponse.json(
+                        {
+                            error: 'Arrangementet er fortsatt fullt. Du står fortsatt på venteliste.',
+                        },
+                        { status: 400 }
+                    )
+                }
+            }
+
+            const { data: waitlistRows, error: waitlistError } = await supabase
+                .from('EventParticipants')
+                .select('id')
+                .eq('eventId', eventIdNum)
+                .eq('status', 'waitlist')
+                .order('created_at', { ascending: true })
+
+            if (waitlistError) {
+                console.error('Error loading waitlist:', waitlistError)
+                return NextResponse.json(
+                    { error: 'Kunne ikke verifisere venteliste. Prøv igjen senere.' },
+                    { status: 500 }
+                )
+            }
+
+            if (!waitlistRows?.length) {
+                return NextResponse.json(
+                    { error: 'Kunne ikke verifisere venteliste. Prøv igjen senere.' },
+                    { status: 500 }
+                )
+            }
+
+            if (waitlistRows[0].id !== existingParticipant.id) {
+                return NextResponse.json(
+                    {
+                        error: 'Du er ikke først på ventelisten. Vent til det er din tur.',
+                    },
+                    { status: 400 }
+                )
+            }
+
+            const allergiesValue =
+                typeof allergies === 'string' && allergies.trim() !== ''
+                    ? allergies.trim()
+                    : null
+
+            const { data: participant, error: updateError } = await supabase
+                .from('EventParticipants')
+                .update({
+                    name: nameStr,
+                    email: emailStr,
+                    kull: kullNum,
+                    allergies: allergiesValue,
+                    status: 'confirmed',
+                })
+                .eq('id', existingParticipant.id)
+                .select()
+                .single()
+
+            if (updateError) {
+                console.error('Error promoting from waitlist:', updateError)
+                return NextResponse.json(
+                    { error: 'Kunne ikke bekrefte plassen. Prøv igjen senere.' },
+                    { status: 500 }
+                )
+            }
+
+            try {
+                await sendEventSignupEmail('confirmed', {
+                    recipientName: nameStr,
+                    recipientEmail: emailStr,
+                    eventTitle: event.title || 'Arrangement',
+                    eventSlug: event.slug,
+                    startDatetime: event.start_datetime,
+                    location: event.location,
+                    regDeadline: event.reg_deadline,
+                    contactEmail: event.contact_email,
+                })
+            } catch (mailErr) {
+                console.error('Event signup confirmation email failed:', mailErr)
+            }
+
+            return NextResponse.json({
+                success: true,
+                participant,
+                registrationStatus: 'confirmed' as const,
+            })
         }
 
         let status: 'confirmed' | 'waitlist' = 'confirmed'

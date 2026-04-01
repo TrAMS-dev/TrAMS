@@ -1,7 +1,20 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
-import { Box, Heading, Table, Button, Spinner, Flex, Badge, NativeSelect, Text } from '@chakra-ui/react'
+import {
+    Box,
+    Heading,
+    Table,
+    Button,
+    Spinner,
+    Flex,
+    Badge,
+    NativeSelect,
+    Text,
+    Input,
+    Field,
+    HStack,
+} from '@chakra-ui/react'
 import { useParams, useRouter } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
 import type { Tables } from '@/types/supabase'
@@ -26,16 +39,25 @@ export default function AdminParticipantsPage() {
     const router = useRouter()
     const slug = params.slug as string
     const [participants, setParticipants] = useState<Tables<'EventParticipants'>[]>([])
+    const [eventId, setEventId] = useState<number | null>(null)
     const [eventTitle, setEventTitle] = useState('')
+    const [eventMaxAttendees, setEventMaxAttendees] = useState<number | null>(null)
     const [loading, setLoading] = useState(true)
     const [savingId, setSavingId] = useState<number | null>(null)
     const [deletingId, setDeletingId] = useState<number | null>(null)
+    const [notifySpotsInput, setNotifySpotsInput] = useState('1')
+    const [notifySending, setNotifySending] = useState(false)
 
     const attendanceSummary = useMemo(() => {
         const confirmed = participants.filter(isConfirmedParticipant)
         const attended = confirmed.filter((p) => p.attended === true).length
         return { confirmedCount: confirmed.length, attendedCount: attended }
     }, [participants])
+
+    const waitlistCount = useMemo(
+        () => participants.filter((p) => p.status === 'waitlist').length,
+        [participants]
+    )
 
     useEffect(() => {
         const fetchData = async () => {
@@ -44,7 +66,7 @@ export default function AdminParticipantsPage() {
             // Get event id first
             const { data: event, error: eventError } = await supabase
                 .from('Events')
-                .select('id, title')
+                .select('id, title, max_attendees')
                 .eq('slug', slug)
                 .single()
 
@@ -53,7 +75,9 @@ export default function AdminParticipantsPage() {
                 return
             }
 
+            setEventId(event.id)
             setEventTitle(event.title || 'Arrangement')
+            setEventMaxAttendees(event.max_attendees ?? null)
 
             // Get participants
             const { data, error } = await supabase
@@ -135,31 +159,100 @@ export default function AdminParticipantsPage() {
         if (!ok) return
 
         setDeletingId(participantId)
-        const supabase = createClient()
-        const { error } = await supabase
-            .from('EventParticipants')
-            .delete()
-            .eq('id', participantId)
-
-        if (error) {
-            console.error('Error removing participant:', error)
-            const description =
-                typeof error.message === 'string' ? error.message : undefined
-            toaster.create({
-                title: 'Kunne ikke fjerne deltaker',
-                description,
-                type: 'error',
-                duration: 5000,
+        try {
+            const res = await fetch('/api/admin/event-participants/remove', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ participantId }),
             })
-        } else {
+            const payload = (await res.json().catch(() => ({}))) as {
+                error?: string
+            }
+
+            if (!res.ok) {
+                throw new Error(payload.error || 'Kunne ikke fjerne deltaker')
+            }
+
             setParticipants((prev) => prev.filter((p) => p.id !== participantId))
             toaster.create({
                 title: 'Deltaker fjernet',
                 type: 'success',
                 duration: 4000,
             })
+        } catch (e) {
+            console.error('Error removing participant:', e)
+            toaster.create({
+                title: 'Kunne ikke fjerne deltaker',
+                description:
+                    e instanceof Error ? e.message : 'Prøv igjen eller kontakt administrator.',
+                type: 'error',
+                duration: 5000,
+            })
+        } finally {
+            setDeletingId(null)
         }
-        setDeletingId(null)
+    }
+
+    const handleNotifyWaitlist = async () => {
+        if (eventId == null || waitlistCount === 0) return
+
+        const parsed = Number.parseInt(notifySpotsInput.trim(), 10)
+        if (!Number.isFinite(parsed) || parsed < 1) {
+            toaster.create({
+                title: 'Ugyldig antall',
+                description: 'Oppgi hvor mange ledige plasser e-posten skal handle om (heltall minst 1).',
+                type: 'error',
+                duration: 5000,
+            })
+            return
+        }
+
+        const firstN = Math.min(parsed, waitlistCount)
+        const ok = window.confirm(
+            `Send veilednings-e-post til de første ${firstN} på ventelisten? Teksten i e-posten sier at det er ${parsed === 1 ? 'åpnet minst én plass' : `åpnet ${parsed} plasser`} (juster tallet ved behov).`
+        )
+        if (!ok) return
+
+        setNotifySending(true)
+        try {
+            const res = await fetch('/api/admin/event-participants/notify-waitlist', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ eventId, spotsOpened: parsed }),
+            })
+            const payload = (await res.json().catch(() => ({}))) as {
+                error?: string
+                notified?: number
+            }
+
+            if (!res.ok) {
+                throw new Error(payload.error || 'Kunne ikke sende e-post')
+            }
+
+            const n = typeof payload.notified === 'number' ? payload.notified : 0
+            toaster.create({
+                title: n > 0 ? 'E-post sendt' : 'Ingen e-post sendt',
+                description:
+                    n > 0
+                        ? `${n} mottaker(e) har fått veiledningen.`
+                        : eventMaxAttendees == null
+                          ? 'Arrangementet har ikke maks antall deltakere – ventelisten varsles ikke på e-post.'
+                          : 'Ingen på ventelisten med gyldig e-post, eller noe gikk galt.',
+                type: n > 0 ? 'success' : 'warning',
+                duration: 7000,
+            })
+        } catch (e) {
+            console.error('Notify waitlist error:', e)
+            toaster.create({
+                title: 'Kunne ikke sende e-post',
+                description:
+                    e instanceof Error ? e.message : 'Prøv igjen eller kontakt administrator.',
+                type: 'error',
+                duration: 6000,
+            })
+        } finally {
+            setNotifySending(false)
+        }
     }
 
     const handleExport = () => {
@@ -222,6 +315,53 @@ export default function AdminParticipantsPage() {
                 <Text color="gray.600" mb={4}>
                     Oppmøte (bekreftede): {attendanceSummary.attendedCount} av{' '}
                     {attendanceSummary.confirmedCount} registrert som møtt
+                </Text>
+            )}
+
+            {waitlistCount > 0 && eventMaxAttendees != null && eventId != null && (
+                <Box
+                    mb={4}
+                    p={4}
+                    borderWidth="1px"
+                    borderRadius="md"
+                    borderColor="orange.200"
+                    bg="orange.50"
+                >
+                    <Text fontWeight="semibold" mb={1}>
+                        Venteliste ({waitlistCount})
+                    </Text>
+                    <Text fontSize="sm" color="gray.700" mb={3}>
+                        Send e-post med veiledning til de første på ventelisten når det har blitt
+                        ledige plasser (f.eks. etter avmelding eller økt kapasitet). Velg hvor mange
+                        plasser e-posten sendes til, i
+                        påmeldingsrekkefølge.
+                    </Text>
+                    <HStack flexWrap="wrap" gap={3} align="flex-end">
+                        <Field.Root maxW="200px">
+                            <Field.Label fontSize="sm">Antall ledige plasser</Field.Label>
+                            <Input
+                                type="number"
+                                min={1}
+                                value={notifySpotsInput}
+                                onChange={(e) => setNotifySpotsInput(e.target.value)}
+                            />
+                        </Field.Root>
+                        <Button
+                            loading={notifySending}
+                            disabled={notifySending || deletingId !== null}
+                            colorPalette="orange"
+                            onClick={handleNotifyWaitlist}
+                        >
+                            Send e-post til venteliste
+                        </Button>
+                    </HStack>
+                </Box>
+            )}
+
+            {waitlistCount > 0 && eventMaxAttendees == null && (
+                <Text fontSize="sm" color="gray.600" mb={4}>
+                    Dette arrangementet har ikke maks antall deltakere, så ventelisten kan ikke
+                    varsles med denne e-postmalen.
                 </Text>
             )}
 
