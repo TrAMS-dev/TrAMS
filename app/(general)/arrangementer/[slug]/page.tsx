@@ -309,6 +309,18 @@ export default function EventDetailPage() {
                         )}
                     </Flex>
 
+                    {/* Description */}
+                    {event.description && (
+                        <Box p={6} bg="white" borderRadius="md" boxShadow="sm">
+                            <Heading size="md" mb={4}>
+                                Om arrangementet
+                            </Heading>
+                            <Text whiteSpace="pre-wrap" lineHeight="1.8">
+                                {event.description}
+                            </Text>
+                        </Box>
+                    )}
+                    
                     {/* Registration Info */}
                     <Box p={6} bg="white" borderRadius="md" boxShadow="sm">
                         <Flex justify="space-between" align="center" wrap="wrap" gap={4}>
@@ -443,17 +455,7 @@ export default function EventDetailPage() {
                         )}
                     </Box>
 
-                    {/* Description */}
-                    {event.description && (
-                        <Box p={6} bg="white" borderRadius="md" boxShadow="sm">
-                            <Heading size="md" mb={4}>
-                                Om arrangementet
-                            </Heading>
-                            <Text whiteSpace="pre-wrap" lineHeight="1.8">
-                                {event.description}
-                            </Text>
-                        </Box>
-                    )}
+
                         <Box p={6} bg="white" borderRadius="md" boxShadow="sm">
                             <Heading size="md" mb={4}>
                                 Hvis du ikke møter
