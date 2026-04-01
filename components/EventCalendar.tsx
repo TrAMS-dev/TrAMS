@@ -37,7 +37,7 @@ function isRegistrationWindowOpen(event: Tables<'Events'>): boolean {
 }
 
 export default function EventCalendar({ events }: EventCalendarProps) {
-    const [view, setView] = useState<'calendar' | 'list'>('list')
+    const [view, setView] = useState<'calendar' | 'list'>('calendar')
     const [searchTerm, setSearchTerm] = useState('')
     const [locationFilter, setLocationFilter] = useState('all')
     const [sortBy, setSortBy] = useState<'date-asc' | 'date-desc' | 'title-asc' | 'title-desc'>('date-asc')
