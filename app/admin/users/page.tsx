@@ -17,6 +17,7 @@ import { createClient } from '@/utils/supabase/client'
 import { Tables } from '@/types/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import { useRouter } from 'next/navigation'
+import { toaster } from '@/components/ui/toaster'
 
 export default function AdminUsersPage() {
     const { isAdmin, isAuthenticated, isLoading: authLoading } = useAuth()
@@ -54,18 +55,48 @@ export default function AdminUsersPage() {
     }
 
     const toggleApproval = async (userId: string, currentStatus: boolean) => {
+        const newApproved = !currentStatus
         try {
             const { error } = await supabase
                 .from('profiles')
-                .update({ approved: !currentStatus })
+                .update({ approved: newApproved })
                 .eq('id', userId)
 
             if (error) throw error
 
-            // Update local state
-            setUsers(users.map(user =>
-                user.id === userId ? { ...user, approved: !currentStatus } : user
-            ))
+            setUsers((prev) =>
+                prev.map((user) =>
+                    user.id === userId ? { ...user, approved: newApproved } : user
+                )
+            )
+
+            if (newApproved) {
+                void (async () => {
+                    const res = await fetch('/api/admin/users/approval-email', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ userId }),
+                    })
+                    if (!res.ok) {
+                        const payload = (await res.json().catch(() => ({}))) as {
+                            error?: string
+                        }
+                        console.error(
+                            'Kunne ikke sende godkjennings-e-post:',
+                            payload.error ?? res.status
+                        )
+                        toaster.create({
+                            title: 'Bruker godkjent',
+                            description:
+                                typeof payload.error === 'string'
+                                    ? `E-post til brukeren ble ikke sendt: ${payload.error}`
+                                    : 'E-post til brukeren ble ikke sendt.',
+                            type: 'warning',
+                            duration: 8000,
+                        })
+                    }
+                })()
+            }
         } catch (error) {
             console.error('Error updating status:', error)
             alert('Kunne ikke oppdatere status')
