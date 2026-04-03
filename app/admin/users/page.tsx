@@ -54,8 +54,21 @@ export default function AdminUsersPage() {
         }
     }
 
-    const toggleApproval = async (userId: string, currentStatus: boolean) => {
+    const toggleApproval = async (
+        userId: string,
+        currentStatus: boolean,
+        targetRole: string | null
+    ) => {
         const newApproved = !currentStatus
+        if (!newApproved && targetRole === 'admin') {
+            toaster.create({
+                title: 'Kan ikke fjerne tilgang',
+                description: 'Administratorer kan ikke miste tilgang herfra.',
+                type: 'warning',
+                duration: 6000,
+            })
+            return
+        }
         try {
             const { error } = await supabase
                 .from('profiles')
@@ -131,32 +144,53 @@ export default function AdminUsersPage() {
                         </Table.Row>
                     </Table.Header>
                     <Table.Body>
-                        {users.map((user) => (
-                            <Table.Row key={user.id}>
-                                <Table.Cell>{user.full_name || 'Ukjent'}</Table.Cell>
-                                <Table.Cell>{user.email}</Table.Cell>
-                                <Table.Cell>
-                                    {new Date(user.created_at).toLocaleDateString('no-NO')}
-                                </Table.Cell>
-                                <Table.Cell>
-                                    <Badge
-                                        colorPalette={user.approved ? 'green' : 'yellow'}
-                                        variant="solid"
-                                    >
-                                        {user.approved ? 'Godkjent' : 'Venter'}
-                                    </Badge>
-                                </Table.Cell>
-                                <Table.Cell>
-                                    <Button
-                                        size="sm"
-                                        colorPalette={user.approved ? 'red' : 'green'}
-                                        onClick={() => toggleApproval(user.id, user.approved ?? false)}
-                                    >
-                                        {user.approved ? 'Fjern tilgang' : 'Godkjenn'}
-                                    </Button>
-                                </Table.Cell>
-                            </Table.Row>
-                        ))}
+                        {users.map((user) => {
+                            const isTargetAdmin = user.role === 'admin'
+                            const cannotRemoveAccess = Boolean(user.approved && isTargetAdmin)
+                            return (
+                                <Table.Row key={user.id}>
+                                    <Table.Cell>{user.full_name || 'Ukjent'}</Table.Cell>
+                                    <Table.Cell>{user.email}</Table.Cell>
+                                    <Table.Cell>
+                                        {new Date(user.created_at).toLocaleDateString('no-NO')}
+                                    </Table.Cell>
+                                    <Table.Cell>
+                                        <Badge
+                                            colorPalette={user.approved ? 'green' : 'yellow'}
+                                            variant="solid"
+                                        >
+                                            {user.approved ? 'Godkjent' : 'Venter'}
+                                        </Badge>
+                                    </Table.Cell>
+                                    <Table.Cell>
+                                        <Button
+                                            size="sm"
+                                            colorPalette={
+                                                user.approved
+                                                    ? cannotRemoveAccess
+                                                        ? 'gray'
+                                                        : 'red'
+                                                    : 'green'
+                                            }
+                                            disabled={cannotRemoveAccess}
+                                            onClick={() =>
+                                                toggleApproval(
+                                                    user.id,
+                                                    user.approved ?? false,
+                                                    user.role
+                                                )
+                                            }
+                                        >
+                                            {user.approved
+                                                ? cannotRemoveAccess
+                                                    ? 'Kan ikke fjernes'
+                                                    : 'Fjern tilgang'
+                                                : 'Godkjenn'}
+                                        </Button>
+                                    </Table.Cell>
+                                </Table.Row>
+                            )
+                        })}
                     </Table.Body>
                 </Table.Root>
                 {users.length === 0 && (
