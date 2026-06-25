@@ -84,10 +84,11 @@ export async function POST(request: Request) {
         )
     }
 
-    const { error: delError } = await supabase
+    const { data: deletedRows, error: delError } = await supabase
         .from('EventParticipants')
         .delete()
         .in('id', participantIds)
+        .select('id')
 
     if (delError) {
         console.error('Remove participant error:', delError)
@@ -97,5 +98,12 @@ export async function POST(request: Request) {
         )
     }
 
-    return NextResponse.json({ success: true, removed: participantIds.length })
+    if (!deletedRows || deletedRows.length === 0) {
+        return NextResponse.json(
+            { error: 'Ingen deltakere ble slettet. Vennligst sjekk RLS-rettigheter.' },
+            { status: 403 }
+        )
+    }
+
+    return NextResponse.json({ success: true, removed: deletedRows.length })
 }

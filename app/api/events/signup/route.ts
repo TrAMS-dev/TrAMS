@@ -243,6 +243,22 @@ export async function POST(request: Request) {
             )
         }
 
+        let waitlistQueuePosition: number | null = null
+        if (status === 'waitlist' && participant) {
+            const { count, error: countError } = await supabase
+                .from('EventParticipants')
+                .select('*', { count: 'exact', head: true })
+                .eq('eventId', eventIdNum)
+                .eq('status', 'waitlist')
+                .lte('created_at', participant.created_at)
+
+            if (countError) {
+                console.error('Error counting waitlist spot:', countError)
+            } else if (count !== null) {
+                waitlistQueuePosition = count
+            }
+        }
+
         try {
             await sendEventSignupEmail(status, {
                 recipientName: nameStr,
@@ -253,6 +269,7 @@ export async function POST(request: Request) {
                 location: event.location,
                 regDeadline: event.reg_deadline,
                 contactEmail: event.contact_email,
+                waitlistQueuePosition,
             })
         } catch (mailErr) {
             console.error('Event signup confirmation email failed:', mailErr)

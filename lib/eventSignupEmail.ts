@@ -24,6 +24,7 @@ export interface EventSignupEmailContext {
     regDeadline: string | null
     /** When set and valid, used as Resend Reply-To so attendees can reach the organizer. */
     contactEmail: string | null
+    waitlistQueuePosition?: number | null
 }
 
 function formatNbDate(iso: string | null): string | null {
@@ -122,14 +123,11 @@ function waitlistSpotsOpenedGuideHtml(
 <li>Send inn. Da flyttes du til bekreftet plass når det er <strong>din tur</strong> og det fortsatt er ledig kapasitet.</li>
 </ol>`
 
-    const orderNote = `<p style="color:#555;line-height:1.6;margin-bottom:0;"><strong>Viktig om rekkefølgen:</strong> Ventelisten følger tidspunktet du meldte deg på. Bare den som står <strong>først</strong> i køen kan fullføre bekreftelsen først. Når vedkommende har bekreftet, kan nestemann gjøre det samme, og så videre. Får du melding om at du ikke er først på listen, vent til de foran deg har bekreftet (eller prøv igjen senere).</p>`
-
     const body = `<p style="color:#555;line-height:1.6;margin-top:0;">${greeting} ${spotsPhrase} ${detail}.</p>
 ${batchNote}
 <p style="color:#555;line-height:1.6;">Slik bekrefter du plassen:</p>
 ${steps}
-${linkParagraph(link)}
-${orderNote}`
+${linkParagraph(link)}`
 
     return emailShell(body)
 }
@@ -156,7 +154,12 @@ function waitlistEmailHtml(ctx: EventSignupEmailContext): string {
     const link = eventPageUrl(ctx.eventSlug)
     const detail = courseWhenWhereFragment(title, when, where, 'til')
 
+    const queuePositionText = ctx.waitlistQueuePosition
+        ? `<p style="color:#555;line-height:1.6;">Du har plass nummer <strong>${ctx.waitlistQueuePosition}</strong> på ventelisten.</p>`
+        : ''
+
     const body = `<p style="color:#555;line-height:1.6;margin-top:0;">Hei! Du som har fått denne mailen er satt på venteliste ${detail}.</p>
+${queuePositionText}
 <p style="color:#555;line-height:1.6;">Dersom det åpner seg plass, får du e-post med veiledning for hvordan du bekrefter plassen på nettsiden.</p>
 ${linkParagraph(link)}`
 
