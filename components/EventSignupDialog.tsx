@@ -1,13 +1,17 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import {
+    Box,
     Dialog,
     Input,
     Textarea,
     Button,
     NativeSelect,
     Field,
+    Checkbox,
+    Text,
 } from '@chakra-ui/react'
 import { toaster } from "@/components/ui/toaster"
 import { activeYears } from '@/utils/functions/activeYears'
@@ -18,6 +22,8 @@ interface EventSignupDialogProps {
     eventId: number
     eventTitle: string
     onSuccess?: () => void
+    /** Medlemskap — fra Sanity (`forMedisinstudenterPage.membershipSignupUrl`) eller fallback. */
+    membershipSignupHref?: string
 }
 
 interface SignupFormData {
@@ -33,13 +39,16 @@ export default function EventSignupDialog({
     eventId,
     eventTitle,
     onSuccess,
+    membershipSignupHref = 'https://forms.gle/GDLsAZTeVvTKmCqw9',
 }: EventSignupDialogProps) {
+    const membershipLinkIsExternal = /^https?:\/\//i.test(membershipSignupHref)
     const [formData, setFormData] = useState<SignupFormData>({
         name: '',
         email: '',
         kull: '',
         allergies: '',
     })
+    const [declaresTramsMember, setDeclaresTramsMember] = useState(false)
     const [isSubmitting, setIsSubmitting] = useState(false)
 
     const handleChange = (
@@ -71,6 +80,7 @@ export default function EventSignupDialog({
                 body: JSON.stringify({
                     ...formData,
                     eventId,
+                    confirmedTramsMember: declaresTramsMember,
                 }),
             })
 
@@ -102,6 +112,7 @@ export default function EventSignupDialog({
                 kull: '',
                 allergies: '',
             })
+            setDeclaresTramsMember(false)
 
             onSuccess?.()
             onClose()
@@ -187,6 +198,50 @@ export default function EventSignupDialog({
                                     rows={3}
                                 />
                             </Field.Root>
+
+                            <Box>
+                                <Checkbox.Root
+                                    checked={declaresTramsMember}
+                                    onCheckedChange={(details) =>
+                                        setDeclaresTramsMember(!!details.checked)
+                                    }
+                                >
+                                    <Checkbox.HiddenInput />
+                                    <Checkbox.Control />
+                                    <Checkbox.Label>
+                                        Jeg er TrAMS-medlem og har betalt medlemsgebyret.
+                                    </Checkbox.Label>
+                                </Checkbox.Root>
+                            </Box>
+
+                            <Box
+                                borderWidth="1px"
+                                borderRadius="md"
+                                px={3}
+                                py={2.5}
+                                bg="gray.50"
+                                _dark={{ bg: 'whiteAlpha.50' }}
+                            >
+                                <Text fontSize="sm" color="fg.muted">
+                                    Ikke medlem ennå? Bli det{' '}
+                                    <Link
+                                        href={membershipSignupHref}
+                                        {...(membershipLinkIsExternal
+                                            ? {
+                                                  target: '_blank',
+                                                  rel: 'noopener noreferrer',
+                                              }
+                                            : {})}
+                                        style={{
+                                            color: 'var(--color-primary)',
+                                            textDecoration: 'underline',
+                                            fontWeight: 500,
+                                        }}
+                                    >
+                                        her
+                                    </Link>
+                                </Text>
+                            </Box>
                         </Dialog.Body>
 
                         <Dialog.Footer gap={3}>

@@ -17,7 +17,7 @@ function confirmedParticipantsQuery(
 export async function POST(request: Request) {
     try {
         const body = await request.json()
-        const { name, email, kull, allergies, eventId } = body
+        const { name, email, kull, allergies, eventId, confirmedTramsMember } = body
 
         const nameStr = typeof name === 'string' ? name.trim() : ''
         const emailStr = typeof email === 'string' ? email.trim() : ''
@@ -34,6 +34,9 @@ export async function POST(request: Request) {
                 { status: 400 }
             )
         }
+
+        /** Selvrapportert medlemskap; ikke påkrevd for påmelding, men lagres for admin. */
+        const confirmedTramsMemberBool = confirmedTramsMember === true
 
         const kullNum = Number.parseInt(kullStr, 10)
         if (!Number.isFinite(kullNum)) {
@@ -156,6 +159,7 @@ export async function POST(request: Request) {
                     kull: kullNum,
                     allergies: allergiesValue,
                     status: 'confirmed',
+                    confirmed_trams_member: confirmedTramsMemberBool,
                 })
                 .eq('id', existingParticipant.id)
                 .select()
@@ -219,6 +223,7 @@ export async function POST(request: Request) {
                         : null,
                 eventId: eventIdNum,
                 status,
+                confirmed_trams_member: confirmedTramsMemberBool,
             })
             .select()
             .single()

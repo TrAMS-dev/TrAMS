@@ -13,6 +13,24 @@
  */
 
 // Source: schema.json
+export type MembershipSignupUrl = {
+  _id: string;
+  _type: "membershipSignupUrl";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  membershipSignupUrl: string;
+};
+
+export type HomePage = {
+  _id: string;
+  _type: "homePage";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  videoUrl: string;
+};
+
 export type BookKursPage = {
   _id: string;
   _type: "bookKursPage";
@@ -637,7 +655,7 @@ export type Geopoint = {
   alt?: number;
 };
 
-export type AllSanitySchemaTypes = BookKursPage | FirstAidCoursePage | SanityImageCrop | SanityImageHotspot | CooperationPartners | MarkorPage | AkuttCalling | FirstAidInfo | InstruktorLink | Vedtekter | Committee | Slug | CourseOffering | MediaItem | CarouselSlide | BoardMember | SanityImagePaletteSwatch | SanityImagePalette | SanityImageDimensions | SanityImageMetadata | SanityFileAsset | SanityAssetSourceData | SanityImageAsset | Geopoint;
+export type AllSanitySchemaTypes = MembershipSignupUrl | HomePage | BookKursPage | FirstAidCoursePage | SanityImageCrop | SanityImageHotspot | CooperationPartners | MarkorPage | AkuttCalling | FirstAidInfo | InstruktorLink | Vedtekter | Committee | Slug | CourseOffering | MediaItem | CarouselSlide | BoardMember | SanityImagePaletteSwatch | SanityImagePalette | SanityImageDimensions | SanityImageMetadata | SanityFileAsset | SanityAssetSourceData | SanityImageAsset | Geopoint;
 export declare const internalGroqTypeReferenceTo: unique symbol;
 // Source: sanity/lib/queries.ts
 // Variable: BOARD_MEMBERS_QUERY
@@ -1296,6 +1314,15 @@ export type BOOK_KURS_PAGE_QUERYResult = {
     _key: string;
   }>;
 } | null;
+// Variable: HOME_PAGE_QUERY
+// Query: *[_type == "homePage"][0] {  _id,  videoUrl}
+export type HOME_PAGE_QUERYResult = {
+  _id: string;
+  videoUrl: string;
+} | null;
+// Variable: FOR_MEDISINSTUDENTER_PAGE_QUERY
+// Query: *[_type == "forMedisinstudenterPage"][0] {  _id,  membershipSignupUrl}
+export type FOR_MEDISINSTUDENTER_PAGE_QUERYResult = null;
 
 // Query TypeMap
 import "@sanity/client";
@@ -1318,5 +1345,7 @@ declare module "@sanity/client" {
     "*[_type == \"cooperationPartners\"][0] {\n  _id,\n  partners[] {\n    _key,\n    name,\n    logo,\n    url,\n    size\n  },\n  sisterOrganizations[] {\n    _key,\n    name,\n    logo,\n    url\n  }\n}": COOPERATION_PARTNERS_QUERYResult;
     "*[_type == \"firstAidCoursePage\"][0] {\n  _id,\n  introText,\n  courses[] {\n    title,\n    description,\n    modules[] {\n      number,\n      title,\n      description,\n      imageSrc,\n      imageAlt,\n      isReversed\n    },\n    footerNote\n  }\n}": FIRST_AID_COURSE_PAGE_QUERYResult;
     "*[_type == \"bookKursPage\"][0] {\n  _id,\n  step1Content\n}": BOOK_KURS_PAGE_QUERYResult;
+    "*[_type == \"homePage\"][0] {\n  _id,\n  videoUrl\n}": HOME_PAGE_QUERYResult;
+    "*[_type == \"forMedisinstudenterPage\"][0] {\n  _id,\n  membershipSignupUrl\n}": FOR_MEDISINSTUDENTER_PAGE_QUERYResult;
   }
 }

@@ -34,6 +34,12 @@ function parseAttended(value: string): boolean | null {
     return value === 'true'
 }
 
+function memberConfirmLabel(p: Tables<'EventParticipants'>) {
+    if (p.confirmed_trams_member === true) return 'TrAMS-medlem'
+    if (p.confirmed_trams_member === false) return 'Ikke medlem'
+    return 'Ukjent'
+}
+
 export default function AdminParticipantsPage() {
     const params = useParams()
     const router = useRouter()
@@ -58,6 +64,18 @@ export default function AdminParticipantsPage() {
         () => participants.filter((p) => p.status === 'waitlist').length,
         [participants]
     )
+
+    const memberStatusSummary = useMemo(() => {
+        let asMember = 0
+        let notAsMember = 0
+        let unknown = 0
+        for (const p of participants) {
+            if (p.confirmed_trams_member === true) asMember++
+            else if (p.confirmed_trams_member === false) notAsMember++
+            else unknown++
+        }
+        return { asMember, notAsMember, unknown }
+    }, [participants])
 
     useEffect(() => {
         const fetchData = async () => {
@@ -262,6 +280,7 @@ export default function AdminParticipantsPage() {
             'E-post',
             'Kull',
             'Allergier',
+            'Medlemskap (selvrapportert)',
             'Status',
             'Oppmøte',
             'Påmeldt',
@@ -278,6 +297,7 @@ export default function AdminParticipantsPage() {
                 `"${p.email}"`,
                 `"${p.kull}"`,
                 `"${p.allergies || ''}"`,
+                `"${memberConfirmLabel(p)}"`,
                 `"${p.status === 'waitlist' ? 'Venteliste' : 'Påmeldt'}"`,
                 `"${oppmoteLabel(p)}"`,
                 `"${new Date(p.created_at).toLocaleString()}"`
@@ -312,10 +332,29 @@ export default function AdminParticipantsPage() {
             </Flex>
 
             {participants.length > 0 && (
-                <Text color="gray.600" mb={4}>
-                    Oppmøte (bekreftede): {attendanceSummary.attendedCount} av{' '}
-                    {attendanceSummary.confirmedCount} registrert som møtt
-                </Text>
+                <Box mb={4}>
+                    <Text color="gray.600" mb={1}>
+                        <Text as="span" fontWeight="semibold" color="green.700">
+                            TrAMS-medlem: {memberStatusSummary.asMember}
+                        </Text>
+                        {' · '}
+                        <Text as="span" fontWeight="semibold" color="orange.800">
+                            Ikke medlem: {memberStatusSummary.notAsMember}
+                        </Text>
+                        {memberStatusSummary.unknown > 0 && (
+                            <>
+                                {' · '}
+                                <Text as="span" fontWeight="medium" color="gray.600">
+                                    Ukjent : {memberStatusSummary.unknown}
+                                </Text>
+                            </>
+                        )}
+                    </Text>
+                    <Text color="gray.600">
+                        Oppmøte (bekreftede): {attendanceSummary.attendedCount} av{' '}
+                        {attendanceSummary.confirmedCount} registrert som møtt
+                    </Text>
+                </Box>
             )}
 
             {waitlistCount > 0 && eventMaxAttendees != null && eventId != null && (
@@ -373,6 +412,9 @@ export default function AdminParticipantsPage() {
                             <Table.ColumnHeader>E-post</Table.ColumnHeader>
                             <Table.ColumnHeader>Kull</Table.ColumnHeader>
                             <Table.ColumnHeader>Allergier</Table.ColumnHeader>
+                            <Table.ColumnHeader maxW="200px">
+                                Medlemskap (selvrapportert)
+                            </Table.ColumnHeader>
                             <Table.ColumnHeader>Status</Table.ColumnHeader>
                             <Table.ColumnHeader>Oppmøte</Table.ColumnHeader>
                             <Table.ColumnHeader>Påmeldt</Table.ColumnHeader>
@@ -382,7 +424,7 @@ export default function AdminParticipantsPage() {
                     <Table.Body>
                         {participants.length === 0 && (
                             <Table.Row>
-                                <Table.Cell colSpan={8} textAlign="center" py={8} color="gray.500">
+                                <Table.Cell colSpan={9} textAlign="center" py={8} color="gray.500">
                                     Ingen påmeldte enda.
                                 </Table.Cell>
                             </Table.Row>
@@ -393,6 +435,21 @@ export default function AdminParticipantsPage() {
                                 <Table.Cell>{p.email}</Table.Cell>
                                 <Table.Cell>{p.kull}</Table.Cell>
                                 <Table.Cell>{p.allergies || '-'}</Table.Cell>
+                                <Table.Cell>
+                                    {p.confirmed_trams_member === true ? (
+                                        <Badge colorPalette="green" size="lg">
+                                            TrAMS-medlem
+                                        </Badge>
+                                    ) : p.confirmed_trams_member === false ? (
+                                        <Badge colorPalette="orange" size="lg" variant="solid">
+                                            Ikke medlem
+                                        </Badge>
+                                    ) : (
+                                        <Badge colorPalette="gray" variant="outline">
+                                            Ukjent
+                                        </Badge>
+                                    )}
+                                </Table.Cell>
                                 <Table.Cell>
                                     {p.status === 'waitlist' ? (
                                         <Badge colorPalette="orange">Venteliste</Badge>

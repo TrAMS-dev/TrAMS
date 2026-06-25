@@ -87,6 +87,7 @@ export type Database = {
         Row: {
           allergies: string | null
           attended: boolean | null
+          confirmed_trams_member: boolean | null
           created_at: string
           email: string | null
           eventId: number | null
@@ -98,6 +99,7 @@ export type Database = {
         Insert: {
           allergies?: string | null
           attended?: boolean | null
+          confirmed_trams_member?: boolean | null
           created_at?: string
           email?: string | null
           eventId?: number | null
@@ -109,6 +111,7 @@ export type Database = {
         Update: {
           allergies?: string | null
           attended?: boolean | null
+          confirmed_trams_member?: boolean | null
           created_at?: string
           email?: string | null
           eventId?: number | null

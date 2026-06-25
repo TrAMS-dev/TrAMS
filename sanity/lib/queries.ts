@@ -251,3 +251,8 @@ export const HOME_PAGE_QUERY = defineQuery(`*[_type == "homePage"][0] {
   _id,
   videoUrl
 }`)
+
+export const FOR_MEDISINSTUDENTER_PAGE_QUERY = defineQuery(`*[_type == "forMedisinstudenterPage"][0] {
+  _id,
+  membershipSignupUrl
+}`)

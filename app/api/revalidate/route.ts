@@ -86,6 +86,10 @@ export async function POST(req: NextRequest) {
         revalidatePath('/forstehjelpskurs/book-kurs')
         break
 
+      case 'forMedisinstudenterPage':
+        revalidatePath('/for-medisinstudenter')
+        break
+
       default:
         // For any unknown types, revalidate the whole site
         revalidatePath('/', 'layout')
