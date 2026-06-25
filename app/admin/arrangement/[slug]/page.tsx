@@ -22,6 +22,7 @@ interface EventFormData {
     reg_deadline: string
     author: string
     planned_month: string
+    has_food: boolean
 }
 
 export default function AdminEditEventPage() {
@@ -30,6 +31,7 @@ export default function AdminEditEventPage() {
     const slug = params.slug as string
 
     const [dateUnspecified, setDateUnspecified] = useState(false)
+    const [hasFood, setHasFood] = useState(false)
     const [formData, setFormData] = useState<EventFormData | null>(null)
     const [eventId, setEventId] = useState<number | null>(null)
     const [loading, setLoading] = useState(true)
@@ -56,6 +58,7 @@ export default function AdminEditEventPage() {
 
             setEventId(data.id)
             setDateUnspecified(Boolean(data.date_unspecified))
+            setHasFood(Boolean(data.has_food))
             setFormData({
                 title: data.title || '',
                 description: data.description || '',
@@ -69,6 +72,7 @@ export default function AdminEditEventPage() {
                 reg_deadline: utcIsoToDatetimeLocalValue(data.reg_deadline),
                 author: data.author || '',
                 planned_month: data.planned_month || '',
+                has_food: data.has_food,
             })
             setLoading(false)
         }
@@ -177,6 +181,7 @@ export default function AdminEditEventPage() {
                     author: formData.author || null,
                     date_unspecified: dateUnspecified,
                     planned_month: dateUnspecified ? formData.planned_month.trim() : null,
+                    has_food: hasFood,
                 })
                 .eq('id', eventId)
 
@@ -193,9 +198,9 @@ export default function AdminEditEventPage() {
         } catch (error) {
             const description =
                 error &&
-                typeof error === 'object' &&
-                'message' in error &&
-                typeof (error as { message: unknown }).message === 'string'
+                    typeof error === 'object' &&
+                    'message' in error &&
+                    typeof (error as { message: unknown }).message === 'string'
                     ? (error as { message: string }).message
                     : undefined
             toaster.create({
@@ -243,6 +248,15 @@ export default function AdminEditEventPage() {
                         <Checkbox.HiddenInput />
                         <Checkbox.Control />
                         <Checkbox.Label>Arrangementsdato ikke spesifisert enda</Checkbox.Label>
+                    </Checkbox.Root>
+
+                    <Checkbox.Root
+                        checked={hasFood}
+                        onCheckedChange={(details) => setHasFood(!!details.checked)}
+                    >
+                        <Checkbox.HiddenInput />
+                        <Checkbox.Control />
+                        <Checkbox.Label>Blir det servering av mat drikke?</Checkbox.Label>
                     </Checkbox.Root>
 
                     {dateUnspecified ? (

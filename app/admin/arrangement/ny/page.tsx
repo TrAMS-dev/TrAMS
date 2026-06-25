@@ -22,12 +22,14 @@ interface EventFormData {
     reg_deadline: string
     author: string
     planned_month: string
+    has_food: boolean
 }
 
 export default function AdminCreateEventPage() {
     const router = useRouter()
     const { user } = useAuth()
     const [dateUnspecified, setDateUnspecified] = useState(false)
+    const [hasFood, setHasFood] = useState(false)
     const [formData, setFormData] = useState<EventFormData>({
         title: '',
         description: '',
@@ -41,6 +43,7 @@ export default function AdminCreateEventPage() {
         reg_deadline: '',
         author: '',
         planned_month: '',
+        has_food: false,
     })
     const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -150,6 +153,7 @@ export default function AdminCreateEventPage() {
                     date_unspecified: dateUnspecified,
                     planned_month: dateUnspecified ? formData.planned_month.trim() : null,
                     location: dateUnspecified ? null : (formData.location.trim() || null),
+                    has_food: hasFood,
                 }),
             })
 
@@ -204,6 +208,14 @@ export default function AdminCreateEventPage() {
                             rows={6}
                         />
                     </Field.Root>
+                    <Checkbox.Root
+                        checked={hasFood}
+                        onCheckedChange={(details) => setHasFood(!!details.checked)}
+                    >
+                        <Checkbox.HiddenInput />
+                        <Checkbox.Control />
+                        <Checkbox.Label>Blir det servering av mat drikke?</Checkbox.Label>
+                    </Checkbox.Root>
 
                     <Checkbox.Root
                         checked={dateUnspecified}

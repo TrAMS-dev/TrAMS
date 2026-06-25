@@ -22,6 +22,7 @@ interface EventSignupDialogProps {
     eventId: number
     eventTitle: string
     onSuccess?: () => void
+    eventHasFood: boolean
     /** Medlemskap — fra Sanity (`forMedisinstudenterPage.membershipSignupUrl`) eller fallback. */
     membershipSignupHref?: string
 }
@@ -38,6 +39,7 @@ export default function EventSignupDialog({
     onClose,
     eventId,
     eventTitle,
+    eventHasFood,
     onSuccess,
     membershipSignupHref = 'https://forms.gle/GDLsAZTeVvTKmCqw9',
 }: EventSignupDialogProps) {
@@ -188,16 +190,18 @@ export default function EventSignupDialog({
                                 </NativeSelect.Root>
                             </Field.Root>
 
-                            <Field.Root>
-                                <Field.Label>Allergier / Matpreferanser</Field.Label>
-                                <Textarea
-                                    name="allergies"
-                                    value={formData.allergies}
-                                    onChange={handleChange}
-                                    placeholder="Skriv inn eventuelle allergier eller matpreferanser..."
-                                    rows={3}
-                                />
-                            </Field.Root>
+                            {eventHasFood && (
+                                <Field.Root>
+                                    <Field.Label>Allergier / Matpreferanser</Field.Label>
+                                    <Textarea
+                                        name="allergies"
+                                        value={formData.allergies}
+                                        onChange={handleChange}
+                                        placeholder="Skriv inn eventuelle allergier eller matpreferanser..."
+                                        rows={3}
+                                    />
+                                </Field.Root>
+                            )}
 
                             <Box>
                                 <Checkbox.Root
@@ -228,9 +232,9 @@ export default function EventSignupDialog({
                                         href={membershipSignupHref}
                                         {...(membershipLinkIsExternal
                                             ? {
-                                                  target: '_blank',
-                                                  rel: 'noopener noreferrer',
-                                              }
+                                                target: '_blank',
+                                                rel: 'noopener noreferrer',
+                                            }
                                             : {})}
                                         style={{
                                             color: 'var(--color-primary)',

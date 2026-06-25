@@ -1,6 +1,6 @@
 import { client } from '@/sanity/lib/client'
 import { FOR_MEDISINSTUDENTER_PAGE_QUERY } from '@/sanity/lib/queries'
-import EventArrangementDetailClient from './EventArrangementDetailClient'
+import EventArrangementDetailClient from './EventData'
 
 /** Same fallback as `app/(general)/for-medisinstudenter/page.tsx` when Sanity has no URL. */
 const FALLBACK_MEMBERSHIP_SIGNUP_URL = 'https://forms.gle/GDLsAZTeVvTKmCqw9'

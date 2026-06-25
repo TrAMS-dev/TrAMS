@@ -161,6 +161,8 @@ export default function EventArrangementDetailClient({
         )
     }
 
+    const hasFood: boolean = event.has_food
+
     const isDateUnspecified = isDateUnspecifiedEvent(event)
     const startDate = event.start_datetime ? new Date(event.start_datetime) : null
     const endDate = event.end_datetime ? new Date(event.end_datetime) : null
@@ -474,12 +476,12 @@ export default function EventArrangementDetailClient({
                                     {isDateUnspecified
                                         ? 'Påmelding ikke tilgjengelig ennå'
                                         : isRegistrationNotYetOpen
-                                          ? 'Påmelding ikke åpnet'
-                                          : isRegistrationClosed
-                                            ? 'Påmelding stengt'
-                                            : isFull
-                                              ? 'Meld deg på venteliste'
-                                              : 'Meld deg på'}
+                                            ? 'Påmelding ikke åpnet'
+                                            : isRegistrationClosed
+                                                ? 'Påmelding stengt'
+                                                : isFull
+                                                    ? 'Meld deg på venteliste'
+                                                    : 'Meld deg på'}
                                 </Button>
                             </Stack>
 
@@ -593,6 +595,7 @@ export default function EventArrangementDetailClient({
                 eventTitle={event.title || 'dette arrangementet'}
                 onSuccess={handleSignupSuccess}
                 membershipSignupHref={membershipSignupHref}
+                eventHasFood={hasFood}
             />
 
             <EventParticipantListDialog
