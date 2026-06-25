@@ -23,6 +23,7 @@ interface EventFormData {
     author: string
     planned_month: string
     has_food: boolean
+    custom_question: string
 }
 
 export default function AdminEditEventPage() {
@@ -73,6 +74,7 @@ export default function AdminEditEventPage() {
                 author: data.author || '',
                 planned_month: data.planned_month || '',
                 has_food: data.has_food,
+                custom_question: data.custom_question || '',
             })
             setLoading(false)
         }
@@ -182,6 +184,7 @@ export default function AdminEditEventPage() {
                     date_unspecified: dateUnspecified,
                     planned_month: dateUnspecified ? formData.planned_month.trim() : null,
                     has_food: hasFood,
+                    custom_question: formData.custom_question.trim() || null,
                 })
                 .eq('id', eventId)
 
@@ -319,6 +322,19 @@ export default function AdminEditEventPage() {
                         />
                         <Field.HelperText>
                             Vises på arrangementssiden. Brukes også som svar-adresse på påmeldingsbekreftelser.
+                        </Field.HelperText>
+                    </Field.Root>
+
+                    <Field.Root>
+                        <Field.Label>Spørsmål til påmelding (ja/nei-spørsmål, valgfritt)</Field.Label>
+                        <Input
+                            name="custom_question"
+                            value={formData.custom_question}
+                            onChange={handleChange}
+                            placeholder="F.eks. Har du deltatt på kurset tidligere?"
+                        />
+                        <Field.HelperText>
+                            Dersom du fyller ut dette, vil deltakerne få et avhukingsspørsmål under påmelding.
                         </Field.HelperText>
                     </Field.Root>
 

@@ -89,6 +89,7 @@ export type Database = {
           attended: boolean | null
           confirmed_trams_member: boolean | null
           created_at: string
+          custom_question_response: boolean | null
           email: string | null
           eventId: number | null
           id: number
@@ -101,6 +102,7 @@ export type Database = {
           attended?: boolean | null
           confirmed_trams_member?: boolean | null
           created_at?: string
+          custom_question_response?: boolean | null
           email?: string | null
           eventId?: number | null
           id?: number
@@ -113,6 +115,7 @@ export type Database = {
           attended?: boolean | null
           confirmed_trams_member?: boolean | null
           created_at?: string
+          custom_question_response?: boolean | null
           email?: string | null
           eventId?: number | null
           id?: number
@@ -135,6 +138,7 @@ export type Database = {
           author: string | null
           contact_email: string | null
           created_at: string
+          custom_question: string | null
           date_unspecified: boolean
           description: string | null
           end_datetime: string | null
@@ -154,6 +158,7 @@ export type Database = {
           author?: string | null
           contact_email?: string | null
           created_at?: string
+          custom_question?: string | null
           date_unspecified?: boolean
           description?: string | null
           end_datetime?: string | null
@@ -173,6 +178,7 @@ export type Database = {
           author?: string | null
           contact_email?: string | null
           created_at?: string
+          custom_question?: string | null
           date_unspecified?: boolean
           description?: string | null
           end_datetime?: string | null

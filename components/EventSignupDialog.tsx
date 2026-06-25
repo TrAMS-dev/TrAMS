@@ -25,6 +25,7 @@ interface EventSignupDialogProps {
     eventHasFood: boolean
     /** Medlemskap — fra Sanity (`forMedisinstudenterPage.membershipSignupUrl`) eller fallback. */
     membershipSignupHref?: string
+    eventCustomQuestion?: string | null
 }
 
 interface SignupFormData {
@@ -42,6 +43,7 @@ export default function EventSignupDialog({
     eventHasFood,
     onSuccess,
     membershipSignupHref = 'https://forms.gle/GDLsAZTeVvTKmCqw9',
+    eventCustomQuestion,
 }: EventSignupDialogProps) {
     const membershipLinkIsExternal = /^https?:\/\//i.test(membershipSignupHref)
     const [formData, setFormData] = useState<SignupFormData>({
@@ -51,6 +53,7 @@ export default function EventSignupDialog({
         allergies: '',
     })
     const [declaresTramsMember, setDeclaresTramsMember] = useState(false)
+    const [customQuestionResponse, setCustomQuestionResponse] = useState(false)
     const [isSubmitting, setIsSubmitting] = useState(false)
 
     const handleChange = (
@@ -83,6 +86,7 @@ export default function EventSignupDialog({
                     ...formData,
                     eventId,
                     confirmedTramsMember: declaresTramsMember,
+                    customQuestionResponse,
                 }),
             })
 
@@ -115,6 +119,7 @@ export default function EventSignupDialog({
                 allergies: '',
             })
             setDeclaresTramsMember(false)
+            setCustomQuestionResponse(false)
 
             onSuccess?.()
             onClose()
@@ -201,6 +206,23 @@ export default function EventSignupDialog({
                                         rows={3}
                                     />
                                 </Field.Root>
+                            )}
+
+                            {eventCustomQuestion && (
+                                <Box>
+                                    <Checkbox.Root
+                                        checked={customQuestionResponse}
+                                        onCheckedChange={(details) =>
+                                            setCustomQuestionResponse(!!details.checked)
+                                        }
+                                    >
+                                        <Checkbox.HiddenInput />
+                                        <Checkbox.Control />
+                                        <Checkbox.Label>
+                                            {eventCustomQuestion}
+                                        </Checkbox.Label>
+                                    </Checkbox.Root>
+                                </Box>
                             )}
 
                             <Box>

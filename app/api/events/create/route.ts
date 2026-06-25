@@ -28,6 +28,8 @@ export async function POST(request: Request) {
             contact_email,
             date_unspecified,
             planned_month,
+            has_food,
+            custom_question,
         } = body
 
         const isDateUnspecified = Boolean(date_unspecified)
@@ -93,6 +95,8 @@ export async function POST(request: Request) {
                 date_unspecified: isDateUnspecified,
                 planned_month: isDateUnspecified ? planned_month : null,
                 slug,
+                has_food: Boolean(has_food),
+                custom_question: custom_question || null,
             })
             .select()
             .single()

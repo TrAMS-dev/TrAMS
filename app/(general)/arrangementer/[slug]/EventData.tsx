@@ -596,6 +596,7 @@ export default function EventArrangementDetailClient({
                 onSuccess={handleSignupSuccess}
                 membershipSignupHref={membershipSignupHref}
                 eventHasFood={hasFood}
+                eventCustomQuestion={event.custom_question}
             />
 
             <EventParticipantListDialog

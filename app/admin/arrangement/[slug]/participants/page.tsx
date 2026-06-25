@@ -48,6 +48,7 @@ export default function AdminParticipantsPage() {
     const [eventId, setEventId] = useState<number | null>(null)
     const [eventTitle, setEventTitle] = useState('')
     const [eventMaxAttendees, setEventMaxAttendees] = useState<number | null>(null)
+    const [eventCustomQuestion, setEventCustomQuestion] = useState<string | null>(null)
     const [loading, setLoading] = useState(true)
     const [savingId, setSavingId] = useState<number | null>(null)
     const [deletingId, setDeletingId] = useState<number | null>(null)
@@ -84,7 +85,7 @@ export default function AdminParticipantsPage() {
             // Get event id first
             const { data: event, error: eventError } = await supabase
                 .from('Events')
-                .select('id, title, max_attendees')
+                .select('id, title, max_attendees, custom_question')
                 .eq('slug', slug)
                 .single()
 
@@ -96,6 +97,7 @@ export default function AdminParticipantsPage() {
             setEventId(event.id)
             setEventTitle(event.title || 'Arrangement')
             setEventMaxAttendees(event.max_attendees ?? null)
+            setEventCustomQuestion(event.custom_question ?? null)
 
             // Get participants
             const { data, error } = await supabase
@@ -281,6 +283,7 @@ export default function AdminParticipantsPage() {
             'Kull',
             'Allergier',
             'Medlemskap (selvrapportert)',
+            ...(eventCustomQuestion ? [eventCustomQuestion] : []),
             'Status',
             'Oppmøte',
             'Påmeldt',
@@ -298,6 +301,7 @@ export default function AdminParticipantsPage() {
                 `"${p.kull}"`,
                 `"${p.allergies || ''}"`,
                 `"${memberConfirmLabel(p)}"`,
+                ...(eventCustomQuestion ? [`"${p.custom_question_response ? 'Ja' : 'Nei'}"`] : []),
                 `"${p.status === 'waitlist' ? 'Venteliste' : 'Påmeldt'}"`,
                 `"${oppmoteLabel(p)}"`,
                 `"${new Date(p.created_at).toLocaleString()}"`
@@ -415,6 +419,11 @@ export default function AdminParticipantsPage() {
                             <Table.ColumnHeader maxW="200px">
                                 Medlemskap (selvrapportert)
                             </Table.ColumnHeader>
+                            {eventCustomQuestion && (
+                                <Table.ColumnHeader maxW="200px">
+                                    {eventCustomQuestion}
+                                </Table.ColumnHeader>
+                            )}
                             <Table.ColumnHeader>Status</Table.ColumnHeader>
                             <Table.ColumnHeader>Oppmøte</Table.ColumnHeader>
                             <Table.ColumnHeader>Påmeldt</Table.ColumnHeader>
@@ -424,7 +433,7 @@ export default function AdminParticipantsPage() {
                     <Table.Body>
                         {participants.length === 0 && (
                             <Table.Row>
-                                <Table.Cell colSpan={9} textAlign="center" py={8} color="gray.500">
+                                <Table.Cell colSpan={eventCustomQuestion ? 10 : 9} textAlign="center" py={8} color="gray.500">
                                     Ingen påmeldte enda.
                                 </Table.Cell>
                             </Table.Row>
@@ -450,6 +459,19 @@ export default function AdminParticipantsPage() {
                                         </Badge>
                                     )}
                                 </Table.Cell>
+                                {eventCustomQuestion && (
+                                    <Table.Cell>
+                                        {p.custom_question_response ? (
+                                            <Badge colorPalette="green" size="lg">
+                                                Ja
+                                            </Badge>
+                                        ) : (
+                                            <Badge colorPalette="gray" variant="outline" size="lg">
+                                                Nei
+                                            </Badge>
+                                        )}
+                                    </Table.Cell>
+                                )}
                                 <Table.Cell>
                                     {p.status === 'waitlist' ? (
                                         <Badge colorPalette="orange">Venteliste</Badge>
