@@ -18,8 +18,34 @@ jobs:
       - name: Enable auto-merge for Dependabot PRs
         if: steps.metadata.outputs.update-type == 'version-update:semver-patch'
         run: |
-          gh pr checks "$PR_URL" --required --watch --interval 10
+          echo "Waiting for Vercel deployments..."
+          for i in $(seq 1 90); do
+            vercel_state=$(gh api "repos/${GITHUB_REPOSITORY}/commits/${HEAD_SHA}/status" --jq '
+              [.statuses[] | select(.context | startswith("Vercel"))] as $v |
+              if ($v | length) == 0 then "pending"
+              elif ($v | all(.state == "success")) then "success"
+              elif ($v | any(.state == "failure" or .state == "error")) then "failure"
+              else "pending"
+              end
+            ')
+            echo "Attempt ${i}/90: ${vercel_state}"
+            case "$vercel_state" in
+              success) break ;;
+              failure)
+                echo "Vercel deployment failed"
+                exit 1
+                ;;
+            esac
+            sleep 10
+          done
+
+          if [ "$vercel_state" != "success" ]; then
+            echo "Timed out waiting for Vercel deployments"
+            exit 1
+          fi
+
           gh pr merge --auto --merge "$PR_URL"
         env:
-          PR_URL: ${{github.event.pull_request.html_url}}
-          GH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
