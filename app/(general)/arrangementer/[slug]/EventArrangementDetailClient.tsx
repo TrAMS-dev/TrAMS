@@ -19,6 +19,7 @@ import { createClient } from '@/utils/supabase/client'
 import type { Tables } from '@/types/supabase'
 import { useParams, useRouter } from 'next/navigation'
 import { APP_TIME_ZONE } from '@/lib/datetimeLocal'
+import { formatEventDate, isDateUnspecifiedEvent } from '@/lib/eventDate'
 
 type EventWithAuthorProfile = Tables<'Events'> & {
     profiles: { full_name: string | null; email: string | null } | null
@@ -160,6 +161,7 @@ export default function EventArrangementDetailClient({
         )
     }
 
+    const isDateUnspecified = isDateUnspecifiedEvent(event)
     const startDate = event.start_datetime ? new Date(event.start_datetime) : null
     const endDate = event.end_datetime ? new Date(event.end_datetime) : null
     const regOpens = event.reg_opens ? new Date(event.reg_opens) : null
@@ -169,7 +171,7 @@ export default function EventArrangementDetailClient({
     const isRegistrationNotYetOpen = regOpens ? now < regOpens : false
     const isRegistrationClosed = regDeadline ? now > regDeadline : false
     const isFull = event.max_attendees ? participantCount >= event.max_attendees : false
-    const canSignup = !isRegistrationNotYetOpen && !isRegistrationClosed
+    const canSignup = !isDateUnspecified && !isRegistrationNotYetOpen && !isRegistrationClosed
 
     const confirmedNamesToShow = publicParticipants.slice(0, PARTICIPANT_NAMES_PREVIEW)
     const waitlistNamesToShow = publicWaitlist.slice(0, PARTICIPANT_NAMES_PREVIEW)
@@ -217,7 +219,7 @@ export default function EventArrangementDetailClient({
                         gap={4}
                         wrap="wrap"
                     >
-                        {startDate && (
+                        {isDateUnspecified ? (
                             <Box
                                 flex="1"
                                 minW="250px"
@@ -229,60 +231,85 @@ export default function EventArrangementDetailClient({
                                 borderColor="blue.500"
                             >
                                 <Text fontWeight="bold" fontSize="sm" color="gray.600" mb={1}>
-                                    START
+                                    DATO
                                 </Text>
                                 <Text fontSize="lg">
-                                    {startDate.toLocaleDateString('nb-NO', {
-                                        timeZone: APP_TIME_ZONE,
-                                        weekday: 'long',
-                                        year: 'numeric',
-                                        month: 'long',
-                                        day: 'numeric',
-                                    })}
+                                    {formatEventDate(event, { style: 'long' })}
                                 </Text>
-                                <Text color="gray.600">
-                                    Kl.{' '}
-                                    {startDate.toLocaleTimeString('nb-NO', {
-                                        timeZone: APP_TIME_ZONE,
-                                        hour: '2-digit',
-                                        minute: '2-digit',
-                                    })}
+                                <Text color="gray.600" fontSize="sm" mt={1}>
+                                    Nøyaktig dato er ikke fastsatt ennå
                                 </Text>
                             </Box>
-                        )}
+                        ) : (
+                            <>
+                                {startDate && (
+                                    <Box
+                                        flex="1"
+                                        minW="250px"
+                                        p={4}
+                                        bg="white"
+                                        borderRadius="md"
+                                        boxShadow="sm"
+                                        borderLeft="4px solid"
+                                        borderColor="blue.500"
+                                    >
+                                        <Text fontWeight="bold" fontSize="sm" color="gray.600" mb={1}>
+                                            START
+                                        </Text>
+                                        <Text fontSize="lg">
+                                            {startDate.toLocaleDateString('nb-NO', {
+                                                timeZone: APP_TIME_ZONE,
+                                                weekday: 'long',
+                                                year: 'numeric',
+                                                month: 'long',
+                                                day: 'numeric',
+                                            })}
+                                        </Text>
+                                        <Text color="gray.600">
+                                            Kl.{' '}
+                                            {startDate.toLocaleTimeString('nb-NO', {
+                                                timeZone: APP_TIME_ZONE,
+                                                hour: '2-digit',
+                                                minute: '2-digit',
+                                            })}
+                                        </Text>
+                                    </Box>
+                                )}
 
-                        {endDate && (
-                            <Box
-                                flex="1"
-                                minW="250px"
-                                p={4}
-                                bg="white"
-                                borderRadius="md"
-                                boxShadow="sm"
-                                borderLeft="4px solid"
-                                borderColor="green.500"
-                            >
-                                <Text fontWeight="bold" fontSize="sm" color="gray.600" mb={1}>
-                                    SLUTT
-                                </Text>
-                                <Text fontSize="lg">
-                                    {endDate.toLocaleDateString('nb-NO', {
-                                        timeZone: APP_TIME_ZONE,
-                                        weekday: 'long',
-                                        year: 'numeric',
-                                        month: 'long',
-                                        day: 'numeric',
-                                    })}
-                                </Text>
-                                <Text color="gray.600">
-                                    Kl.{' '}
-                                    {endDate.toLocaleTimeString('nb-NO', {
-                                        timeZone: APP_TIME_ZONE,
-                                        hour: '2-digit',
-                                        minute: '2-digit',
-                                    })}
-                                </Text>
-                            </Box>
+                                {endDate && (
+                                    <Box
+                                        flex="1"
+                                        minW="250px"
+                                        p={4}
+                                        bg="white"
+                                        borderRadius="md"
+                                        boxShadow="sm"
+                                        borderLeft="4px solid"
+                                        borderColor="green.500"
+                                    >
+                                        <Text fontWeight="bold" fontSize="sm" color="gray.600" mb={1}>
+                                            SLUTT
+                                        </Text>
+                                        <Text fontSize="lg">
+                                            {endDate.toLocaleDateString('nb-NO', {
+                                                timeZone: APP_TIME_ZONE,
+                                                weekday: 'long',
+                                                year: 'numeric',
+                                                month: 'long',
+                                                day: 'numeric',
+                                            })}
+                                        </Text>
+                                        <Text color="gray.600">
+                                            Kl.{' '}
+                                            {endDate.toLocaleTimeString('nb-NO', {
+                                                timeZone: APP_TIME_ZONE,
+                                                hour: '2-digit',
+                                                minute: '2-digit',
+                                            })}
+                                        </Text>
+                                    </Box>
+                                )}
+                            </>
                         )}
 
                         {event.location && (
@@ -444,13 +471,15 @@ export default function EventArrangementDetailClient({
                                     onClick={() => setSignupOpen(true)}
                                     disabled={!canSignup}
                                 >
-                                    {isRegistrationNotYetOpen
-                                        ? 'Påmelding ikke åpnet'
-                                        : isRegistrationClosed
-                                          ? 'Påmelding stengt'
-                                          : isFull
-                                            ? 'Meld deg på venteliste'
-                                            : 'Meld deg på'}
+                                    {isDateUnspecified
+                                        ? 'Påmelding ikke tilgjengelig ennå'
+                                        : isRegistrationNotYetOpen
+                                          ? 'Påmelding ikke åpnet'
+                                          : isRegistrationClosed
+                                            ? 'Påmelding stengt'
+                                            : isFull
+                                              ? 'Meld deg på venteliste'
+                                              : 'Meld deg på'}
                                 </Button>
                             </Stack>
 

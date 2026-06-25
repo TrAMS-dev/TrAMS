@@ -135,12 +135,14 @@ export type Database = {
           author: string | null
           contact_email: string | null
           created_at: string
+          date_unspecified: boolean
           description: string | null
           end_datetime: string | null
           id: number
           image: string | null
           location: string | null
           max_attendees: number | null
+          planned_month: string | null
           reg_deadline: string | null
           reg_opens: string | null
           slug: string | null
@@ -151,12 +153,14 @@ export type Database = {
           author?: string | null
           contact_email?: string | null
           created_at?: string
+          date_unspecified?: boolean
           description?: string | null
           end_datetime?: string | null
           id?: number
           image?: string | null
           location?: string | null
           max_attendees?: number | null
+          planned_month?: string | null
           reg_deadline?: string | null
           reg_opens?: string | null
           slug?: string | null
@@ -167,12 +171,14 @@ export type Database = {
           author?: string | null
           contact_email?: string | null
           created_at?: string
+          date_unspecified?: boolean
           description?: string | null
           end_datetime?: string | null
           id?: number
           image?: string | null
           location?: string | null
           max_attendees?: number | null
+          planned_month?: string | null
           reg_deadline?: string | null
           reg_opens?: string | null
           slug?: string | null

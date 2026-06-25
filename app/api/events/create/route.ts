@@ -26,10 +26,27 @@ export async function POST(request: Request) {
             reg_opens,
             author,
             contact_email,
+            date_unspecified,
+            planned_month,
         } = body
 
-        // Validate required fields
-        if (!title || !start_datetime || !end_datetime || !location) {
+        const isDateUnspecified = Boolean(date_unspecified)
+
+        if (!title) {
+            return NextResponse.json(
+                { error: 'Tittel er påkrevd' },
+                { status: 400 }
+            )
+        }
+
+        if (isDateUnspecified) {
+            if (!planned_month) {
+                return NextResponse.json(
+                    { error: 'Planlagt måned er påkrevd når dato ikke er spesifisert' },
+                    { status: 400 }
+                )
+            }
+        } else if (!start_datetime || !end_datetime || !location) {
             return NextResponse.json(
                 { error: 'Tittel, start, slutt og lokasjon er påkrevd' },
                 { status: 400 }
@@ -64,15 +81,17 @@ export async function POST(request: Request) {
             .insert({
                 title,
                 description: description || null,
-                start_datetime,
-                end_datetime,
-                location,
+                start_datetime: isDateUnspecified ? null : start_datetime,
+                end_datetime: isDateUnspecified ? null : end_datetime,
+                location: isDateUnspecified ? null : (location || null),
                 image: image || null,
-                max_attendees: max_attendees || null,
-                reg_deadline: reg_deadline || null,
-                reg_opens: reg_opens || null,
+                max_attendees: isDateUnspecified ? null : (max_attendees || null),
+                reg_deadline: isDateUnspecified ? null : (reg_deadline || null),
+                reg_opens: isDateUnspecified ? null : (reg_opens || null),
                 author: author || null,
                 contact_email: contact_email?.trim() || null,
+                date_unspecified: isDateUnspecified,
+                planned_month: isDateUnspecified ? planned_month : null,
                 slug,
             })
             .select()

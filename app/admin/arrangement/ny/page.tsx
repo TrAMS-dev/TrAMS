@@ -1,9 +1,10 @@
 'use client'
 
 import { useState } from 'react'
-import { Box, Heading, Stack, Input, Textarea, Button, Field } from '@chakra-ui/react'
+import { Box, Heading, Stack, Input, Textarea, Button, Field, Checkbox } from '@chakra-ui/react'
 import { useRouter } from 'next/navigation'
 import { ImageUploader } from '@/components/admin/ImageUploader'
+import { PlannedMonthSelector } from '@/components/admin/PlannedMonthSelector'
 import { useAuth } from '@/hooks/useAuth'
 import { toaster } from '@/components/ui/toaster'
 import { datetimeLocalToUtcIso } from '@/lib/datetimeLocal'
@@ -20,11 +21,13 @@ interface EventFormData {
     reg_opens: string
     reg_deadline: string
     author: string
+    planned_month: string
 }
 
 export default function AdminCreateEventPage() {
     const router = useRouter()
     const { user } = useAuth()
+    const [dateUnspecified, setDateUnspecified] = useState(false)
     const [formData, setFormData] = useState<EventFormData>({
         title: '',
         description: '',
@@ -37,6 +40,7 @@ export default function AdminCreateEventPage() {
         reg_opens: '',
         reg_deadline: '',
         author: '',
+        planned_month: '',
     })
     const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -53,6 +57,16 @@ export default function AdminCreateEventPage() {
         if (!user) {
             toaster.create({
                 title: 'Du må være logget inn for å opprette et arrangement',
+                type: 'error',
+                duration: 5000,
+            })
+            return
+        }
+
+        if (dateUnspecified && !formData.planned_month.trim()) {
+            toaster.create({
+                title: 'Velg planlagt måned',
+                description: 'Når dato ikke er spesifisert, må du oppgi hvilken måned arrangementet planlegges i.',
                 type: 'error',
                 duration: 5000,
             })
@@ -78,16 +92,20 @@ export default function AdminCreateEventPage() {
             max_attendees = n
         }
 
-        const startUtc = datetimeLocalToUtcIso(formData.start_datetime)
-        const endUtc = datetimeLocalToUtcIso(formData.end_datetime)
-        if (!startUtc || !endUtc) {
-            toaster.create({
-                title: 'Ugyldig start- eller sluttidspunkt',
-                type: 'error',
-                duration: 5000,
-            })
-            setIsSubmitting(false)
-            return
+        let startUtc: string | null = null
+        let endUtc: string | null = null
+        if (!dateUnspecified) {
+            startUtc = datetimeLocalToUtcIso(formData.start_datetime)
+            endUtc = datetimeLocalToUtcIso(formData.end_datetime)
+            if (!startUtc || !endUtc) {
+                toaster.create({
+                    title: 'Ugyldig start- eller sluttidspunkt',
+                    type: 'error',
+                    duration: 5000,
+                })
+                setIsSubmitting(false)
+                return
+            }
         }
 
         const regOpensUtc = formData.reg_opens.trim()
@@ -128,7 +146,10 @@ export default function AdminCreateEventPage() {
                     reg_opens: regOpensUtc,
                     reg_deadline: regDeadlineUtc,
                     max_attendees,
-                    author: user.id
+                    author: user.id,
+                    date_unspecified: dateUnspecified,
+                    planned_month: dateUnspecified ? formData.planned_month.trim() : null,
+                    location: dateUnspecified ? null : (formData.location.trim() || null),
                 }),
             })
 
@@ -144,7 +165,6 @@ export default function AdminCreateEventPage() {
                 duration: 5000,
             })
 
-            // Navigate to the dashboard
             router.push('/admin')
             router.refresh()
         } catch (error) {
@@ -185,44 +205,64 @@ export default function AdminCreateEventPage() {
                         />
                     </Field.Root>
 
-                    <Box
-                        display="grid"
-                        gridTemplateColumns={{ base: '1fr', md: '1fr 1fr' }}
-                        gap={4}
+                    <Checkbox.Root
+                        checked={dateUnspecified}
+                        onCheckedChange={(details) => setDateUnspecified(!!details.checked)}
                     >
-                        <Field.Root>
-                            <Field.Label>Starttidspunkt *</Field.Label>
-                            <Input
-                                name="start_datetime"
-                                type="datetime-local"
-                                value={formData.start_datetime}
-                                onChange={handleChange}
-                                required
-                            />
-                        </Field.Root>
+                        <Checkbox.HiddenInput />
+                        <Checkbox.Control />
+                        <Checkbox.Label>Arrangementsdato ikke spesifisert enda</Checkbox.Label>
+                    </Checkbox.Root>
 
-                        <Field.Root>
-                            <Field.Label>Sluttidspunkt *</Field.Label>
-                            <Input
-                                name="end_datetime"
-                                type="datetime-local"
-                                value={formData.end_datetime}
-                                onChange={handleChange}
-                                required
-                            />
-                        </Field.Root>
-                    </Box>
-
-                    <Field.Root>
-                        <Field.Label>Lokasjon *</Field.Label>
-                        <Input
-                            name="location"
-                            value={formData.location}
-                            onChange={handleChange}
-                            placeholder="F.eks. Auditorium 1, Medisinsk Teknisk Forskningssenter"
-                            required
+                    {dateUnspecified ? (
+                        <PlannedMonthSelector
+                            value={formData.planned_month}
+                            onChange={(planned_month) =>
+                                setFormData((prev) => ({ ...prev, planned_month }))
+                            }
                         />
-                    </Field.Root>
+                    ) : (
+                        <>
+                            <Box
+                                display="grid"
+                                gridTemplateColumns={{ base: '1fr', md: '1fr 1fr' }}
+                                gap={4}
+                            >
+                                <Field.Root>
+                                    <Field.Label>Starttidspunkt *</Field.Label>
+                                    <Input
+                                        name="start_datetime"
+                                        type="datetime-local"
+                                        value={formData.start_datetime}
+                                        onChange={handleChange}
+                                        required
+                                    />
+                                </Field.Root>
+
+                                <Field.Root>
+                                    <Field.Label>Sluttidspunkt *</Field.Label>
+                                    <Input
+                                        name="end_datetime"
+                                        type="datetime-local"
+                                        value={formData.end_datetime}
+                                        onChange={handleChange}
+                                        required
+                                    />
+                                </Field.Root>
+                            </Box>
+
+                            <Field.Root>
+                                <Field.Label>Lokasjon *</Field.Label>
+                                <Input
+                                    name="location"
+                                    value={formData.location}
+                                    onChange={handleChange}
+                                    placeholder="F.eks. Auditorium 1, Medisinsk Teknisk Forskningssenter"
+                                    required
+                                />
+                            </Field.Root>
+                        </>
+                    )}
 
                     <Field.Root>
                         <Field.Label>Kontakt e-post</Field.Label>
@@ -247,46 +287,49 @@ export default function AdminCreateEventPage() {
                         />
                     </Field.Root>
 
-                    <Field.Root>
-                        <Field.Label>Påmelding åpner</Field.Label>
-                        <Input
-                            name="reg_opens"
-                            type="datetime-local"
-                            value={formData.reg_opens}
-                            onChange={handleChange}
-                        />
-                        <Field.HelperText>Valgfritt. Tomt betyr at påmelding er åpen med en gang.</Field.HelperText>
-                    </Field.Root>
+                    {!dateUnspecified && (
+                        <>
+                            <Field.Root>
+                                <Field.Label>Påmelding åpner</Field.Label>
+                                <Input
+                                    name="reg_opens"
+                                    type="datetime-local"
+                                    value={formData.reg_opens}
+                                    onChange={handleChange}
+                                />
+                                <Field.HelperText>Valgfritt. Tomt betyr at påmelding er åpen med en gang.</Field.HelperText>
+                            </Field.Root>
 
-                    <Box
-                        display="grid"
-                        gridTemplateColumns={{ base: '1fr', md: '1fr 1fr' }}
-                        gap={4}
-                    >
-                        <Field.Root>
-                            <Field.Label>Maks antall deltakere</Field.Label>
-                            <Input
-                                name="max_attendees"
-                                type="number"
-                                min="1"
-                                value={formData.max_attendees}
-                                onChange={handleChange}
-                                placeholder="F.eks. 50"
-                            />
-                            <Field.HelperText>La stå tomt for ubegrenset</Field.HelperText>
+                            <Box
+                                display="grid"
+                                gridTemplateColumns={{ base: '1fr', md: '1fr 1fr' }}
+                                gap={4}
+                            >
+                                <Field.Root>
+                                    <Field.Label>Maks antall deltakere</Field.Label>
+                                    <Input
+                                        name="max_attendees"
+                                        type="number"
+                                        min="1"
+                                        value={formData.max_attendees}
+                                        onChange={handleChange}
+                                        placeholder="F.eks. 50"
+                                    />
+                                    <Field.HelperText>La stå tomt for ubegrenset</Field.HelperText>
+                                </Field.Root>
 
-                        </Field.Root>
-
-                        <Field.Root>
-                            <Field.Label>Påmeldingsfrist</Field.Label>
-                            <Input
-                                name="reg_deadline"
-                                type="datetime-local"
-                                value={formData.reg_deadline}
-                                onChange={handleChange}
-                            />
-                        </Field.Root>
-                    </Box>
+                                <Field.Root>
+                                    <Field.Label>Påmeldingsfrist</Field.Label>
+                                    <Input
+                                        name="reg_deadline"
+                                        type="datetime-local"
+                                        value={formData.reg_deadline}
+                                        onChange={handleChange}
+                                    />
+                                </Field.Root>
+                            </Box>
+                        </>
+                    )}
 
                     <Box
                         display="flex"

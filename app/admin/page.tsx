@@ -2,6 +2,7 @@ import { createClient } from '@/utils/supabase/server'
 import { Box, Heading, Table, Button, Flex, Badge, Link as ChakraLink } from '@chakra-ui/react'
 import Link from 'next/link'
 import { APP_TIME_ZONE } from '@/lib/datetimeLocal'
+import { formatPlannedMonth, isEventPast } from '@/lib/eventDate'
 
 export default async function AdminDashboard() {
     const supabase = await createClient()
@@ -63,8 +64,7 @@ export default async function AdminDashboard() {
                     </Table.Header>
                     <Table.Body>
                         {eventList.map((event) => {
-                            const startDate = new Date(event.start_datetime || '')
-                            const isPast = startDate < new Date()
+                            const isPast = isEventPast(event)
                             const confirmed = confirmedCountByEventId.get(event.id) ?? 0
                             const attendeesLabel =
                                 event.max_attendees != null
@@ -75,14 +75,18 @@ export default async function AdminDashboard() {
                                 <Table.Row key={event.id}>
                                     <Table.Cell fontWeight="medium">{event.title}</Table.Cell>
                                     <Table.Cell>
-                                        {startDate.toLocaleDateString('nb-NO', {
-                                            timeZone: APP_TIME_ZONE,
-                                            day: '2-digit',
-                                            month: '2-digit',
-                                            year: 'numeric',
-                                            hour: '2-digit',
-                                            minute: '2-digit'
-                                        })}
+                                        {event.date_unspecified
+                                            ? formatPlannedMonth(event.planned_month)
+                                            : event.start_datetime
+                                              ? new Date(event.start_datetime).toLocaleDateString('nb-NO', {
+                                                    timeZone: APP_TIME_ZONE,
+                                                    day: '2-digit',
+                                                    month: '2-digit',
+                                                    year: 'numeric',
+                                                    hour: '2-digit',
+                                                    minute: '2-digit',
+                                                })
+                                              : '—'}
                                     </Table.Cell>
                                     <Table.Cell>{attendeesLabel}</Table.Cell>
                                     <Table.Cell>

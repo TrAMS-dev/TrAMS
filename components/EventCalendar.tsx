@@ -23,6 +23,13 @@ import {
 import { Calendar, List, MapPin, Clock, Users } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { APP_TIME_ZONE } from '@/lib/datetimeLocal'
+import {
+    formatEventDate,
+    getEventSortTime,
+    isDateUnspecifiedEvent,
+    isEventPast,
+    shouldShowInCalendar,
+} from '@/lib/eventDate'
 
 interface EventCalendarProps {
     events: Tables<'Events'>[]
@@ -57,12 +64,7 @@ export default function EventCalendar({ events }: EventCalendarProps) {
         const query = searchTerm.trim().toLowerCase()
 
         return events.filter((event) => {
-            const startDate = event.start_datetime ? new Date(event.start_datetime) : null
-            const endDate = event.end_datetime ? new Date(event.end_datetime) : null
-            const comparisonDate = endDate ?? startDate
-            const isPast = comparisonDate ? comparisonDate.getTime() < now.getTime() : false
-
-            if (!includePast && isPast) {
+            if (!includePast && isEventPast(event, now)) {
                 return false
             }
 
@@ -88,19 +90,14 @@ export default function EventCalendar({ events }: EventCalendarProps) {
     }, [events, includePast, locationFilter, searchTerm])
 
     const sortedEvents = useMemo(() => {
-        const getEventTime = (event: Tables<'Events'>) => {
-            const dateValue = event.start_datetime ? new Date(event.start_datetime) : null
-            return dateValue ? dateValue.getTime() : null
-        }
-
         return [...filteredEvents].sort((a, b) => {
             if (sortBy === 'title-asc' || sortBy === 'title-desc') {
                 const titleA = (a.title || '').localeCompare(b.title || '', 'nb')
                 return sortBy === 'title-asc' ? titleA : -titleA
             }
 
-            const timeA = getEventTime(a)
-            const timeB = getEventTime(b)
+            const timeA = getEventSortTime(a)
+            const timeB = getEventSortTime(b)
             const safeA = timeA ?? (sortBy === 'date-asc' ? Number.POSITIVE_INFINITY : Number.NEGATIVE_INFINITY)
             const safeB = timeB ?? (sortBy === 'date-asc' ? Number.POSITIVE_INFINITY : Number.NEGATIVE_INFINITY)
 
@@ -108,8 +105,10 @@ export default function EventCalendar({ events }: EventCalendarProps) {
         })
     }, [filteredEvents, sortBy])
 
-    // Transform Supabase events to FullCalendar format
-    const calendarEvents = filteredEvents.map(event => ({
+    // Transform Supabase events to FullCalendar format (exclude month-only / unspecified dates)
+    const calendarEvents = filteredEvents
+        .filter(shouldShowInCalendar)
+        .map(event => ({
         id: event.id.toString(),
         title: event.title || 'Untitled Event',
         start: event.start_datetime || undefined,
@@ -278,7 +277,7 @@ export default function EventCalendar({ events }: EventCalendarProps) {
                                         <Box>
                                             <Flex justify="space-between" align="start">
                                                 <Badge colorScheme="blue" mb={2} borderRadius="full" px={2}>
-                                                    {event.start_datetime ? new Date(event.start_datetime).toLocaleDateString('nb-NO', { timeZone: APP_TIME_ZONE, month: 'short', day: 'numeric' }) : 'Dato kommer'}
+                                                    {formatEventDate(event, { style: 'short' })}
                                                 </Badge>
                                                 {isRegistrationWindowOpen(event) && (
                                                     <Badge
@@ -300,7 +299,11 @@ export default function EventCalendar({ events }: EventCalendarProps) {
                                             <HStack color="gray.500" fontSize="sm">
                                                 <Clock size={16} />
                                                 <Text>
-                                                    {event.start_datetime ? new Date(event.start_datetime).toLocaleTimeString('nb-NO', { timeZone: APP_TIME_ZONE, hour: '2-digit', minute: '2-digit' }) : 'Tid kommer'}
+                                                    {isDateUnspecifiedEvent(event)
+                                                        ? 'Tid kommer'
+                                                        : event.start_datetime
+                                                          ? new Date(event.start_datetime).toLocaleTimeString('nb-NO', { timeZone: APP_TIME_ZONE, hour: '2-digit', minute: '2-digit' })
+                                                          : 'Tid kommer'}
                                                 </Text>
                                             </HStack>
                                             <HStack color="gray.500" fontSize="sm">

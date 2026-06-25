@@ -59,6 +59,13 @@ export async function POST(request: Request) {
             )
         }
 
+        if (event.date_unspecified) {
+            return NextResponse.json(
+                { error: 'Påmelding er ikke tilgjengelig før dato er fastsatt' },
+                { status: 400 }
+            )
+        }
+
         const now = new Date()
 
         if (event.reg_opens) {
