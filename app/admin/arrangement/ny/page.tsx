@@ -211,14 +211,19 @@ export default function AdminCreateEventPage() {
                             rows={6}
                         />
                     </Field.Root>
-                    <Checkbox.Root
-                        checked={hasFood}
-                        onCheckedChange={(details) => setHasFood(!!details.checked)}
-                    >
-                        <Checkbox.HiddenInput />
-                        <Checkbox.Control />
-                        <Checkbox.Label>Blir det servering av mat drikke?</Checkbox.Label>
-                    </Checkbox.Root>
+                    <Field.Root>
+                        <Checkbox.Root
+                            checked={hasFood}
+                            onCheckedChange={(details) => setHasFood(!!details.checked)}
+                        >
+                            <Checkbox.HiddenInput />
+                            <Checkbox.Control />
+                            <Checkbox.Label>Blir det servering av mat drikke?</Checkbox.Label>
+                        </Checkbox.Root>
+                        <Field.HelperText>
+                            Dersom du huker av denne vil deltagere bli spurt om eventuelle allergier
+                        </Field.HelperText>
+                    </Field.Root>
 
                     <Checkbox.Root
                         checked={dateUnspecified}
