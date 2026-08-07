@@ -42,6 +42,7 @@ export default function BookKursForm() {
         kontaktpersonNavn: '',
         kontaktpersonTelefon: '',
         kontaktpersonEpost: '',
+        organisasjonsnummer: '',
         datoType: 'fleksibel' as 'spesifikk' | 'fleksibel',
         spesifikkDato: '',
         spesifikkTid: '',
@@ -55,6 +56,7 @@ export default function BookKursForm() {
         annet: '',
         kursbevis: false,
         engelskKurs: false,
+        fakturaGodkjent: false,
     });
 
     const [pageContent, setPageContent] = useState<BookKursPage | null>(null);
@@ -83,6 +85,11 @@ export default function BookKursForm() {
 
         if (step < totalSteps) {
             nextStep();
+            return;
+        }
+
+        if (!formData.fakturaGodkjent) {
+            setValidationError('Du må bekrefte at du er innforstått med at du blir fakturert i etterkant av kurset.');
             return;
         }
 
@@ -170,6 +177,10 @@ export default function BookKursForm() {
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!emailRegex.test(formData.kontaktpersonEpost)) {
                 setValidationError('Vennligst oppgi en gyldig e-postadresse.');
+                return;
+            }
+            if (!formData.organisasjonsnummer.trim()) {
+                setValidationError('Vennligst oppgi organisasjonsnummer.');
                 return;
             }
         }
@@ -339,6 +350,16 @@ export default function BookKursForm() {
                                     onChange={handleChange}
                                     type="email"
                                     placeholder="navn@bedrift.no"
+                                />
+                            </Field.Root>
+
+                            <Field.Root>
+                                <Field.Label>Organisasjonsnummer <Text as="span" color="red.500">*</Text></Field.Label>
+                                <Input
+                                    name="organisasjonsnummer"
+                                    value={formData.organisasjonsnummer}
+                                    onChange={handleChange}
+                                    placeholder="123 456 789"
                                 />
                             </Field.Root>
                         </Stack>
@@ -550,6 +571,23 @@ export default function BookKursForm() {
                                 <Checkbox.HiddenInput />
                                 <Checkbox.Control />
                                 <Checkbox.Label>Kurset skal holdes på engelsk</Checkbox.Label>
+                            </Checkbox.Root>
+
+                            <Checkbox.Root
+                                name="fakturaGodkjent"
+                                checked={formData.fakturaGodkjent}
+                                onCheckedChange={(details) => {
+                                    setFormData(prev => ({ ...prev, fakturaGodkjent: !!details.checked }));
+                                    if (validationError) setValidationError(null);
+                                }}
+                                mt={2}
+                            >
+                                <Checkbox.HiddenInput />
+                                <Checkbox.Control />
+                                <Checkbox.Label>
+                                    Jeg er innforstått med at jeg blir fakturert i etterkant av kurset{' '}
+                                    <Text as="span" color="red.500">*</Text>
+                                </Checkbox.Label>
                             </Checkbox.Root>
                         </Stack>
                     </Box>
