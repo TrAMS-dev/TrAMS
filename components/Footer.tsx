@@ -95,7 +95,7 @@ export default function Footer() {
       <Box textAlign="center" mt={4} fontSize="0.8rem" color="black">
         <Text m={0}>&copy; 2024 Trondheim Akuttmedisinske Studentforening</Text>
         <Link
-          href="/studio"
+          href="/admin"
           color="gray.500"
           textDecoration="none"
           _hover={{ color: 'var(--color-primary)', opacity: 1 }}
@@ -104,7 +104,7 @@ export default function Footer() {
           display="inline-block"
           opacity={0.5}
         >
-          Endre innhold på nettsiden
+          Adminside
         </Link>
       </Box>
     </Box>

@@ -2,6 +2,7 @@ export interface BookingData {
   kontaktpersonNavn: string;
   kontaktpersonEpost: string;
   kontaktpersonTelefon?: string;
+  organisasjonsnummer: string;
   kursType: string;
   kursTypeAnnet?: string;
   deltakermasse?: string;
@@ -78,6 +79,10 @@ Denne mailen bekrefter at du har booket førstehjelpskurs av TrAMS, Trondheim Ak
             <tr>
               <td style="padding: 8px 0; color: #666; font-weight: bold;">Sted:</td>
               <td style="padding: 8px 0; color: #333;">${stedTekst}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px 0; color: #666; font-weight: bold;">Organisasjonsnummer:</td>
+              <td style="padding: 8px 0; color: #333;">${booking.organisasjonsnummer}</td>
             </tr>
             ${booking.kursbevis ? `
             <tr>
@@ -168,6 +173,10 @@ export function getAdminNotificationHtml(booking: BookingData): string {
               </td>
             </tr>
             ` : ''}
+            <tr>
+              <td style="padding: 8px 0; color: #666; font-weight: bold;">Organisasjonsnummer:</td>
+              <td style="padding: 8px 0; color: #333;">${booking.organisasjonsnummer}</td>
+            </tr>
           </tbody>
         </table>
       </div>

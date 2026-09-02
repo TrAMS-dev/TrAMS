@@ -4,8 +4,12 @@ import CommiteeCards from '@/components/CommiteeCards';
 import CourseCards from '@/components/CourseCards';
 import HeroImage from '@/components/HeroImage';
 import PreloadHeroImage from '@/components/PreloadHeroImage';
+import { client } from '@/sanity/lib/client';
+import { FOR_MEDISINSTUDENTER_PAGE_QUERY } from '@/sanity/lib/queries';
 
 import type { Metadata } from "next";
+
+const FALLBACK_MEMBERSHIP_SIGNUP_URL = 'https://forms.gle/GDLsAZTeVvTKmCqw9';
 
 export const metadata: Metadata = {
   title: "For Medisinstudenter",
@@ -19,7 +23,13 @@ export const metadata: Metadata = {
   },
 };
 
-export default function ForMedisinstudenter() {
+export default async function ForMedisinstudenter() {
+  const pageData = await client.fetch<{ membershipSignupUrl?: string | null }>(
+    FOR_MEDISINSTUDENTER_PAGE_QUERY
+  );
+  const membershipSignupUrl =
+    pageData?.membershipSignupUrl?.trim() || FALLBACK_MEMBERSHIP_SIGNUP_URL;
+
   return (
     <>
       <PreloadHeroImage imageUrl="/assets/images/cbrn.jpg" />
@@ -66,7 +76,7 @@ export default function ForMedisinstudenter() {
                 <strong>Bli medlem i dag ved å klikke på knappen!</strong>
               </Text>
               <Link
-                href="https://forms.gle/GDLsAZTeVvTKmCqw9"
+                href={membershipSignupUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 display="inline-block"

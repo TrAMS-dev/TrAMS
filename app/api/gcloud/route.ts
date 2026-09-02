@@ -4,6 +4,7 @@ interface BookingRequestBody {
     kontaktpersonNavn?: string;
     kontaktpersonTelefon?: string;
     kontaktpersonEpost?: string;
+    organisasjonsnummer?: string;
     kursType?: string;
     kursTypeAnnet?: string;
     deltakermasse?: string;
@@ -26,6 +27,7 @@ export async function POST(req: Request) {
         kontaktpersonNavn,
         kontaktpersonTelefon,
         kontaktpersonEpost,
+        organisasjonsnummer,
         kursType,
         kursTypeAnnet,
         deltakermasse,
@@ -89,7 +91,8 @@ export async function POST(req: Request) {
                     adresse ?? "",
                     annet ?? "",
                     kursbevis ? "Ja" : "Nei",
-                    engelskKurs ? "Ja" : "Nei"
+                    engelskKurs ? "Ja" : "Nei",
+                    organisasjonsnummer ?? "",
                 ]],
             },
         });
