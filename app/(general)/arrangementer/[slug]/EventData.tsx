@@ -14,7 +14,9 @@ import {
     Wrap,
 } from '@chakra-ui/react'
 import EventSignupDialog from '@/components/EventSignupDialog'
+import EventFeedbackDialog from '@/components/EventFeedbackDialog'
 import EventParticipantListDialog from '@/components/EventParticipantListDialog'
+import { parseFeedbackQuestions } from '@/lib/eventFeedback'
 import { createClient } from '@/utils/supabase/client'
 import type { Tables } from '@/types/supabase'
 import { useParams, useRouter } from 'next/navigation'
@@ -52,6 +54,7 @@ export default function EventArrangementDetailClient({
     >([])
     const [loading, setLoading] = useState(true)
     const [signupOpen, setSignupOpen] = useState(false)
+    const [feedbackOpen, setFeedbackOpen] = useState(false)
     const [participantListOpen, setParticipantListOpen] = useState(false)
 
     const fetchEventData = async () => {
@@ -162,6 +165,9 @@ export default function EventArrangementDetailClient({
     }
 
     const hasFood: boolean = event.has_food
+
+    const feedbackQuestions = parseFeedbackQuestions(event.feedback_questions)
+    const showFeedback = Boolean(event.feedback_open) && feedbackQuestions.length > 0
 
     const isDateUnspecified = isDateUnspecifiedEvent(event)
     const startDate = event.start_datetime ? new Date(event.start_datetime) : null
@@ -399,6 +405,28 @@ export default function EventArrangementDetailClient({
                                         TrAMS-arrangementer.
                                     </Text>
                                 </Box>
+                                {showFeedback && (
+                                    <Box
+                                        borderTopWidth="1px"
+                                        borderColor="gray.100"
+                                        pt={6}
+                                    >
+                                        <Heading size={{ base: 'md', md: 'lg' }} mb={3}>
+                                            Gi tilbakemelding
+                                        </Heading>
+                                        <Text color="gray.700" lineHeight="1.8" mb={4}>
+                                            Arrangøren ønsker innspill om dette arrangementet.
+                                            Tilbakemeldingen er anonym.
+                                        </Text>
+                                        <Button
+                                            bg="var(--color-primary)"
+                                            color="white"
+                                            onClick={() => setFeedbackOpen(true)}
+                                        >
+                                            Gi tilbakemelding
+                                        </Button>
+                                    </Box>
+                                )}
                             </Stack>
                         </Box>
 
@@ -597,6 +625,14 @@ export default function EventArrangementDetailClient({
                 membershipSignupHref={membershipSignupHref}
                 eventHasFood={hasFood}
                 eventCustomQuestion={event.custom_question}
+            />
+
+            <EventFeedbackDialog
+                open={feedbackOpen}
+                onClose={() => setFeedbackOpen(false)}
+                eventId={event.id}
+                eventTitle={event.title || 'dette arrangementet'}
+                questions={feedbackQuestions}
             />
 
             <EventParticipantListDialog

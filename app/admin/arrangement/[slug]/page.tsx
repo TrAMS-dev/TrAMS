@@ -12,6 +12,8 @@ import {
 } from '@/components/admin/EventForm'
 import { toaster } from '@/components/ui/toaster'
 import { utcIsoToDatetimeLocalValue } from '@/lib/datetimeLocal'
+import { parseFeedbackQuestions } from '@/lib/eventFeedback'
+import type { Json } from '@/types/supabase'
 
 export default function AdminEditEventPage() {
     const router = useRouter()
@@ -60,6 +62,8 @@ export default function AdminEditEventPage() {
                 planned_month: data.planned_month || '',
                 has_food: Boolean(data.has_food),
                 custom_question: data.custom_question || '',
+                feedback_open: Boolean(data.feedback_open),
+                feedback_questions: parseFeedbackQuestions(data.feedback_questions),
             })
             setLoading(false)
         }
@@ -90,6 +94,8 @@ export default function AdminEditEventPage() {
                     planned_month: payload.planned_month,
                     has_food: payload.has_food,
                     custom_question: payload.custom_question,
+                    feedback_open: payload.feedback_open,
+                    feedback_questions: payload.feedback_questions as unknown as Json,
                 })
                 .eq('id', eventId)
 

@@ -1,5 +1,7 @@
 import { createClient } from '@/utils/supabase/server'
 import { NextResponse } from 'next/server'
+import { parseFeedbackQuestions } from '@/lib/eventFeedback'
+import type { Json } from '@/types/supabase'
 
 function generateSlug(title: string): string {
     return title
@@ -30,6 +32,8 @@ export async function POST(request: Request) {
             planned_month,
             has_food,
             custom_question,
+            feedback_open,
+            feedback_questions,
         } = body
 
         const isDateUnspecified = Boolean(date_unspecified)
@@ -97,6 +101,10 @@ export async function POST(request: Request) {
                 slug,
                 has_food: Boolean(has_food),
                 custom_question: custom_question || null,
+                feedback_open: Boolean(feedback_open),
+                feedback_questions: parseFeedbackQuestions(
+                    feedback_questions
+                ) as unknown as Json,
             })
             .select()
             .single()
