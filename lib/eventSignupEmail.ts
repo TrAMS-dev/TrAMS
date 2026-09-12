@@ -1,4 +1,5 @@
 import { Resend } from 'resend'
+import { APP_TIME_ZONE } from '@/lib/datetimeLocal'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
@@ -32,6 +33,7 @@ function formatNbDate(iso: string | null): string | null {
     const d = new Date(iso)
     if (Number.isNaN(d.getTime())) return null
     return d.toLocaleString('nb-NO', {
+        timeZone: APP_TIME_ZONE,
         weekday: 'long',
         year: 'numeric',
         month: 'long',
