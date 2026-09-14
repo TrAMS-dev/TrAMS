@@ -101,7 +101,7 @@ function waitlistPromotedEmailHtml(ctx: EventSignupEmailContext): string {
     const body = `<p style="color:#555;line-height:1.6;margin-top:0;">${greeting} Du sto på venteliste, men det har blitt ledig plass og du er nå <strong>flyttet opp til bekreftet plass</strong> ${detail}.</p>
 ${linkParagraph(link)}
 <p style="color:#555;line-height:1.6;">Vi gleder oss til å se deg på kurs!</p>
-<p style="color:#555;line-height:1.6;">Dersom du ikke kan komme på kurset ønsker vi at du gir beskjed på denne mailen så fort som mulig for å kunne gi plass til de som står på evt. venteliste, og informerer om at du vil bli nedprioritert på fremtidige TrAMS kurs dersom du gir beskjed senere enn et døgn før kurset.</p>`
+<p style="color:#555;line-height:1.6;">Dersom du ikke kan komme på kurset ønsker vi at du gir beskjed på denne mailen så fort som mulig for å kunne gi plass til de som eventuelt står på venteliste under deg.</p>`
 
     return emailShell(body)
 }
