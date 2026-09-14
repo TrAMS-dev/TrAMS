@@ -20,6 +20,7 @@ import { createClient } from '@/utils/supabase/client'
 import type { Tables } from '@/types/supabase'
 import { toaster } from '@/components/ui/toaster'
 import { useAuth } from '@/hooks/useAuth'
+import ExportParticipantsDialog from '@/components/admin/ExportParticipantsDialog'
 
 function isConfirmedParticipant(p: Tables<'EventParticipants'>) {
     return p.status !== 'waitlist'
@@ -33,12 +34,6 @@ function attendedSelectValue(attended: boolean | null) {
 function parseAttended(value: string): boolean | null {
     if (value === '') return null
     return value === 'true'
-}
-
-function memberConfirmLabel(p: Tables<'EventParticipants'>) {
-    if (p.confirmed_trams_member === true) return 'TrAMS-medlem'
-    if (p.confirmed_trams_member === false) return 'Ikke medlem'
-    return 'Ukjent'
 }
 
 export default function AdminParticipantsPage() {
@@ -57,6 +52,7 @@ export default function AdminParticipantsPage() {
     const [promoteCountInput, setPromoteCountInput] = useState('1')
     const [promoting, setPromoting] = useState(false)
     const [promotingId, setPromotingId] = useState<number | null>(null)
+    const [exportDialogOpen, setExportDialogOpen] = useState(false)
 
     const attendanceSummary = useMemo(() => {
         const confirmed = participants.filter(isConfirmedParticipant)
@@ -350,54 +346,6 @@ export default function AdminParticipantsPage() {
         }
     }
 
-    const handleExport = (scope: 'confirmed' | 'all') => {
-        const rows = scope === 'confirmed' ? participants.filter(isConfirmedParticipant) : participants
-
-        const headers = [
-            'Navn',
-            'E-post',
-            'Kull',
-            'Allergier',
-            'Medlemskap (selvrapportert)',
-            ...(eventCustomQuestion ? [eventCustomQuestion] : []),
-            'Status',
-            'Oppmøte',
-            'Påmeldt',
-        ]
-        const oppmoteLabel = (p: Tables<'EventParticipants'>) => {
-            if (p.attended === true) return 'Møtt'
-            if (p.attended === false) return 'Ikke møtt'
-            return 'Ikke registrert'
-        }
-        const csvContent = [
-            headers.join(','),
-            ...rows.map(p => [
-                `"${p.name}"`,
-                `"${p.email}"`,
-                `"${p.kull}"`,
-                `"${p.allergies || ''}"`,
-                `"${memberConfirmLabel(p)}"`,
-                ...(eventCustomQuestion ? [`"${p.custom_question_response ? 'Ja' : 'Nei'}"`] : []),
-                `"${p.status === 'waitlist' ? 'Venteliste' : 'Påmeldt'}"`,
-                `"${oppmoteLabel(p)}"`,
-                `"${new Date(p.created_at).toLocaleString()}"`
-            ].join(','))
-        ].join('\n')
-
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
-        const link = document.createElement('a')
-        const url = URL.createObjectURL(blob)
-        link.setAttribute('href', url)
-        link.setAttribute(
-            'download',
-            scope === 'confirmed' ? `${slug}-deltakere.csv` : `${slug}-deltakere-alle.csv`
-        )
-        link.style.visibility = 'hidden'
-        document.body.appendChild(link)
-        link.click()
-        document.body.removeChild(link)
-    }
-
     if (authLoading || loading) return <Flex justify="center" align="center" h="50vh"><Spinner size="xl" /></Flex>
 
     if (!isAuthenticated || !isApproved) return null
@@ -411,22 +359,13 @@ export default function AdminParticipantsPage() {
                     </Button>
                     <Heading size="lg">Deltakere: {eventTitle}</Heading>
                 </Box>
-                <HStack gap={2}>
-                    <Button
-                        onClick={() => handleExport('confirmed')}
-                        variant="outline"
-                        disabled={attendanceSummary.confirmedCount === 0}
-                    >
-                        Eksporter påmeldte (CSV)
-                    </Button>
-                    <Button
-                        onClick={() => handleExport('all')}
-                        variant="outline"
-                        disabled={participants.length === 0}
-                    >
-                        Eksporter hele listen (CSV)
-                    </Button>
-                </HStack>
+                <Button
+                    onClick={() => setExportDialogOpen(true)}
+                    variant="outline"
+                    disabled={participants.length === 0}
+                >
+                    Eksporter CSV
+                </Button>
             </Flex>
 
             {participants.length > 0 && (
@@ -635,6 +574,14 @@ export default function AdminParticipantsPage() {
                     </Table.Body>
                 </Table.Root>
             </Box>
+
+            <ExportParticipantsDialog
+                open={exportDialogOpen}
+                onClose={() => setExportDialogOpen(false)}
+                participants={participants}
+                eventCustomQuestion={eventCustomQuestion}
+                slug={slug}
+            />
         </Box>
     )
 }
