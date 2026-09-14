@@ -350,8 +350,9 @@ export default function AdminParticipantsPage() {
         }
     }
 
-    const handleExport = () => {
-        // Simple CSV export
+    const handleExport = (scope: 'confirmed' | 'all') => {
+        const rows = scope === 'confirmed' ? participants.filter(isConfirmedParticipant) : participants
+
         const headers = [
             'Navn',
             'E-post',
@@ -370,7 +371,7 @@ export default function AdminParticipantsPage() {
         }
         const csvContent = [
             headers.join(','),
-            ...participants.map(p => [
+            ...rows.map(p => [
                 `"${p.name}"`,
                 `"${p.email}"`,
                 `"${p.kull}"`,
@@ -387,7 +388,10 @@ export default function AdminParticipantsPage() {
         const link = document.createElement('a')
         const url = URL.createObjectURL(blob)
         link.setAttribute('href', url)
-        link.setAttribute('download', `${slug}-deltakere.csv`)
+        link.setAttribute(
+            'download',
+            scope === 'confirmed' ? `${slug}-deltakere.csv` : `${slug}-deltakere-alle.csv`
+        )
         link.style.visibility = 'hidden'
         document.body.appendChild(link)
         link.click()
@@ -407,9 +411,22 @@ export default function AdminParticipantsPage() {
                     </Button>
                     <Heading size="lg">Deltakere: {eventTitle}</Heading>
                 </Box>
-                <Button onClick={handleExport} variant="outline" disabled={participants.length === 0}>
-                    Eksporter CSV
-                </Button>
+                <HStack gap={2}>
+                    <Button
+                        onClick={() => handleExport('confirmed')}
+                        variant="outline"
+                        disabled={attendanceSummary.confirmedCount === 0}
+                    >
+                        Eksporter påmeldte (CSV)
+                    </Button>
+                    <Button
+                        onClick={() => handleExport('all')}
+                        variant="outline"
+                        disabled={participants.length === 0}
+                    >
+                        Eksporter hele listen (CSV)
+                    </Button>
+                </HStack>
             </Flex>
 
             {participants.length > 0 && (
