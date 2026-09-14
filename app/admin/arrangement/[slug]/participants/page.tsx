@@ -19,6 +19,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
 import type { Tables } from '@/types/supabase'
 import { toaster } from '@/components/ui/toaster'
+import { useAuth } from '@/hooks/useAuth'
 
 function isConfirmedParticipant(p: Tables<'EventParticipants'>) {
     return p.status !== 'waitlist'
@@ -44,6 +45,7 @@ export default function AdminParticipantsPage() {
     const params = useParams()
     const router = useRouter()
     const slug = params.slug as string
+    const { isAuthenticated, isApproved, isLoading: authLoading } = useAuth()
     const [participants, setParticipants] = useState<Tables<'EventParticipants'>[]>([])
     const [eventId, setEventId] = useState<number | null>(null)
     const [eventTitle, setEventTitle] = useState('')
@@ -79,6 +81,14 @@ export default function AdminParticipantsPage() {
     }, [participants])
 
     useEffect(() => {
+        if (!authLoading && (!isAuthenticated || !isApproved)) {
+            router.push('/admin/login')
+        }
+    }, [authLoading, isAuthenticated, isApproved, router])
+
+    useEffect(() => {
+        if (authLoading || !isAuthenticated || !isApproved) return
+
         const fetchData = async () => {
             const supabase = createClient()
 
@@ -115,7 +125,7 @@ export default function AdminParticipantsPage() {
         }
 
         fetchData()
-    }, [slug])
+    }, [slug, authLoading, isAuthenticated, isApproved])
 
     const handleAttendanceChange = async (
         participantId: number,
@@ -319,7 +329,9 @@ export default function AdminParticipantsPage() {
         document.body.removeChild(link)
     }
 
-    if (loading) return <Flex justify="center" align="center" h="50vh"><Spinner size="xl" /></Flex>
+    if (authLoading || loading) return <Flex justify="center" align="center" h="50vh"><Spinner size="xl" /></Flex>
+
+    if (!isAuthenticated || !isApproved) return null
 
     return (
         <Box>
