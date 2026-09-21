@@ -89,47 +89,21 @@ const SUBJECT_CONFIRMED = (title: string) => `Plass på kurs: ${title}`
 
 const SUBJECT_WAITLIST = (title: string) => `Venteliste: ${title}`
 
-const SUBJECT_WAITLIST_SPOTS_OPENED = (title: string, spotsOpened: number) =>
-    spotsOpened === 1
-        ? `Ledig plass – venteliste: ${title}`
-        : `Ledige plasser – venteliste: ${title}`
+const SUBJECT_WAITLIST_PROMOTED = (title: string) => `Du har fått plass: ${title}`
 
-function waitlistSpotsOpenedGuideHtml(
-    ctx: EventSignupEmailContext,
-    spotsOpened: number
-): string {
+function waitlistPromotedEmailHtml(ctx: EventSignupEmailContext): string {
     const title = ctx.eventTitle.trim()
     const when = formatNbDate(ctx.startDatetime)
     const where = ctx.location ? escapeHtml(ctx.location.trim()) : null
     const link = eventPageUrl(ctx.eventSlug)
     const detail = courseWhenWhereFragment(title, when, where, 'på')
     const name = (ctx.recipientName || '').trim()
-    const greeting = name
-        ? `Hei ${escapeHtml(name)}!`
-        : 'Hei!'
+    const greeting = name ? `Hei ${escapeHtml(name)}!` : 'Hei!'
 
-    const spotsPhrase =
-        spotsOpened === 1
-            ? 'Det har åpnet seg <strong>minst én bekreftet plass</strong>'
-            : `Det har åpnet seg <strong>${spotsOpened} bekreftede plasser</strong>`
-
-    const batchNote =
-        spotsOpened === 1
-            ? '<p style="color:#555;line-height:1.6;">Du står først blant dem på ventelisten som nå får beskjed om å kunne bekrefte plass.</p>'
-            : `<p style="color:#555;line-height:1.6;">Du er blant de <strong>${spotsOpened} første</strong> på ventelisten som får denne e-posten, fordi flere plasser ble ledige samtidig. Alle får samme veiledning.</p>`
-
-    const steps = `<ol style="color:#555;line-height:1.7;padding-left:1.25rem;margin:0 0 1rem 0;">
-<li>Gå til arrangementsiden (lenke under).</li>
-<li>Klikk <strong>«Meld deg på»</strong>.</li>
-<li>Fyll ut skjemaet – bruk <strong>samme e-postadresse</strong> som da du meldte deg på ventelisten.</li>
-<li>Send inn. Da flyttes du til bekreftet plass når det er <strong>din tur</strong> og det fortsatt er ledig kapasitet.</li>
-</ol>`
-
-    const body = `<p style="color:#555;line-height:1.6;margin-top:0;">${greeting} ${spotsPhrase} ${detail}.</p>
-${batchNote}
-<p style="color:#555;line-height:1.6;">Slik bekrefter du plassen:</p>
-${steps}
-${linkParagraph(link)}`
+    const body = `<p style="color:#555;line-height:1.6;margin-top:0;">${greeting} Du sto på venteliste, men det har blitt ledig plass og du er nå <strong>flyttet opp til bekreftet plass</strong> ${detail}.</p>
+${linkParagraph(link)}
+<p style="color:#555;line-height:1.6;">Vi gleder oss til å se deg på kurs!</p>
+<p style="color:#555;line-height:1.6;">Dersom du ikke kan komme på kurset ønsker vi at du gir beskjed på denne mailen så fort som mulig for å kunne gi plass til de som eventuelt står på venteliste under deg.</p>`
 
     return emailShell(body)
 }
@@ -212,26 +186,23 @@ export async function sendEventSignupEmail(
     }
 }
 
-/** Veilednings-e-post til venteliste, sendt manuelt av admin fra deltakeroversikten. */
-export async function sendWaitlistSpotsOpenedGuideEmail(
-    spotsOpened: number,
+/** E-post til en deltaker som er flyttet opp fra venteliste til bekreftet plass av en admin. */
+export async function sendWaitlistPromotedEmail(
     ctx: EventSignupEmailContext
 ): Promise<void> {
-    if (spotsOpened < 1) return
-
     const to = ctx.recipientEmail.trim().toLowerCase()
     if (!to || to.length > 320 || !EMAIL_RE.test(to)) {
-        console.error('sendWaitlistSpotsOpenedGuideEmail: invalid recipient')
+        console.error('sendWaitlistPromotedEmail: invalid recipient')
         return
     }
 
     if (!process.env.RESEND_API_KEY) {
-        console.warn('sendWaitlistSpotsOpenedGuideEmail: RESEND_API_KEY missing, skipping')
+        console.warn('sendWaitlistPromotedEmail: RESEND_API_KEY missing, skipping')
         return
     }
 
-    const subject = SUBJECT_WAITLIST_SPOTS_OPENED(ctx.eventTitle.trim(), spotsOpened)
-    const html = waitlistSpotsOpenedGuideHtml(ctx, spotsOpened)
+    const subject = SUBJECT_WAITLIST_PROMOTED(ctx.eventTitle.trim())
+    const html = waitlistPromotedEmailHtml(ctx)
 
     const replyToRaw = ctx.contactEmail?.trim().toLowerCase()
     const replyTo =
@@ -248,6 +219,6 @@ export async function sendWaitlistSpotsOpenedGuideEmail(
     })
 
     if (result.error) {
-        console.error('sendWaitlistSpotsOpenedGuideEmail: Resend error', result.error)
+        console.error('sendWaitlistPromotedEmail: Resend error', result.error)
     }
 }

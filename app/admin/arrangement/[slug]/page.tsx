@@ -12,11 +12,13 @@ import {
 } from '@/components/admin/EventForm'
 import { toaster } from '@/components/ui/toaster'
 import { utcIsoToDatetimeLocalValue } from '@/lib/datetimeLocal'
+import { useAuth } from '@/hooks/useAuth'
 
 export default function AdminEditEventPage() {
     const router = useRouter()
     const params = useParams()
     const slug = params.slug as string
+    const { isAuthenticated, isApproved, isLoading: authLoading } = useAuth()
 
     const [initialValues, setInitialValues] = useState<EventFormValues | null>(null)
     const [dateUnspecified, setDateUnspecified] = useState(false)
@@ -24,6 +26,14 @@ export default function AdminEditEventPage() {
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
+        if (!authLoading && (!isAuthenticated || !isApproved)) {
+            router.push('/admin/login')
+        }
+    }, [authLoading, isAuthenticated, isApproved, router])
+
+    useEffect(() => {
+        if (authLoading || !isAuthenticated || !isApproved) return
+
         const fetchEvent = async () => {
             const supabase = createClient()
             const { data, error } = await supabase
@@ -65,7 +75,7 @@ export default function AdminEditEventPage() {
         }
 
         fetchEvent()
-    }, [slug, router])
+    }, [slug, router, authLoading, isAuthenticated, isApproved])
 
     const handleSubmit = async (payload: EventFormPayload) => {
         if (!eventId) return
@@ -121,12 +131,16 @@ export default function AdminEditEventPage() {
         }
     }
 
-    if (loading || !initialValues) {
+    if (authLoading || loading || !initialValues) {
         return (
             <Flex justify="center" align="center" h="50vh">
                 <Spinner size="xl" />
             </Flex>
         )
+    }
+
+    if (!isAuthenticated || !isApproved) {
+        return null
     }
 
     return (

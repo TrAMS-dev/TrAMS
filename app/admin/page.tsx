@@ -1,11 +1,11 @@
-import { createClient } from '@/utils/supabase/server'
 import { Box, Heading, Table, Button, Flex, Badge, Link as ChakraLink } from '@chakra-ui/react'
 import Link from 'next/link'
 import { APP_TIME_ZONE } from '@/lib/datetimeLocal'
 import { formatPlannedMonth, isEventPast } from '@/lib/eventDate'
+import { requireApprovedUser } from '@/utils/supabase/requireApprovedUser'
 
 export default async function AdminDashboard() {
-    const supabase = await createClient()
+    const { supabase } = await requireApprovedUser()
 
     const { data: events, error } = await supabase
         .from('Events')
