@@ -3,7 +3,7 @@ import Image from 'next/image';
 import { SectionHeading, SubsectionHeading } from '@/components/Typography';
 import { client } from '@/sanity/lib/client';
 import { FIRST_AID_COURSE_PAGE_QUERY } from '@/sanity/lib/queries';
-import { FIRST_AID_COURSE_PAGE_QUERYResult } from '@/types/sanity.types';
+import { FIRST_AID_COURSE_PAGE_QUERY_RESULT } from '@/types/sanity.types';
 import { urlFor } from '@/sanity/lib/image';
 import { SanityImageSource } from "@sanity/image-url/lib/types/types";
 import HeroImage from '@/components/HeroImage';
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
 };
 
 export default async function Forstehjelpskurs() {
-  const pageData = await client.fetch<FIRST_AID_COURSE_PAGE_QUERYResult>(FIRST_AID_COURSE_PAGE_QUERY);
+  const pageData = await client.fetch<FIRST_AID_COURSE_PAGE_QUERY_RESULT>(FIRST_AID_COURSE_PAGE_QUERY);
 
   if (!pageData) {
     return (
