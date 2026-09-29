@@ -15,6 +15,7 @@ import {
 } from '@chakra-ui/react'
 import EventSignupDialog from '@/components/EventSignupDialog'
 import EventParticipantListDialog from '@/components/EventParticipantListDialog'
+import { LinkifiedText } from '@/components/LinkifiedText'
 import { createClient } from '@/utils/supabase/client'
 import type { Tables } from '@/types/supabase'
 import { useParams, useRouter } from 'next/navigation'
@@ -381,7 +382,7 @@ export default function EventArrangementDetailClient({
                                             Om arrangementet
                                         </Heading>
                                         <Text whiteSpace="pre-wrap" lineHeight="1.8">
-                                            {event.description}
+                                            <LinkifiedText text={event.description} />
                                         </Text>
                                     </Box>
                                 )}
