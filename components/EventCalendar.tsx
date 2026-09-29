@@ -36,6 +36,7 @@ interface EventCalendarProps {
 }
 
 function isRegistrationWindowOpen(event: Tables<'Events'>): boolean {
+    if (event.signup_undecided) return false
     const t = new Date()
     const pastOpens = !event.reg_opens || t >= new Date(event.reg_opens)
     const beforeDeadline = !event.reg_deadline || t <= new Date(event.reg_deadline)
@@ -310,7 +311,7 @@ export default function EventCalendar({ events }: EventCalendarProps) {
                                                 <MapPin size={16} />
                                                 <Text lineClamp={1}>{event.location || 'Sted kommer'}</Text>
                                             </HStack>
-                                            {event.max_attendees && (
+                                            {event.max_attendees && !event.signup_undecided && (
                                                 <HStack color="gray.500" fontSize="sm">
                                                     <Users size={16} />
                                                     <Text>{event.max_attendees} plasser</Text>

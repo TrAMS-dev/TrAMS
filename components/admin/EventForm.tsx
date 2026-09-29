@@ -48,6 +48,7 @@ export interface EventFormPayload {
     author: string | null
     planned_month: string | null
     date_unspecified: boolean
+    signup_undecided: boolean
     has_food: boolean
     custom_question: string | null
 }
@@ -74,6 +75,7 @@ interface EventFormProps {
     submitLabel: string
     initialValues?: EventFormValues
     initialDateUnspecified?: boolean
+    initialSignupUndecided?: boolean
     onSubmit: (payload: EventFormPayload) => Promise<void>
 }
 
@@ -82,10 +84,12 @@ export function EventForm({
     submitLabel,
     initialValues = emptyEventFormValues,
     initialDateUnspecified = false,
+    initialSignupUndecided = false,
     onSubmit,
 }: EventFormProps) {
     const router = useRouter()
     const [dateUnspecified, setDateUnspecified] = useState(initialDateUnspecified)
+    const [signupUndecided, setSignupUndecided] = useState(initialSignupUndecided)
     const [hasFood, setHasFood] = useState(initialValues.has_food)
     const [formData, setFormData] = useState<EventFormValues>(initialValues)
     const [isSubmitting, setIsSubmitting] = useState(false)
@@ -169,6 +173,8 @@ export function EventForm({
             return
         }
 
+        const hideSignup = dateUnspecified || signupUndecided
+
         const payload: EventFormPayload = {
             title: formData.title,
             description: formData.description,
@@ -177,14 +183,15 @@ export function EventForm({
             location: dateUnspecified ? null : formData.location.trim() || null,
             contact_email: formData.contact_email.trim() || null,
             image: formData.image || null,
-            max_attendees: dateUnspecified ? null : max_attendees,
-            reg_opens: dateUnspecified ? null : regOpensUtc,
-            reg_deadline: dateUnspecified ? null : regDeadlineUtc,
+            max_attendees: hideSignup ? null : max_attendees,
+            reg_opens: hideSignup ? null : regOpensUtc,
+            reg_deadline: hideSignup ? null : regDeadlineUtc,
             author: formData.author || null,
             planned_month: dateUnspecified ? formData.planned_month.trim() : null,
             date_unspecified: dateUnspecified,
+            signup_undecided: signupUndecided,
             has_food: hasFood,
-            custom_question: formData.custom_question.trim() || null,
+            custom_question: signupUndecided ? null : formData.custom_question.trim() || null,
         }
 
         try {
@@ -312,21 +319,23 @@ export function EventForm({
                         </Field.HelperText>
                     </Field.Root>
 
-                    <Field.Root>
-                        <Field.Label>
-                            Spørsmål til påmelding (ja/nei-spørsmål, valgfritt)
-                        </Field.Label>
-                        <Input
-                            name="custom_question"
-                            value={formData.custom_question}
-                            onChange={handleChange}
-                            placeholder="F.eks. Har du deltatt på kurset tidligere?"
-                        />
-                        <Field.HelperText>
-                            Dersom du fyller ut dette, vil deltakerne få et avhukingsspørsmål under
-                            påmelding.
-                        </Field.HelperText>
-                    </Field.Root>
+                    {!signupUndecided && (
+                        <Field.Root>
+                            <Field.Label>
+                                Spørsmål til påmelding (ja/nei-spørsmål, valgfritt)
+                            </Field.Label>
+                            <Input
+                                name="custom_question"
+                                value={formData.custom_question}
+                                onChange={handleChange}
+                                placeholder="F.eks. Har du deltatt på kurset tidligere?"
+                            />
+                            <Field.HelperText>
+                                Dersom du fyller ut dette, vil deltakerne få et avhukingsspørsmål under
+                                påmelding.
+                            </Field.HelperText>
+                        </Field.Root>
+                    )}
 
                     <Field.Root w="full">
                         <Field.Label>Bilde</Field.Label>
@@ -340,7 +349,21 @@ export function EventForm({
                         />
                     </Field.Root>
 
-                    {!dateUnspecified && (
+                    <Field.Root>
+                        <Checkbox.Root
+                            checked={signupUndecided}
+                            onCheckedChange={(details) => setSignupUndecided(!!details.checked)}
+                        >
+                            <Checkbox.HiddenInput />
+                            <Checkbox.Control />
+                            <Checkbox.Label>Påmelding ikke bestemt enda</Checkbox.Label>
+                        </Checkbox.Root>
+                        <Field.HelperText>
+                            Skjuler all informasjon om påmelding på arrangementssiden
+                        </Field.HelperText>
+                    </Field.Root>
+
+                    {!dateUnspecified && !signupUndecided && (
                         <>
                             <Field.Root>
                                 <Field.Label>Påmelding åpner</Field.Label>

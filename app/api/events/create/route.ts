@@ -27,12 +27,15 @@ export async function POST(request: Request) {
             author,
             contact_email,
             date_unspecified,
+            signup_undecided,
             planned_month,
             has_food,
             custom_question,
         } = body
 
         const isDateUnspecified = Boolean(date_unspecified)
+        const isSignupUndecided = Boolean(signup_undecided)
+        const hideSignup = isDateUnspecified || isSignupUndecided
 
         if (!title) {
             return NextResponse.json(
@@ -87,16 +90,17 @@ export async function POST(request: Request) {
                 end_datetime: isDateUnspecified ? null : end_datetime,
                 location: isDateUnspecified ? null : (location || null),
                 image: image || null,
-                max_attendees: isDateUnspecified ? null : (max_attendees || null),
-                reg_deadline: isDateUnspecified ? null : (reg_deadline || null),
-                reg_opens: isDateUnspecified ? null : (reg_opens || null),
+                max_attendees: hideSignup ? null : (max_attendees || null),
+                reg_deadline: hideSignup ? null : (reg_deadline || null),
+                reg_opens: hideSignup ? null : (reg_opens || null),
                 author: author || null,
                 contact_email: contact_email?.trim() || null,
                 date_unspecified: isDateUnspecified,
+                signup_undecided: isSignupUndecided,
                 planned_month: isDateUnspecified ? planned_month : null,
                 slug,
                 has_food: Boolean(has_food),
-                custom_question: custom_question || null,
+                custom_question: isSignupUndecided ? null : (custom_question || null),
             })
             .select()
             .single()
