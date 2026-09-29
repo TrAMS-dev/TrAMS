@@ -4,7 +4,8 @@ import { Resend } from 'resend';
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 // Email address to receive admin notifications
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'ekstern@trams.no';
+const ADMIN_EMAIL_TRONDHEIM = process.env.ADMIN_EMAIL || 'ekstern@trams.no';
+const ADMIN_EMAIL_LEVANGER = process.env.ADMIN_EMAIL_LEVANGER || 'levanger@trams.no';
 
 export async function POST(request: Request) {
   try {
@@ -17,6 +18,8 @@ export async function POST(request: Request) {
         { status: 400 }
       );
     }
+
+    const ADMIN_EMAIL = booking.kursby === 'levanger' ? ADMIN_EMAIL_LEVANGER : ADMIN_EMAIL_TRONDHEIM;
 
     const kursNavn = booking.kursType === 'Annet' ? booking.kursTypeAnnet : booking.kursType;
 

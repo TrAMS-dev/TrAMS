@@ -1,8 +1,8 @@
 import { createClient } from '@/utils/supabase/server'
 import {
-    MAX_WAITLIST_SPOT_NOTIFY,
-    notifyWaitlistAfterSpotsOpened,
-} from '@/lib/waitlistSpotNotifications'
+    MAX_WAITLIST_PROMOTE,
+    promoteFromWaitlist,
+} from '@/lib/waitlistPromotion'
 import { NextResponse } from 'next/server'
 
 export async function POST(request: Request) {
@@ -13,22 +13,22 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: 'Ugyldig forespørsel' }, { status: 400 })
     }
 
-    const o = body as { eventId?: unknown; spotsOpened?: unknown }
+    const o = body as { eventId?: unknown; count?: unknown }
     const eventId = Number(o.eventId)
     if (!Number.isInteger(eventId) || eventId < 1) {
         return NextResponse.json({ error: 'Ugyldig arrangement-ID' }, { status: 400 })
     }
 
-    const spotsOpened = Number(o.spotsOpened)
-    if (!Number.isInteger(spotsOpened) || spotsOpened < 1) {
+    const count = Number(o.count)
+    if (!Number.isInteger(count) || count < 1) {
         return NextResponse.json(
-            { error: 'Oppgi antall plasser (heltall minst 1)' },
+            { error: 'Oppgi antall som skal flyttes opp (heltall minst 1)' },
             { status: 400 }
         )
     }
-    if (spotsOpened > MAX_WAITLIST_SPOT_NOTIFY) {
+    if (count > MAX_WAITLIST_PROMOTE) {
         return NextResponse.json(
-            { error: `Maks ${MAX_WAITLIST_SPOT_NOTIFY} plasser per utsending` },
+            { error: `Maks ${MAX_WAITLIST_PROMOTE} deltakere om gangen` },
             { status: 400 }
         )
     }
@@ -52,10 +52,18 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: 'Ingen tilgang' }, { status: 403 })
     }
 
-    const notified = await notifyWaitlistAfterSpotsOpened(supabase, {
-        eventId,
-        spotsOpened,
-    })
-
-    return NextResponse.json({ success: true, notified })
+    try {
+        const result = await promoteFromWaitlist(supabase, { eventId, count })
+        return NextResponse.json({
+            success: true,
+            promoted: result.promoted,
+            participantIds: result.participantIds,
+        })
+    } catch (e) {
+        console.error('Promote waitlist error:', e)
+        return NextResponse.json(
+            { error: e instanceof Error ? e.message : 'Kunne ikke flytte opp fra venteliste' },
+            { status: 500 }
+        )
+    }
 }

@@ -1,13 +1,21 @@
 'use client'
 
+import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { Flex, Spinner } from '@chakra-ui/react'
 import { EventForm, type EventFormPayload } from '@/components/admin/EventForm'
 import { useAuth } from '@/hooks/useAuth'
 import { toaster } from '@/components/ui/toaster'
 
 export default function AdminCreateEventPage() {
     const router = useRouter()
-    const { user } = useAuth()
+    const { user, isAuthenticated, isApproved, isLoading: authLoading } = useAuth()
+
+    useEffect(() => {
+        if (!authLoading && (!isAuthenticated || !isApproved)) {
+            router.push('/admin/login')
+        }
+    }, [authLoading, isAuthenticated, isApproved, router])
 
     const handleSubmit = async (payload: EventFormPayload) => {
         if (!user) {
@@ -49,6 +57,18 @@ export default function AdminCreateEventPage() {
 
         router.push('/admin')
         router.refresh()
+    }
+
+    if (authLoading) {
+        return (
+            <Flex justify="center" align="center" h="50vh">
+                <Spinner size="xl" />
+            </Flex>
+        )
+    }
+
+    if (!isAuthenticated || !isApproved) {
+        return null
     }
 
     return (

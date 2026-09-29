@@ -1,7 +1,7 @@
-import { createClient } from '@/utils/supabase/server'
 import { Box, Heading, Table, Text } from '@chakra-ui/react'
 import Link from 'next/link'
 import { APP_TIME_ZONE } from '@/lib/datetimeLocal'
+import { requireApprovedUser } from '@/utils/supabase/requireApprovedUser'
 
 type EventRow = {
     id: number
@@ -25,7 +25,7 @@ function formatEventDate(startDatetime: string | null) {
 }
 
 export default async function AdminAttendancePage() {
-    const supabase = await createClient()
+    const { supabase } = await requireApprovedUser()
 
     const { data: participants, error: participantsError } = await supabase
         .from('EventParticipants')

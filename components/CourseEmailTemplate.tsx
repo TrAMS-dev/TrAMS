@@ -12,6 +12,7 @@ export interface BookingData {
   spesifikkTid?: string;
   fraDato?: string;
   tilDato?: string;
+  kursby: 'trondheim' | 'levanger';
   sted: string;
   adresse?: string;
   annet?: string;
@@ -29,6 +30,14 @@ function formatDateDisplay(booking: BookingData): string {
 
 function getDateLabel(booking: BookingData): string {
   return booking.datoType === 'spesifikk' ? 'Ønsket dato og tid:' : 'Ønsket periode:';
+}
+
+function getKursbyLabel(booking: BookingData): string {
+  return booking.kursby === 'levanger' ? 'Levanger' : 'Trondheim';
+}
+
+function getKontaktEpost(booking: BookingData): string {
+  return booking.kursby === 'levanger' ? 'levanger@trams.no' : 'ekstern@trams.no';
 }
 
 // Customer confirmation email - returns HTML string
@@ -77,6 +86,10 @@ Denne mailen bekrefter at du har booket førstehjelpskurs av TrAMS, Trondheim Ak
               <td style="padding: 8px 0; color: #333;">${formatDateDisplay(booking)}</td>
             </tr>
             <tr>
+              <td style="padding: 8px 0; color: #666; font-weight: bold;">By:</td>
+              <td style="padding: 8px 0; color: #333;">${getKursbyLabel(booking)}</td>
+            </tr>
+            <tr>
               <td style="padding: 8px 0; color: #666; font-weight: bold;">Sted:</td>
               <td style="padding: 8px 0; color: #333;">${stedTekst}</td>
             </tr>
@@ -101,8 +114,8 @@ Denne mailen bekrefter at du har booket førstehjelpskurs av TrAMS, Trondheim Ak
       </div>
 
       <p style="color: #555; line-height: 1.6;">
-        Har du spørsmål i mellomtiden? Ta gjerne kontakt med oss på 
-        <a href="mailto:ekstern@trams.no" style="color: #c41e3a;">ekstern@trams.no</a>.
+        Har du spørsmål i mellomtiden? Ta gjerne kontakt med oss på
+        <a href="mailto:${getKontaktEpost(booking)}" style="color: #c41e3a;">${getKontaktEpost(booking)}</a>.
       </p>
 
       <p style="color: #555; line-height: 1.6; margin-bottom: 0;">
@@ -218,6 +231,10 @@ export function getAdminNotificationHtml(booking: BookingData): string {
             <tr>
               <td style="padding: 8px 0; color: #666; font-weight: bold; width: 40%;">${getDateLabel(booking)}</td>
               <td style="padding: 8px 0; color: #333;">${formatDateDisplay(booking)}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px 0; color: #666; font-weight: bold;">By:</td>
+              <td style="padding: 8px 0; color: #333;">${getKursbyLabel(booking)}</td>
             </tr>
             <tr>
               <td style="padding: 8px 0; color: #666; font-weight: bold;">Sted:</td>
