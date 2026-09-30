@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { APP_TIME_ZONE } from '@/lib/datetimeLocal'
 import { formatPlannedMonth, isEventPast } from '@/lib/eventDate'
 import { requireApprovedUser } from '@/utils/supabase/requireApprovedUser'
+import { DeleteEventButton } from '@/components/admin/DeleteEventButton'
 
 export default async function AdminDashboard() {
     const { supabase } = await requireApprovedUser()
@@ -102,6 +103,11 @@ export default async function AdminDashboard() {
                                             <Link href={`/admin/arrangement/${event.slug}`}>
                                                 <Button size="xs" variant="subtle">Rediger</Button>
                                             </Link>
+                                            <DeleteEventButton
+                                                eventId={event.id}
+                                                eventTitle={event.title || 'Uten tittel'}
+                                                participantCount={confirmed}
+                                            />
                                         </Flex>
                                     </Table.Cell>
                                 </Table.Row>
