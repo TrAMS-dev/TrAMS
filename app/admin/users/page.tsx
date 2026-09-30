@@ -11,7 +11,8 @@ import {
     Container,
     Spinner,
     Stack,
-    HStack
+    HStack,
+    Dialog,
 } from '@chakra-ui/react'
 import { createClient } from '@/utils/supabase/client'
 import { Tables } from '@/types/supabase'
@@ -24,6 +25,8 @@ export default function AdminUsersPage() {
     const router = useRouter()
     const [users, setUsers] = useState<Tables<'profiles'>[]>([])
     const [isLoading, setIsLoading] = useState(true)
+    const [userToDelete, setUserToDelete] = useState<Tables<'profiles'> | null>(null)
+    const [isDeleting, setIsDeleting] = useState(false)
     const supabase = createClient()
 
     useEffect(() => {
@@ -116,6 +119,39 @@ export default function AdminUsersPage() {
         }
     }
 
+    const deleteUser = async () => {
+        if (!userToDelete) return
+        setIsDeleting(true)
+        try {
+            const res = await fetch('/api/admin/users/delete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId: userToDelete.id }),
+            })
+            const payload = (await res.json().catch(() => ({}))) as { error?: string }
+
+            if (!res.ok) {
+                toaster.create({
+                    title: 'Kunne ikke slette bruker',
+                    description: payload.error,
+                    type: 'error',
+                    duration: 6000,
+                })
+                return
+            }
+
+            setUsers((prev) => prev.filter((user) => user.id !== userToDelete.id))
+            toaster.create({
+                title: 'Bruker slettet',
+                type: 'success',
+                duration: 5000,
+            })
+            setUserToDelete(null)
+        } finally {
+            setIsDeleting(false)
+        }
+    }
+
     if (isLoading || authLoading) {
         return (
             <Container centerContent py={10}>
@@ -187,6 +223,17 @@ export default function AdminUsersPage() {
                                                     : 'Fjern tilgang'
                                                 : 'Godkjenn'}
                                         </Button>
+                                        {!user.approved && !isTargetAdmin && (
+                                            <Button
+                                                size="sm"
+                                                ml={2}
+                                                variant="outline"
+                                                colorPalette="red"
+                                                onClick={() => setUserToDelete(user)}
+                                            >
+                                                Slett
+                                            </Button>
+                                        )}
                                     </Table.Cell>
                                 </Table.Row>
                             )
@@ -199,6 +246,44 @@ export default function AdminUsersPage() {
                     </Box>
                 )}
             </Box>
+
+            <Dialog.Root
+                open={userToDelete !== null}
+                onOpenChange={({ open }) => !open && !isDeleting && setUserToDelete(null)}
+                role="alertdialog"
+            >
+                <Dialog.Backdrop />
+                <Dialog.Positioner>
+                    <Dialog.Content maxW="md">
+                        <Dialog.Header>
+                            <Dialog.Title>Slette bruker?</Dialog.Title>
+                            <Dialog.CloseTrigger />
+                        </Dialog.Header>
+                        <Dialog.Body>
+                            <Text>
+                                Er du sikker på at du vil slette{' '}
+                                <strong>
+                                    {userToDelete?.full_name || userToDelete?.email || 'denne brukeren'}
+                                </strong>
+                                ? Brukerkontoen slettes permanent, og personen må registrere seg på
+                                nytt for å få tilgang.
+                            </Text>
+                        </Dialog.Body>
+                        <Dialog.Footer>
+                            <Button
+                                variant="outline"
+                                onClick={() => setUserToDelete(null)}
+                                disabled={isDeleting}
+                            >
+                                Avbryt
+                            </Button>
+                            <Button colorPalette="red" onClick={deleteUser} loading={isDeleting}>
+                                Slett bruker
+                            </Button>
+                        </Dialog.Footer>
+                    </Dialog.Content>
+                </Dialog.Positioner>
+            </Dialog.Root>
         </Container>
     )
 }

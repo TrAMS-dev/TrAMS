@@ -60,6 +60,13 @@ export async function POST(request: Request) {
             )
         }
 
+        if (event.signup_undecided) {
+            return NextResponse.json(
+                { error: 'Påmelding er ikke tilgjengelig for dette arrangementet ennå' },
+                { status: 400 }
+            )
+        }
+
         if (event.date_unspecified) {
             return NextResponse.json(
                 { error: 'Påmelding er ikke tilgjengelig før dato er fastsatt' },

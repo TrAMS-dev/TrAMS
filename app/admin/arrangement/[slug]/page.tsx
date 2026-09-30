@@ -22,6 +22,7 @@ export default function AdminEditEventPage() {
 
     const [initialValues, setInitialValues] = useState<EventFormValues | null>(null)
     const [dateUnspecified, setDateUnspecified] = useState(false)
+    const [signupUndecided, setSignupUndecided] = useState(false)
     const [eventId, setEventId] = useState<number | null>(null)
     const [loading, setLoading] = useState(true)
 
@@ -54,6 +55,7 @@ export default function AdminEditEventPage() {
 
             setEventId(data.id)
             setDateUnspecified(Boolean(data.date_unspecified))
+            setSignupUndecided(Boolean(data.signup_undecided))
             setInitialValues({
                 ...emptyEventFormValues,
                 title: data.title || '',
@@ -97,6 +99,7 @@ export default function AdminEditEventPage() {
                     reg_deadline: payload.reg_deadline,
                     author: payload.author,
                     date_unspecified: payload.date_unspecified,
+                    signup_undecided: payload.signup_undecided,
                     planned_month: payload.planned_month,
                     has_food: payload.has_food,
                     custom_question: payload.custom_question,
@@ -149,6 +152,7 @@ export default function AdminEditEventPage() {
             submitLabel="Lagre endringer"
             initialValues={initialValues}
             initialDateUnspecified={dateUnspecified}
+            initialSignupUndecided={signupUndecided}
             onSubmit={handleSubmit}
         />
     )
