@@ -56,6 +56,11 @@ export async function POST(request: Request) {
                 { error: 'Tittel, start, slutt og lokasjon er påkrevd' },
                 { status: 400 }
             )
+        } else if (new Date(end_datetime) < new Date(start_datetime)) {
+            return NextResponse.json(
+                { error: 'Sluttidspunkt kan ikke være før starttidspunkt' },
+                { status: 400 }
+            )
         }
 
         const supabase = await createClient()

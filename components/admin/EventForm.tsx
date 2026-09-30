@@ -94,6 +94,13 @@ export function EventForm({
     const [formData, setFormData] = useState<EventFormValues>(initialValues)
     const [isSubmitting, setIsSubmitting] = useState(false)
 
+    // datetime-local values share one format, so string comparison orders them correctly
+    const endBeforeStart =
+        !dateUnspecified &&
+        formData.start_datetime !== '' &&
+        formData.end_datetime !== '' &&
+        formData.end_datetime < formData.start_datetime
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target
         setFormData((prev) => ({ ...prev, [name]: value }))
@@ -140,6 +147,15 @@ export function EventForm({
             if (!startUtc || !endUtc) {
                 toaster.create({
                     title: 'Ugyldig start- eller sluttidspunkt',
+                    type: 'error',
+                    duration: 5000,
+                })
+                setIsSubmitting(false)
+                return
+            }
+            if (new Date(endUtc) < new Date(startUtc)) {
+                toaster.create({
+                    title: 'Sluttidspunkt kan ikke være før starttidspunkt',
                     type: 'error',
                     duration: 5000,
                 })
@@ -279,15 +295,19 @@ export function EventForm({
                                     />
                                 </Field.Root>
 
-                                <Field.Root>
+                                <Field.Root invalid={endBeforeStart}>
                                     <Field.Label>Sluttidspunkt *</Field.Label>
                                     <Input
                                         name="end_datetime"
                                         type="datetime-local"
                                         value={formData.end_datetime}
                                         onChange={handleChange}
+                                        min={formData.start_datetime || undefined}
                                         required
                                     />
+                                    <Field.ErrorText>
+                                        Sluttidspunkt kan ikke være før starttidspunkt
+                                    </Field.ErrorText>
                                 </Field.Root>
                             </Box>
 
@@ -428,6 +448,7 @@ export function EventForm({
                         <Button
                             type="submit"
                             loading={isSubmitting}
+                            disabled={endBeforeStart}
                             bg="var(--color-primary)"
                             color="white"
                         >
