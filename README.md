@@ -1,110 +1,130 @@
 # TrAMS Web
 
-The official website for **Trondheim Akuttmedisinske Studentforening (TrAMS)**. This project is a modern web application built for performance, ease of content management, and scalability.
+The official website for **Trondheim Akuttmedisinske Studentforening (TrAMS)**: public pages, course booking, event signup with waitlists, and an admin area for managing events, participants and users.
 
 ## 🛠️ Technology Stack
 
-- **Framework:** [Next.js 15](https://nextjs.org/) (App Router)
+- **Framework:** [Next.js 16](https://nextjs.org/) (App Router) with [React 19](https://react.dev/)
 - **Language:** [TypeScript](https://www.typescriptlang.org/)
-- **CMS:** [Sanity v3](https://www.sanity.io/)
+- **CMS:** [Sanity](https://www.sanity.io/) (Studio embedded in the app)
 - **Database / Auth:** [Supabase](https://supabase.com/)
+- **Email:** [Resend](https://resend.com/)
+- **Course bookings:** Google Sheets via [googleapis](https://github.com/googleapis/google-api-nodejs-client)
 - **Styling:** [Tailwind CSS v4](https://tailwindcss.com/)
-- **UI Components:** [Chakra UI](https://chakra-ui.com/), [Ark UI](https://ark-ui.com/)
+- **UI Components:** [Chakra UI v3](https://chakra-ui.com/), [Ark UI](https://ark-ui.com/), [FullCalendar](https://fullcalendar.io/)
 - **Icons:** [Lucide React](https://lucide.dev/)
+- **Hosting:** [Vercel](https://vercel.com/) (incl. Analytics, Speed Insights and Cron Jobs)
 
 ## 🚀 Getting Started
 
-Follow these steps to set up the project locally.
-
 ### Prerequisites
 
-- Node.js (v18 or later recommended)
-- npm, yarn, or pnpm
+- Node.js 20.9 or later (22+ recommended)
+- npm
 
 ### Installation
 
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/your-username/trams-web.git
-   cd trams-web
-   ```
-
-2. **Install dependencies:**
-   ```bash
-   npm install
-   # or
-   pnpm install
-   ```
+```bash
+git clone git@github.com:TrAMS-dev/TrAMS.git trams-web
+cd trams-web
+npm install
+```
 
 ### Environment Configuration
 
-Create a `.env.local` file in the root directory. You can use the `env.example` file as a reference.
-
-**Required Environment Variables:**
+Copy `env.example` to `.env.local` and fill in the values. If you have access to the Vercel project, you can pull them instead with `vercel env pull .env.local`.
 
 ```bash
-# Sanity CMS
-NEXT_PUBLIC_SANITY_PROJECT_ID=your_project_id
-NEXT_PUBLIC_SANITY_DATASET=production
-NEXT_PUBLIC_SANITY_API_VERSION=2025-12-01 # Optional
-
 # Supabase
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=        # Server-only. Never expose with NEXT_PUBLIC_.
+
+# Sanity
+NEXT_PUBLIC_SANITY_PROJECT_ID=
+NEXT_PUBLIC_SANITY_DATASET=production
+NEXT_PUBLIC_SANITY_API_VERSION=   # Optional
+SANITY_REVALIDATE_SECRET=         # Shared secret for the Sanity webhook
+
+# Google Sheets (course bookings)
+GOOGLE_SHEET_ID=
+GOOGLE_SERVICE_ACCOUNT_EMAIL=
+GOOGLE_PRIVATE_KEY=
+
+# Email (Resend). If missing, emails are skipped with a warning.
+RESEND_API_KEY=
+
+# Vercel Cron sends this as a Bearer token to /api/cron/*
+CRON_SECRET=
+
+# Optional overrides
+NEXT_PUBLIC_SITE_URL=             # Default: https://www.trams.no (used in email links)
+WEB_NOTIFY_EMAIL=                 # Default: web@trams.no
+ADMIN_EMAIL=                      # Default: ekstern@trams.no
+ADMIN_EMAIL_LEVANGER=             # Default: levanger@trams.no
 ```
 
 ### Running the Development Server
-
-Start the local development server:
 
 ```bash
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser to view the application.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## 📂 Project Structure
 
-- **`/app`**: Next.js App Router pages and layouts.
-  - **`/studio`**: The Sanity Studio mounting point.
-- **`/components`**: Reusable React components.
-- **`/sanity`**: Sanity configuration, schemas, and utilities.
-  - **`/schemas`**: Content content definitions.
-- **`/utils`**: Helper functions and utilities.
-- **`/public`**: Static assets (images, fonts, etc.).
+- **`/app`**: Next.js App Router.
+  - **`/(general)`**: Public pages (om oss, arrangementer, førstehjelpskurs, for medisinstudenter, instruktører).
+  - **`/admin`**: Admin area behind Supabase auth: events (`arrangement`), attendance (`oppmote`), user approval (`users`), login/registration, and the Sanity Studio (`studio`).
+  - **`/api`**: Route handlers for event signup, admin actions, course bookings (`gcloud`, `supabase`), emails (`send`), Sanity revalidation and cron jobs.
+- **`/components`**: React components (`/admin` for admin UI, `/ui` for shared primitives).
+- **`/lib`**: Server logic such as email templates, waitlist promotion and date helpers.
+- **`/hooks`**: Client hooks (e.g. `useAuth`).
+- **`/utils`**: Supabase clients (browser, server, admin, session middleware) and Sanity helpers.
+- **`/sanity`**: Sanity config, schemas and Studio structure.
+- **`/types`**: Generated types for Sanity and Supabase.
+- **`/supabase`**: Supabase CLI config.
+- **`proxy.ts`**: Refreshes the Supabase session on each request.
+- **`EMAILS.md`**: Overview of every email the site sends and when.
 
 ## ✏️ Content Management (Sanity)
 
-This project uses Sanity as a Headless CMS.
+The Sanity Studio is embedded in the app at [http://localhost:3000/admin/studio](http://localhost:3000/admin/studio) (or `/admin/studio` in production).
 
-### Accessing the Studio
+Published content is revalidated through a Sanity webhook that calls `/api/revalidate`, signed with `SANITY_REVALIDATE_SECRET`.
 
-You can access the content editing interface locally at:
-[http://localhost:3000/studio](http://localhost:3000/studio)
+## 🔐 Admin & Supabase
 
-### updating Schemas & Types
+Admins register at `/admin/register` and must be approved by an existing admin under `/admin/users` before they get access. Events, signups, waitlists and participant comments are stored in Supabase.
 
-If you verify or modify schemas in `sanity/schemas`, remember to regenerate the TypeScript definitions:
+## 🧬 Generated Types
+
+After changing Sanity schemas or the Supabase database schema, regenerate the types:
 
 ```bash
 npm run typegen
 ```
 
-This command runs `sanity schema extract` and `sanity typegen generate` to ensure your frontend code is type-safe with your content model.
+This extracts the Sanity schema, generates `types/sanity.types.ts`, and then runs `npm run typegen:supabase` to generate `types/supabase.ts`. Don't edit these files by hand. Generating Supabase types requires being logged in with the Supabase CLI (`npx supabase login`) with access to the project.
+
+## 📧 Emails & Scheduled Jobs
+
+- All emails are sent through Resend from `web@trams.no`. See [EMAILS.md](EMAILS.md) for the full list.
+- A Vercel Cron job (`vercel.json`) calls `/api/cron/event-reminders` every day at 07:00 UTC and emails confirmed participants two days before their event.
+- A GitHub Actions workflow (`.github/workflows/supabase-keepalive.yml`) pings Supabase daily to stop the project from being paused.
 
 ## 📜 Scripts
 
 - `npm run dev`: Starts the development server.
 - `npm run build`: Builds the application for production.
 - `npm run start`: Starts the production server.
-- `npm run lint`: Runs ESLint to check for code quality issues.
-- `npm run typegen`: Generates TypeScript types from Sanity schemas.
+- `npm run lint`: Runs ESLint.
+- `npm run typegen`: Generates TypeScript types from Sanity and Supabase.
+- `npm run typegen:supabase`: Generates only the Supabase types.
 
 ## ☁️ Deployment
 
-The application is designed to be deployed on **Vercel**.
+The site is deployed on **Vercel** from this repository. Pushes to `master` deploy to production, and other branches (e.g. `dev`) get preview deployments.
 
-1. Push your code to a Git repository.
-2. Import the project into Vercel.
-3. Configure the **Environment Variables** in the Vercel dashboard.
-4. Deploy!
+When adding a new environment variable, add it to `env.example` and to the Vercel project settings.
