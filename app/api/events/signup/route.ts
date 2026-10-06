@@ -1,6 +1,7 @@
 import { createClient } from '@/utils/supabase/server'
 import { sendEventSignupEmail } from '@/lib/eventSignupEmail'
 import { NextResponse } from 'next/server'
+import { isKullAllowed } from '@/utils/functions/activeYears'
 
 /** Rows that count toward max_attendees (excludes waitlist). */
 function confirmedParticipantsQuery(
@@ -70,6 +71,13 @@ export async function POST(request: Request) {
         if (event.date_unspecified) {
             return NextResponse.json(
                 { error: 'Påmelding er ikke tilgjengelig før dato er fastsatt' },
+                { status: 400 }
+            )
+        }
+
+        if (!isKullAllowed(kullNum, event.allowed_kull)) {
+            return NextResponse.json(
+                { error: `Kull ${kullNum} kan ikke melde seg på dette arrangementet` },
                 { status: 400 }
             )
         }

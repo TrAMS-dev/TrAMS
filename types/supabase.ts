@@ -189,6 +189,7 @@ export type Database = {
       }
       Events: {
         Row: {
+          allowed_kull: number[] | null
           author: string | null
           contact_email: string | null
           created_at: string
@@ -212,6 +213,7 @@ export type Database = {
           title: string | null
         }
         Insert: {
+          allowed_kull?: number[] | null
           author?: string | null
           contact_email?: string | null
           created_at?: string
@@ -235,6 +237,7 @@ export type Database = {
           title?: string | null
         }
         Update: {
+          allowed_kull?: number[] | null
           author?: string | null
           contact_email?: string | null
           created_at?: string

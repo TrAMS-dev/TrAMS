@@ -31,6 +31,7 @@ export async function POST(request: Request) {
             planned_month,
             has_food,
             custom_question,
+            allowed_kull,
         } = body
 
         const isDateUnspecified = Boolean(date_unspecified)
@@ -62,6 +63,11 @@ export async function POST(request: Request) {
                 { status: 400 }
             )
         }
+
+        const allowedKull =
+            !isSignupUndecided && Array.isArray(allowed_kull)
+                ? allowed_kull.filter((k: unknown): k is number => Number.isInteger(k))
+                : []
 
         const supabase = await createClient()
 
@@ -106,6 +112,7 @@ export async function POST(request: Request) {
                 slug,
                 has_food: Boolean(has_food),
                 custom_question: isSignupUndecided ? null : (custom_question || null),
+                allowed_kull: allowedKull.length > 0 ? allowedKull : null,
             })
             .select()
             .single()

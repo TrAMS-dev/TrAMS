@@ -14,7 +14,7 @@ import {
     Text,
 } from '@chakra-ui/react'
 import { toaster } from "@/components/ui/toaster"
-import { activeYears } from '@/utils/functions/activeYears'
+import { activeYears, isKullAllowed } from '@/utils/functions/activeYears'
 
 interface EventSignupDialogProps {
     open: boolean
@@ -26,6 +26,8 @@ interface EventSignupDialogProps {
     /** Medlemskap — fra Sanity (`forMedisinstudenterPage.membershipSignupUrl`) eller fallback. */
     membershipSignupHref?: string
     eventCustomQuestion?: string | null
+    /** Null or empty means every kull may sign up. */
+    eventAllowedKull?: number[] | null
 }
 
 interface SignupFormData {
@@ -44,6 +46,7 @@ export default function EventSignupDialog({
     onSuccess,
     membershipSignupHref = 'https://forms.gle/GDLsAZTeVvTKmCqw9',
     eventCustomQuestion,
+    eventAllowedKull,
 }: EventSignupDialogProps) {
     const membershipLinkIsExternal = /^https?:\/\//i.test(membershipSignupHref)
     const [formData, setFormData] = useState<SignupFormData>({
@@ -184,11 +187,13 @@ export default function EventSignupDialog({
                                         <option value="" disabled>
                                             Velg kull
                                         </option>
-                                        {activeYears().map((year) => (
-                                            <option key={year} value={year}>
-                                                {year}
-                                            </option>
-                                        ))}
+                                        {activeYears()
+                                            .filter((year) => isKullAllowed(year, eventAllowedKull))
+                                            .map((year) => (
+                                                <option key={year} value={year}>
+                                                    {year}
+                                                </option>
+                                            ))}
                                     </NativeSelect.Field>
 
                                     <NativeSelect.Indicator />

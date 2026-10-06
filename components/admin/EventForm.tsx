@@ -7,6 +7,7 @@ import {
     Stack,
     Input,
     Textarea,
+    Text,
     Button,
     Field,
     Checkbox,
@@ -16,6 +17,7 @@ import { ImageUploader } from '@/components/admin/ImageUploader'
 import { PlannedMonthSelector } from '@/components/admin/PlannedMonthSelector'
 import { toaster } from '@/components/ui/toaster'
 import { datetimeLocalToUtcIso } from '@/lib/datetimeLocal'
+import { activeYears, kullToKlasse } from '@/utils/functions/activeYears'
 
 export interface EventFormValues {
     title: string
@@ -32,6 +34,8 @@ export interface EventFormValues {
     planned_month: string
     has_food: boolean
     custom_question: string
+    /** Empty means every kull may sign up (all boxes checked). */
+    allowed_kull: number[]
 }
 
 export interface EventFormPayload {
@@ -51,6 +55,7 @@ export interface EventFormPayload {
     signup_undecided: boolean
     has_food: boolean
     custom_question: string | null
+    allowed_kull: number[] | null
 }
 
 export const emptyEventFormValues: EventFormValues = {
@@ -68,6 +73,7 @@ export const emptyEventFormValues: EventFormValues = {
     planned_month: '',
     has_food: false,
     custom_question: '',
+    allowed_kull: [],
 }
 
 interface EventFormProps {
@@ -91,8 +97,26 @@ export function EventForm({
     const [dateUnspecified, setDateUnspecified] = useState(initialDateUnspecified)
     const [signupUndecided, setSignupUndecided] = useState(initialSignupUndecided)
     const [hasFood, setHasFood] = useState(initialValues.has_food)
-    const [formData, setFormData] = useState<EventFormValues>(initialValues)
+    const [formData, setFormData] = useState<EventFormValues>(() => ({
+        ...initialValues,
+        allowed_kull:
+            initialValues.allowed_kull.length > 0 ? initialValues.allowed_kull : activeYears(),
+    }))
     const [isSubmitting, setIsSubmitting] = useState(false)
+
+    // Keep previously saved kull visible even after they drop out of activeYears()
+    const kullOptions = Array.from(
+        new Set([...activeYears(), ...initialValues.allowed_kull])
+    ).sort((a, b) => b - a)
+
+    const toggleAllowedKull = (kull: number, checked: boolean) => {
+        setFormData((prev) => ({
+            ...prev,
+            allowed_kull: checked
+                ? [...prev.allowed_kull, kull]
+                : prev.allowed_kull.filter((k) => k !== kull),
+        }))
+    }
 
     // datetime-local values share one format, so string comparison orders them correctly
     const endBeforeStart =
@@ -114,6 +138,16 @@ export function EventForm({
                 title: 'Velg planlagt måned',
                 description:
                     'Når dato ikke er spesifisert, må du oppgi hvilken måned arrangementet planlegges i.',
+                type: 'error',
+                duration: 5000,
+            })
+            return
+        }
+
+        if (!signupUndecided && formData.allowed_kull.length === 0) {
+            toaster.create({
+                title: 'Velg minst ett kull',
+                description: 'Minst ett kull må kunne melde seg på arrangementet.',
                 type: 'error',
                 duration: 5000,
             })
@@ -208,6 +242,11 @@ export function EventForm({
             signup_undecided: signupUndecided,
             has_food: hasFood,
             custom_question: signupUndecided ? null : formData.custom_question.trim() || null,
+            // All active kull checked means no restriction
+            allowed_kull:
+                signupUndecided || activeYears().every((k) => formData.allowed_kull.includes(k))
+                    ? null
+                    : [...formData.allowed_kull].sort((a, b) => a - b),
         }
 
         try {
@@ -382,6 +421,32 @@ export function EventForm({
                             Skjuler all informasjon om påmelding på arrangementssiden
                         </Field.HelperText>
                     </Field.Root>
+
+                    {!signupUndecided && (
+                        <Box>
+                            <Text fontSize="sm" fontWeight="medium" mb={2}>
+                                Hvilke kull kan melde seg på?
+                            </Text>
+                            <Box display="flex" flexWrap="wrap" gap={4}>
+                                {kullOptions.map((kull) => (
+                                    <Checkbox.Root
+                                        key={kull}
+                                        checked={formData.allowed_kull.includes(kull)}
+                                        onCheckedChange={(details) =>
+                                            toggleAllowedKull(kull, !!details.checked)
+                                        }
+                                    >
+                                        <Checkbox.HiddenInput />
+                                        <Checkbox.Control />
+                                        <Checkbox.Label>{kullToKlasse(kull)}. klasse</Checkbox.Label>
+                                    </Checkbox.Root>
+                                ))}
+                            </Box>
+                            <Text fontSize="xs" color="fg.muted" mt={2}>
+                                Fjern avhukingen for kull som ikke skal kunne melde seg på.
+                            </Text>
+                        </Box>
+                    )}
 
                     {!dateUnspecified && !signupUndecided && (
                         <>
