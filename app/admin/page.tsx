@@ -1,9 +1,16 @@
-import { Box, Heading, Table, Button, Flex, Badge, Link as ChakraLink } from '@chakra-ui/react'
+import { Box, Heading, Button, Flex } from '@chakra-ui/react'
 import Link from 'next/link'
-import { APP_TIME_ZONE } from '@/lib/datetimeLocal'
-import { formatPlannedMonth, isEventPast } from '@/lib/eventDate'
+import type { Tables } from '@/types/supabase'
+import { isEventPast } from '@/lib/eventDate'
 import { requireApprovedUser } from '@/utils/supabase/requireApprovedUser'
-import { DeleteEventButton } from '@/components/admin/DeleteEventButton'
+import { AdminEventList, type AdminEventRow, type RegistrationStatus } from '@/components/admin/AdminEventList'
+
+function getRegistrationStatus(event: Tables<'Events'>, now: Date): RegistrationStatus {
+    if (event.signup_undecided) return 'undecided'
+    if (event.reg_opens && now < new Date(event.reg_opens)) return 'not-open'
+    if (event.reg_deadline && now > new Date(event.reg_deadline)) return 'closed'
+    return 'open'
+}
 
 export default async function AdminDashboard() {
     const { supabase } = await requireApprovedUser()
@@ -41,9 +48,17 @@ export default async function AdminDashboard() {
         }
     }
 
+    const now = new Date()
+    const rows: AdminEventRow[] = eventList.map((event) => ({
+        event,
+        confirmed: confirmedCountByEventId.get(event.id) ?? 0,
+        isPast: isEventPast(event, now),
+        registrationStatus: getRegistrationStatus(event, now),
+    }))
+
     return (
         <Box>
-            <Flex justify="space-between" align="center" mb={8}>
+            <Flex justify="space-between" align="center" mb={6}>
                 <Heading size="xl">Arrangementer</Heading>
                 <Link href="/admin/arrangement/ny">
                     <Button bg="var(--color-primary)" color="white">
@@ -52,70 +67,7 @@ export default async function AdminDashboard() {
                 </Link>
             </Flex>
 
-            <Box bg="white" shadow="sm" rounded="lg" overflow="hidden">
-                <Table.Root striped interactive>
-                    <Table.Header>
-                        <Table.Row>
-                            <Table.ColumnHeader>Tittel</Table.ColumnHeader>
-                            <Table.ColumnHeader>Dato</Table.ColumnHeader>
-                            <Table.ColumnHeader>Påmeldte</Table.ColumnHeader>
-                            <Table.ColumnHeader>Status</Table.ColumnHeader>
-                            <Table.ColumnHeader textAlign="right">Handlinger</Table.ColumnHeader>
-                        </Table.Row>
-                    </Table.Header>
-                    <Table.Body>
-                        {eventList.map((event) => {
-                            const isPast = isEventPast(event)
-                            const confirmed = confirmedCountByEventId.get(event.id) ?? 0
-                            const attendeesLabel =
-                                event.max_attendees != null
-                                    ? `${confirmed} / ${event.max_attendees}`
-                                    : String(confirmed)
-
-                            return (
-                                <Table.Row key={event.id}>
-                                    <Table.Cell fontWeight="medium">{event.title}</Table.Cell>
-                                    <Table.Cell>
-                                        {event.date_unspecified
-                                            ? formatPlannedMonth(event.planned_month)
-                                            : event.start_datetime
-                                              ? new Date(event.start_datetime).toLocaleDateString('nb-NO', {
-                                                    timeZone: APP_TIME_ZONE,
-                                                    day: '2-digit',
-                                                    month: '2-digit',
-                                                    year: 'numeric',
-                                                    hour: '2-digit',
-                                                    minute: '2-digit',
-                                                })
-                                              : '—'}
-                                    </Table.Cell>
-                                    <Table.Cell>{attendeesLabel}</Table.Cell>
-                                    <Table.Cell>
-                                        <Badge colorPalette={isPast ? 'gray' : 'green'}>
-                                            {isPast ? 'Fullført' : 'Kommende'}
-                                        </Badge>
-                                    </Table.Cell>
-                                    <Table.Cell textAlign="right">
-                                        <Flex justify="flex-end" gap={3}>
-                                            <Link href={`/admin/arrangement/${event.slug}/participants`}>
-                                                <Button size="xs" variant="outline">Deltakere</Button>
-                                            </Link>
-                                            <Link href={`/admin/arrangement/${event.slug}`}>
-                                                <Button size="xs" variant="subtle">Rediger</Button>
-                                            </Link>
-                                            <DeleteEventButton
-                                                eventId={event.id}
-                                                eventTitle={event.title || 'Uten tittel'}
-                                                participantCount={confirmed}
-                                            />
-                                        </Flex>
-                                    </Table.Cell>
-                                </Table.Row>
-                            )
-                        })}
-                    </Table.Body>
-                </Table.Root>
-            </Box>
+            <AdminEventList rows={rows} />
         </Box>
     )
 }
