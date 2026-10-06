@@ -34,6 +34,7 @@ export interface EventFormValues {
     planned_month: string
     has_food: boolean
     custom_question: string
+    require_phone: boolean
     /** Empty means every kull may sign up (all boxes checked). */
     allowed_kull: number[]
 }
@@ -55,6 +56,7 @@ export interface EventFormPayload {
     signup_undecided: boolean
     has_food: boolean
     custom_question: string | null
+    require_phone: boolean
     allowed_kull: number[] | null
 }
 
@@ -73,6 +75,7 @@ export const emptyEventFormValues: EventFormValues = {
     planned_month: '',
     has_food: false,
     custom_question: '',
+    require_phone: false,
     allowed_kull: [],
 }
 
@@ -242,6 +245,7 @@ export function EventForm({
             signup_undecided: signupUndecided,
             has_food: hasFood,
             custom_question: signupUndecided ? null : formData.custom_question.trim() || null,
+            require_phone: !signupUndecided && formData.require_phone,
             // All active kull checked means no restriction
             allowed_kull:
                 signupUndecided || activeYears().every((k) => formData.allowed_kull.includes(k))
@@ -392,6 +396,28 @@ export function EventForm({
                             <Field.HelperText>
                                 Dersom du fyller ut dette, vil deltakerne få et avhukingsspørsmål under
                                 påmelding.
+                            </Field.HelperText>
+                        </Field.Root>
+                    )}
+
+                    {!signupUndecided && (
+                        <Field.Root>
+                            <Checkbox.Root
+                                checked={formData.require_phone}
+                                onCheckedChange={(details) =>
+                                    setFormData((prev) => ({
+                                        ...prev,
+                                        require_phone: !!details.checked,
+                                    }))
+                                }
+                            >
+                                <Checkbox.HiddenInput />
+                                <Checkbox.Control />
+                                <Checkbox.Label>Krev telefonnummer ved påmelding</Checkbox.Label>
+                            </Checkbox.Root>
+                            <Field.HelperText>
+                                Dersom du huker av denne må deltakerne oppgi telefonnummer når de
+                                melder seg på.
                             </Field.HelperText>
                         </Field.Root>
                     )}

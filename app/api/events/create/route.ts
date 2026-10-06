@@ -31,6 +31,7 @@ export async function POST(request: Request) {
             planned_month,
             has_food,
             custom_question,
+            require_phone,
             allowed_kull,
         } = body
 
@@ -112,6 +113,7 @@ export async function POST(request: Request) {
                 slug,
                 has_food: Boolean(has_food),
                 custom_question: isSignupUndecided ? null : (custom_question || null),
+                require_phone: !isSignupUndecided && require_phone === true,
                 allowed_kull: allowedKull.length > 0 ? allowedKull : null,
             })
             .select()

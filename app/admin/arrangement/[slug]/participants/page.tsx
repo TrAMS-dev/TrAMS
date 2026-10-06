@@ -49,6 +49,7 @@ export default function AdminParticipantsPage() {
     const [eventTitle, setEventTitle] = useState('')
     const [eventMaxAttendees, setEventMaxAttendees] = useState<number | null>(null)
     const [eventCustomQuestion, setEventCustomQuestion] = useState<string | null>(null)
+    const [eventRequiresPhone, setEventRequiresPhone] = useState(false)
     const [loading, setLoading] = useState(true)
     const [savingId, setSavingId] = useState<number | null>(null)
     const [deletingId, setDeletingId] = useState<number | null>(null)
@@ -58,6 +59,9 @@ export default function AdminParticipantsPage() {
     const [exportDialogOpen, setExportDialogOpen] = useState(false)
     const [comments, setComments] = useState<ParticipantComment[]>([])
     const [commentsParticipantId, setCommentsParticipantId] = useState<number | null>(null)
+
+    // Keep the column if phones were collected before the requirement was turned off
+    const showPhone = eventRequiresPhone || participants.some((p) => p.phone)
 
     const commentsByParticipant = useMemo(() => {
         const map = new Map<number, ParticipantComment[]>()
@@ -107,7 +111,7 @@ export default function AdminParticipantsPage() {
             // Get event id first
             const { data: event, error: eventError } = await supabase
                 .from('Events')
-                .select('id, title, max_attendees, custom_question')
+                .select('id, title, max_attendees, custom_question, require_phone')
                 .eq('slug', slug)
                 .single()
 
@@ -120,6 +124,7 @@ export default function AdminParticipantsPage() {
             setEventTitle(event.title || 'Arrangement')
             setEventMaxAttendees(event.max_attendees ?? null)
             setEventCustomQuestion(event.custom_question ?? null)
+            setEventRequiresPhone(Boolean(event.require_phone))
 
             // Get participants
             const { data, error } = await supabase
@@ -473,6 +478,7 @@ export default function AdminParticipantsPage() {
                             <Table.ColumnHeader>Navn</Table.ColumnHeader>
                             <Table.ColumnHeader>E-post</Table.ColumnHeader>
                             <Table.ColumnHeader>Kull</Table.ColumnHeader>
+                            {showPhone && <Table.ColumnHeader>Telefon</Table.ColumnHeader>}
                             <Table.ColumnHeader>Allergier</Table.ColumnHeader>
                             <Table.ColumnHeader maxW="200px">
                                 Medlemskap (selvrapportert)
@@ -492,7 +498,7 @@ export default function AdminParticipantsPage() {
                     <Table.Body>
                         {participants.length === 0 && (
                             <Table.Row>
-                                <Table.Cell colSpan={eventCustomQuestion ? 11 : 10} textAlign="center" py={8} color="gray.500">
+                                <Table.Cell colSpan={10 + (eventCustomQuestion ? 1 : 0) + (showPhone ? 1 : 0)} textAlign="center" py={8} color="gray.500">
                                     Ingen påmeldte enda.
                                 </Table.Cell>
                             </Table.Row>
@@ -502,6 +508,7 @@ export default function AdminParticipantsPage() {
                                 <Table.Cell fontWeight="medium">{p.name}</Table.Cell>
                                 <Table.Cell>{p.email}</Table.Cell>
                                 <Table.Cell>{p.kull}</Table.Cell>
+                                {showPhone && <Table.Cell>{p.phone || '-'}</Table.Cell>}
                                 <Table.Cell>{p.allergies || '-'}</Table.Cell>
                                 <Table.Cell>
                                     {p.confirmed_trams_member === true ? (
@@ -639,6 +646,7 @@ export default function AdminParticipantsPage() {
                 onClose={() => setExportDialogOpen(false)}
                 participants={participants}
                 eventCustomQuestion={eventCustomQuestion}
+                includePhone={showPhone}
                 slug={slug}
             />
 

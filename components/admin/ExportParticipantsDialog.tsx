@@ -19,6 +19,7 @@ export type ExportColumnKey =
     | 'name'
     | 'email'
     | 'kull'
+    | 'phone'
     | 'allergies'
     | 'membership'
     | 'customQuestion'
@@ -48,6 +49,7 @@ const ALL_COLUMNS: ColumnDef[] = [
     { key: 'name', label: 'Navn', getValue: (p) => p.name ?? '' },
     { key: 'email', label: 'E-post', getValue: (p) => p.email ?? '' },
     { key: 'kull', label: 'Kull', getValue: (p) => (p.kull != null ? String(p.kull) : '') },
+    { key: 'phone', label: 'Telefon', getValue: (p) => p.phone ?? '' },
     { key: 'allergies', label: 'Allergier', getValue: (p) => p.allergies ?? '' },
     {
         key: 'membership',
@@ -76,6 +78,7 @@ const DEFAULT_SELECTED_COLUMNS: ExportColumnKey[] = [
     'name',
     'email',
     'kull',
+    'phone',
     'allergies',
     'membership',
     'customQuestion',
@@ -92,6 +95,7 @@ interface ExportParticipantsDialogProps {
     onClose: () => void
     participants: ParticipantRow[]
     eventCustomQuestion: string | null
+    includePhone: boolean
     slug: string
 }
 
@@ -104,6 +108,7 @@ export default function ExportParticipantsDialog({
     onClose,
     participants,
     eventCustomQuestion,
+    includePhone,
     slug,
 }: ExportParticipantsDialogProps) {
     const [scope, setScope] = useState<ExportScope>('all')
@@ -113,8 +118,13 @@ export default function ExportParticipantsDialog({
     )
 
     const availableColumns = useMemo(
-        () => ALL_COLUMNS.filter((c) => c.key !== 'customQuestion' || !!eventCustomQuestion),
-        [eventCustomQuestion]
+        () =>
+            ALL_COLUMNS.filter(
+                (c) =>
+                    (c.key !== 'customQuestion' || !!eventCustomQuestion) &&
+                    (c.key !== 'phone' || includePhone)
+            ),
+        [eventCustomQuestion, includePhone]
     )
 
     const filteredRows = useMemo(() => {

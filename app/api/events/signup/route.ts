@@ -18,7 +18,7 @@ function confirmedParticipantsQuery(
 export async function POST(request: Request) {
     try {
         const body = await request.json()
-        const { name, email, kull, allergies, eventId, confirmedTramsMember, customQuestionResponse } = body
+        const { name, email, kull, phone, allergies, eventId, confirmedTramsMember, customQuestionResponse } = body
 
         const nameStr = typeof name === 'string' ? name.trim() : ''
         const emailStr = typeof email === 'string' ? email.trim() : ''
@@ -26,6 +26,7 @@ export async function POST(request: Request) {
             kull !== undefined && kull !== null && String(kull).trim() !== ''
                 ? String(kull).trim()
                 : ''
+        const phoneStr = typeof phone === 'string' ? phone.trim() : ''
         const eventIdNum = Number(eventId)
 
         // Validate required fields (kull can be 0 in theory; do not use !kull)
@@ -71,6 +72,13 @@ export async function POST(request: Request) {
         if (event.date_unspecified) {
             return NextResponse.json(
                 { error: 'Påmelding er ikke tilgjengelig før dato er fastsatt' },
+                { status: 400 }
+            )
+        }
+
+        if (event.require_phone && !phoneStr) {
+            return NextResponse.json(
+                { error: 'Telefonnummer er påkrevd for dette arrangementet' },
                 { status: 400 }
             )
         }
@@ -180,6 +188,7 @@ export async function POST(request: Request) {
                     name: nameStr,
                     email: emailStr,
                     kull: kullNum,
+                    phone: phoneStr || null,
                     allergies: allergiesValue,
                     status: 'confirmed',
                     confirmed_trams_member: confirmedTramsMemberBool,
@@ -241,6 +250,7 @@ export async function POST(request: Request) {
                 name: nameStr,
                 email: emailStr,
                 kull: kullNum,
+                phone: phoneStr || null,
                 allergies:
                     typeof allergies === 'string' && allergies.trim() !== ''
                         ? allergies.trim()

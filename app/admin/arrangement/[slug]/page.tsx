@@ -72,6 +72,7 @@ export default function AdminEditEventPage() {
                 planned_month: data.planned_month || '',
                 has_food: Boolean(data.has_food),
                 custom_question: data.custom_question || '',
+                require_phone: Boolean(data.require_phone),
                 allowed_kull: data.allowed_kull ?? [],
             })
             setLoading(false)
@@ -104,6 +105,7 @@ export default function AdminEditEventPage() {
                     planned_month: payload.planned_month,
                     has_food: payload.has_food,
                     custom_question: payload.custom_question,
+                    require_phone: payload.require_phone,
                     allowed_kull: payload.allowed_kull,
                 })
                 .eq('id', eventId)

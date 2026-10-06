@@ -149,6 +149,7 @@ export type Database = {
           id: number
           kull: number | null
           name: string | null
+          phone: string | null
           status: string
         }
         Insert: {
@@ -162,6 +163,7 @@ export type Database = {
           id?: number
           kull?: number | null
           name?: string | null
+          phone?: string | null
           status?: string
         }
         Update: {
@@ -175,6 +177,7 @@ export type Database = {
           id?: number
           kull?: number | null
           name?: string | null
+          phone?: string | null
           status?: string
         }
         Relationships: [
@@ -208,6 +211,7 @@ export type Database = {
           reg_deadline: string | null
           reg_opens: string | null
           reminder_sent_at: string | null
+          require_phone: boolean
           signup_undecided: boolean
           slug: string | null
           start_datetime: string | null
@@ -233,6 +237,7 @@ export type Database = {
           reg_deadline?: string | null
           reg_opens?: string | null
           reminder_sent_at?: string | null
+          require_phone?: boolean
           signup_undecided?: boolean
           slug?: string | null
           start_datetime?: string | null
@@ -258,6 +263,7 @@ export type Database = {
           reg_deadline?: string | null
           reg_opens?: string | null
           reminder_sent_at?: string | null
+          require_phone?: boolean
           signup_undecided?: boolean
           slug?: string | null
           start_datetime?: string | null
@@ -300,17 +306,17 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "ParticipantComments_participantId_fkey"
-            columns: ["participantId"]
-            isOneToOne: false
-            referencedRelation: "EventParticipants"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "ParticipantComments_author_id_fkey"
             columns: ["author_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ParticipantComments_participantId_fkey"
+            columns: ["participantId"]
+            isOneToOne: false
+            referencedRelation: "EventParticipants"
             referencedColumns: ["id"]
           },
         ]

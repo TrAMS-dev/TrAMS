@@ -26,6 +26,7 @@ interface EventSignupDialogProps {
     /** Medlemskap — fra Sanity (`forMedisinstudenterPage.membershipSignupUrl`) eller fallback. */
     membershipSignupHref?: string
     eventCustomQuestion?: string | null
+    eventRequiresPhone?: boolean
     /** Null or empty means every kull may sign up. */
     eventAllowedKull?: number[] | null
 }
@@ -34,6 +35,7 @@ interface SignupFormData {
     name: string
     email: string
     kull: string
+    phone: string
     allergies: string
 }
 
@@ -46,6 +48,7 @@ export default function EventSignupDialog({
     onSuccess,
     membershipSignupHref = 'https://forms.gle/GDLsAZTeVvTKmCqw9',
     eventCustomQuestion,
+    eventRequiresPhone = false,
     eventAllowedKull,
 }: EventSignupDialogProps) {
     const membershipLinkIsExternal = /^https?:\/\//i.test(membershipSignupHref)
@@ -53,6 +56,7 @@ export default function EventSignupDialog({
         name: '',
         email: '',
         kull: '',
+        phone: '',
         allergies: '',
     })
     const [declaresTramsMember, setDeclaresTramsMember] = useState(false)
@@ -73,6 +77,15 @@ export default function EventSignupDialog({
                 title: 'Velg kull',
                 type: 'error',
                 description: 'Du må velge kull for å melde deg på.',
+                duration: 5000,
+            })
+            return
+        }
+        if (eventRequiresPhone && !formData.phone.trim()) {
+            toaster.create({
+                title: 'Oppgi telefonnummer',
+                type: 'error',
+                description: 'Du må oppgi telefonnummer for å melde deg på dette arrangementet.',
                 duration: 5000,
             })
             return
@@ -119,6 +132,7 @@ export default function EventSignupDialog({
                 name: '',
                 email: '',
                 kull: '',
+                phone: '',
                 allergies: '',
             })
             setDeclaresTramsMember(false)
@@ -199,6 +213,20 @@ export default function EventSignupDialog({
                                     <NativeSelect.Indicator />
                                 </NativeSelect.Root>
                             </Field.Root>
+
+                            {eventRequiresPhone && (
+                                <Field.Root required>
+                                    <Field.Label>Telefonnummer *</Field.Label>
+                                    <Input
+                                        name="phone"
+                                        type="tel"
+                                        autoComplete="tel"
+                                        value={formData.phone}
+                                        onChange={handleChange}
+                                        placeholder="123 45 678"
+                                    />
+                                </Field.Root>
+                            )}
 
                             {eventHasFood && (
                                 <Field.Root>

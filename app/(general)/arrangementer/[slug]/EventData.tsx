@@ -614,6 +614,7 @@ export default function EventArrangementDetailClient({
                 membershipSignupHref={membershipSignupHref}
                 eventHasFood={hasFood}
                 eventCustomQuestion={event.custom_question}
+                eventRequiresPhone={event.require_phone}
                 eventAllowedKull={event.allowed_kull}
             />
 
