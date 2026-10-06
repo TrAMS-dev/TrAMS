@@ -207,6 +207,7 @@ export type Database = {
           planned_month: string | null
           reg_deadline: string | null
           reg_opens: string | null
+          reminder_sent_at: string | null
           signup_undecided: boolean
           slug: string | null
           start_datetime: string | null
@@ -231,6 +232,7 @@ export type Database = {
           planned_month?: string | null
           reg_deadline?: string | null
           reg_opens?: string | null
+          reminder_sent_at?: string | null
           signup_undecided?: boolean
           slug?: string | null
           start_datetime?: string | null
@@ -255,6 +257,7 @@ export type Database = {
           planned_month?: string | null
           reg_deadline?: string | null
           reg_opens?: string | null
+          reminder_sent_at?: string | null
           signup_undecided?: boolean
           slug?: string | null
           start_datetime?: string | null
