@@ -149,6 +149,7 @@ export type Database = {
           id: number
           kull: number | null
           name: string | null
+          phone: string | null
           status: string
         }
         Insert: {
@@ -162,6 +163,7 @@ export type Database = {
           id?: number
           kull?: number | null
           name?: string | null
+          phone?: string | null
           status?: string
         }
         Update: {
@@ -175,6 +177,7 @@ export type Database = {
           id?: number
           kull?: number | null
           name?: string | null
+          phone?: string | null
           status?: string
         }
         Relationships: [
@@ -189,6 +192,7 @@ export type Database = {
       }
       Events: {
         Row: {
+          allowed_kull: number[] | null
           author: string | null
           contact_email: string | null
           created_at: string
@@ -206,12 +210,15 @@ export type Database = {
           planned_month: string | null
           reg_deadline: string | null
           reg_opens: string | null
+          reminder_sent_at: string | null
+          require_phone: boolean
           signup_undecided: boolean
           slug: string | null
           start_datetime: string | null
           title: string | null
         }
         Insert: {
+          allowed_kull?: number[] | null
           author?: string | null
           contact_email?: string | null
           created_at?: string
@@ -229,12 +236,15 @@ export type Database = {
           planned_month?: string | null
           reg_deadline?: string | null
           reg_opens?: string | null
+          reminder_sent_at?: string | null
+          require_phone?: boolean
           signup_undecided?: boolean
           slug?: string | null
           start_datetime?: string | null
           title?: string | null
         }
         Update: {
+          allowed_kull?: number[] | null
           author?: string | null
           contact_email?: string | null
           created_at?: string
@@ -252,6 +262,8 @@ export type Database = {
           planned_month?: string | null
           reg_deadline?: string | null
           reg_opens?: string | null
+          reminder_sent_at?: string | null
+          require_phone?: boolean
           signup_undecided?: boolean
           slug?: string | null
           start_datetime?: string | null
@@ -263,6 +275,48 @@ export type Database = {
             columns: ["author"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ParticipantComments: {
+        Row: {
+          author_id: string | null
+          author_name: string | null
+          body: string
+          created_at: string
+          id: number
+          participantId: number
+        }
+        Insert: {
+          author_id?: string | null
+          author_name?: string | null
+          body: string
+          created_at?: string
+          id?: never
+          participantId: number
+        }
+        Update: {
+          author_id?: string | null
+          author_name?: string | null
+          body?: string
+          created_at?: string
+          id?: never
+          participantId?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ParticipantComments_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ParticipantComments_participantId_fkey"
+            columns: ["participantId"]
+            isOneToOne: false
+            referencedRelation: "EventParticipants"
             referencedColumns: ["id"]
           },
         ]

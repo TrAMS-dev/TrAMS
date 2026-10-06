@@ -21,6 +21,7 @@ import type { Tables } from '@/types/supabase'
 import { useParams, useRouter } from 'next/navigation'
 import { APP_TIME_ZONE } from '@/lib/datetimeLocal'
 import { formatEventDate, isDateUnspecifiedEvent } from '@/lib/eventDate'
+import { kullToKlasse } from '@/utils/functions/activeYears'
 
 type EventWithAuthorProfile = Tables<'Events'> & {
     profiles: { full_name: string | null; email: string | null } | null
@@ -422,6 +423,16 @@ export default function EventArrangementDetailClient({
                                         Påmelding
                                     </Heading>
                                     <Stack gap={2} fontSize="sm" color="gray.700">
+                                        {event.allowed_kull && event.allowed_kull.length > 0 && (
+                                            <Text>
+                                                <strong>Åpen for:</strong>{' '}
+                                                {[...event.allowed_kull]
+                                                    .sort((a, b) => b - a)
+                                                    .map((k) => `${kullToKlasse(k)}.`)
+                                                    .join(', ')}{' '}
+                                                klasse
+                                            </Text>
+                                        )}
                                         {event.max_attendees && (
                                             <Text>
                                                 <strong>Plasser:</strong> {participantCount} /{' '}
@@ -603,6 +614,8 @@ export default function EventArrangementDetailClient({
                 membershipSignupHref={membershipSignupHref}
                 eventHasFood={hasFood}
                 eventCustomQuestion={event.custom_question}
+                eventRequiresPhone={event.require_phone}
+                eventAllowedKull={event.allowed_kull}
             />
 
             <EventParticipantListDialog
