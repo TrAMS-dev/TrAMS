@@ -270,6 +270,48 @@ export type Database = {
           },
         ]
       }
+      ParticipantComments: {
+        Row: {
+          author_id: string | null
+          author_name: string | null
+          body: string
+          created_at: string
+          id: number
+          participantId: number
+        }
+        Insert: {
+          author_id?: string | null
+          author_name?: string | null
+          body: string
+          created_at?: string
+          id?: never
+          participantId: number
+        }
+        Update: {
+          author_id?: string | null
+          author_name?: string | null
+          body?: string
+          created_at?: string
+          id?: never
+          participantId?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ParticipantComments_participantId_fkey"
+            columns: ["participantId"]
+            isOneToOne: false
+            referencedRelation: "EventParticipants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ParticipantComments_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           approved: boolean | null

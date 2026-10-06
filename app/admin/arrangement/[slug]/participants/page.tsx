@@ -21,6 +21,9 @@ import type { Tables } from '@/types/supabase'
 import { toaster } from '@/components/ui/toaster'
 import { useAuth } from '@/hooks/useAuth'
 import ExportParticipantsDialog from '@/components/admin/ExportParticipantsDialog'
+import ParticipantCommentsDialog, {
+    type ParticipantComment,
+} from '@/components/admin/ParticipantCommentsDialog'
 
 function isConfirmedParticipant(p: Tables<'EventParticipants'>) {
     return p.status !== 'waitlist'
@@ -40,7 +43,7 @@ export default function AdminParticipantsPage() {
     const params = useParams()
     const router = useRouter()
     const slug = params.slug as string
-    const { isAuthenticated, isApproved, isLoading: authLoading } = useAuth()
+    const { user, isAuthenticated, isApproved, isLoading: authLoading } = useAuth()
     const [participants, setParticipants] = useState<Tables<'EventParticipants'>[]>([])
     const [eventId, setEventId] = useState<number | null>(null)
     const [eventTitle, setEventTitle] = useState('')
@@ -53,6 +56,18 @@ export default function AdminParticipantsPage() {
     const [promoting, setPromoting] = useState(false)
     const [promotingId, setPromotingId] = useState<number | null>(null)
     const [exportDialogOpen, setExportDialogOpen] = useState(false)
+    const [comments, setComments] = useState<ParticipantComment[]>([])
+    const [commentsParticipantId, setCommentsParticipantId] = useState<number | null>(null)
+
+    const commentsByParticipant = useMemo(() => {
+        const map = new Map<number, ParticipantComment[]>()
+        for (const c of comments) {
+            const list = map.get(c.participantId)
+            if (list) list.push(c)
+            else map.set(c.participantId, [c])
+        }
+        return map
+    }, [comments])
 
     const attendanceSummary = useMemo(() => {
         const confirmed = participants.filter(isConfirmedParticipant)
@@ -117,6 +132,21 @@ export default function AdminParticipantsPage() {
                 console.error('Error fetching participants:', error)
             } else {
                 setParticipants(data || [])
+
+                const participantIds = (data || []).map((p) => p.id)
+                if (participantIds.length > 0) {
+                    const { data: commentData, error: commentError } = await supabase
+                        .from('ParticipantComments')
+                        .select('*')
+                        .in('participantId', participantIds)
+                        .order('created_at', { ascending: true })
+
+                    if (commentError) {
+                        console.error('Error fetching comments:', commentError)
+                    } else {
+                        setComments(commentData || [])
+                    }
+                }
             }
             setLoading(false)
         }
@@ -436,7 +466,7 @@ export default function AdminParticipantsPage() {
                 </Box>
             )}
 
-            <Box bg="white" shadow="sm" rounded="lg" overflow="hidden">
+            <Box bg="white" shadow="sm" rounded="lg" overflowX="auto">
                 <Table.Root striped>
                     <Table.Header>
                         <Table.Row>
@@ -455,13 +485,14 @@ export default function AdminParticipantsPage() {
                             <Table.ColumnHeader>Status</Table.ColumnHeader>
                             <Table.ColumnHeader>Oppmøte</Table.ColumnHeader>
                             <Table.ColumnHeader>Påmeldt</Table.ColumnHeader>
+                            <Table.ColumnHeader>Kommentarer</Table.ColumnHeader>
                             <Table.ColumnHeader textAlign="right">Handling</Table.ColumnHeader>
                         </Table.Row>
                     </Table.Header>
                     <Table.Body>
                         {participants.length === 0 && (
                             <Table.Row>
-                                <Table.Cell colSpan={eventCustomQuestion ? 10 : 9} textAlign="center" py={8} color="gray.500">
+                                <Table.Cell colSpan={eventCustomQuestion ? 11 : 10} textAlign="center" py={8} color="gray.500">
                                     Ingen påmeldte enda.
                                 </Table.Cell>
                             </Table.Row>
@@ -530,44 +561,72 @@ export default function AdminParticipantsPage() {
                                 <Table.Cell color="gray.500" fontSize="sm">
                                     {new Date(p.created_at).toLocaleString('nb-NO')}
                                 </Table.Cell>
+                                <Table.Cell maxW="240px">
+                                    {(() => {
+                                        const list = commentsByParticipant.get(p.id) ?? []
+                                        const latest = list[list.length - 1]
+                                        return (
+                                            <Box>
+                                                {latest && (
+                                                    <Text fontSize="sm" lineClamp={2} mb={1} title={latest.body}>
+                                                        <Text as="span" fontWeight="semibold">
+                                                            {latest.author_name || 'Ukjent'}:
+                                                        </Text>{' '}
+                                                        {latest.body}
+                                                    </Text>
+                                                )}
+                                                <Button
+                                                    size="xs"
+                                                    variant="outline"
+                                                    onClick={() => setCommentsParticipantId(p.id)}
+                                                >
+                                                    {list.length > 0
+                                                        ? `Se alle (${list.length})`
+                                                        : 'Legg til'}
+                                                </Button>
+                                            </Box>
+                                        )
+                                    })()}
+                                </Table.Cell>
                                 <Table.Cell textAlign="right">
-                                    {p.status === 'waitlist' && (
+                                    <HStack gap={2} justify="flex-end" flexWrap="nowrap">
+                                        {p.status === 'waitlist' && (
+                                            <Button
+                                                size="sm"
+                                                variant="outline"
+                                                colorPalette="orange"
+                                                loading={promotingId === p.id}
+                                                disabled={
+                                                    promotingId !== null ||
+                                                    deletingId !== null ||
+                                                    promoting
+                                                }
+                                                onClick={() =>
+                                                    handlePromoteParticipant(
+                                                        p.id,
+                                                        p.name?.trim() || p.email || 'Deltaker'
+                                                    )
+                                                }
+                                            >
+                                                Flytt opp
+                                            </Button>
+                                        )}
                                         <Button
                                             size="sm"
                                             variant="outline"
-                                            colorPalette="orange"
-                                            mr={2}
-                                            loading={promotingId === p.id}
-                                            disabled={
-                                                promotingId !== null ||
-                                                deletingId !== null ||
-                                                promoting
-                                            }
+                                            colorPalette="red"
+                                            loading={deletingId === p.id}
+                                            disabled={deletingId !== null || promotingId !== null}
                                             onClick={() =>
-                                                handlePromoteParticipant(
+                                                handleRemoveParticipant(
                                                     p.id,
                                                     p.name?.trim() || p.email || 'Deltaker'
                                                 )
                                             }
                                         >
-                                            Flytt opp
+                                            Fjern
                                         </Button>
-                                    )}
-                                    <Button
-                                        size="sm"
-                                        variant="outline"
-                                        colorPalette="red"
-                                        loading={deletingId === p.id}
-                                        disabled={deletingId !== null || promotingId !== null}
-                                        onClick={() =>
-                                            handleRemoveParticipant(
-                                                p.id,
-                                                p.name?.trim() || p.email || 'Deltaker'
-                                            )
-                                        }
-                                    >
-                                        Fjern
-                                    </Button>
+                                    </HStack>
                                 </Table.Cell>
                             </Table.Row>
                         ))}
@@ -581,6 +640,21 @@ export default function AdminParticipantsPage() {
                 participants={participants}
                 eventCustomQuestion={eventCustomQuestion}
                 slug={slug}
+            />
+
+            <ParticipantCommentsDialog
+                participant={participants.find((p) => p.id === commentsParticipantId) ?? null}
+                comments={
+                    commentsParticipantId != null
+                        ? commentsByParticipant.get(commentsParticipantId) ?? []
+                        : []
+                }
+                currentUserId={user?.id ?? null}
+                onClose={() => setCommentsParticipantId(null)}
+                onAdded={(comment) => setComments((prev) => [...prev, comment])}
+                onDeleted={(commentId) =>
+                    setComments((prev) => prev.filter((c) => c.id !== commentId))
+                }
             />
         </Box>
     )
