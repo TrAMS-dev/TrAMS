@@ -222,3 +222,101 @@ export async function sendWaitlistPromotedEmail(
         console.error('sendWaitlistPromotedEmail: Resend error', result.error)
     }
 }
+
+const SUBJECT_REMINDER = (title: string) => `Påminnelse: ${title}`
+
+/** Resend tillater maks 100 e-poster per batch-kall. */
+const RESEND_BATCH_LIMIT = 100
+
+export interface EventReminderRecipient {
+    name: string
+    email: string
+}
+
+export interface EventReminderContext {
+    eventId: number
+    eventTitle: string
+    eventSlug: string | null
+    startDatetime: string | null
+    location: string | null
+    contactEmail: string | null
+}
+
+function reminderEmailHtml(
+    ctx: EventReminderContext,
+    recipientName: string,
+    contactEmail: string | null
+): string {
+    const title = ctx.eventTitle.trim()
+    const when = formatNbDate(ctx.startDatetime)
+    const where = ctx.location ? escapeHtml(ctx.location.trim()) : null
+    const link = eventPageUrl(ctx.eventSlug)
+    const detail = courseWhenWhereFragment(title, when, where, 'på')
+    const name = recipientName.trim()
+    const greeting = name ? `Hei ${escapeHtml(name)}!` : 'Hei!'
+
+    const contact = contactEmail
+        ? `sende en e-post til <a href="mailto:${escapeHtml(contactEmail)}" style="color:#c41e3a;">${escapeHtml(contactEmail)}</a> (eller svare på denne e-posten)`
+        : 'sende oss en e-post ved å svare på denne e-posten'
+
+    const body = `<p style="color:#555;line-height:1.6;margin-top:0;">${greeting} Dette er en påminnelse om at du har <strong>bekreftet plass</strong> ${detail}.</p>
+${linkParagraph(link)}
+<p style="color:#555;line-height:1.6;">Vi gleder oss til å se deg!</p>
+<p style="color:#555;line-height:1.6;"><strong>Dersom du ikke har mulighet til å møte</strong>, må du ${contact} <strong>senest 24 timer før arrangementet starter</strong>, slik at plassen kan gå til noen andre.</p>`
+
+    return emailShell(body)
+}
+
+/**
+ * Sender påminnelse til alle bekreftede deltakere på et arrangement.
+ * Returnerer antall e-poster Resend tok imot. Kaster ved feil fra Resend.
+ */
+export async function sendEventReminderEmails(
+    ctx: EventReminderContext,
+    recipients: EventReminderRecipient[]
+): Promise<number> {
+    if (!process.env.RESEND_API_KEY) {
+        console.warn('sendEventReminderEmails: RESEND_API_KEY missing, skipping')
+        return 0
+    }
+
+    const seen = new Set<string>()
+    const valid: EventReminderRecipient[] = []
+    for (const r of recipients) {
+        const to = r.email.trim().toLowerCase()
+        if (!to || to.length > 320 || !EMAIL_RE.test(to) || seen.has(to)) continue
+        seen.add(to)
+        valid.push({ name: r.name, email: to })
+    }
+
+    const replyToRaw = ctx.contactEmail?.trim().toLowerCase()
+    const replyTo =
+        replyToRaw && replyToRaw.length <= 320 && EMAIL_RE.test(replyToRaw)
+            ? ctx.contactEmail!.trim()
+            : undefined
+
+    const subject = SUBJECT_REMINDER(ctx.eventTitle.trim())
+    let sent = 0
+
+    for (let i = 0; i < valid.length; i += RESEND_BATCH_LIMIT) {
+        const chunk = valid.slice(i, i + RESEND_BATCH_LIMIT)
+        const result = await resend.batch.send(
+            chunk.map((r) => ({
+                from: 'TrAMS <web@trams.no>',
+                to: [r.email],
+                subject,
+                html: reminderEmailHtml(ctx, r.name, replyTo ?? null),
+                ...(replyTo ? { replyTo } : {}),
+            })),
+            // Hindrer dobbel utsending hvis samme batch blir sendt på nytt
+            { idempotencyKey: `event-reminder-${ctx.eventId}-${i / RESEND_BATCH_LIMIT}` }
+        )
+
+        if (result.error) {
+            throw new Error(`Resend batch error: ${result.error.message}`)
+        }
+        sent += chunk.length
+    }
+
+    return sent
+}

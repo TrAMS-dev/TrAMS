@@ -32,6 +32,26 @@ interface CropState {
     /** Top-left of the scaled image relative to the frame */
     offsetX: number
     offsetY: number
+    /** Shared id for the original and its cropped versions in storage */
+    imageId: string
+    /** Set when the original is not yet stored and must be uploaded with the crop */
+    pendingOriginal: Blob | null
+}
+
+/**
+ * Cropped images are stored as `<folder>/<id>.<timestamp>.jpg` next to the
+ * uncropped original at `<folder>/<id>.original`, so a crop can be re-edited
+ * later without re-uploading the source image.
+ */
+const CROPPED_PATH_PATTERN = /^(.+)\.\d+\.jpg$/
+
+function originalPathFor(croppedPath: string) {
+    const match = croppedPath.match(CROPPED_PATH_PATTERN)
+    return match ? `${match[1]}.original` : null
+}
+
+function newImageId(folder: string) {
+    return `${folder}/${Date.now()}-${Math.random().toString(36).substring(2)}`
 }
 
 function clamp(value: number, min: number, max: number) {
@@ -97,6 +117,7 @@ export function ImageUploader({
     folder = 'arrangements',
 }: ImageUploaderProps) {
     const [isUploading, setIsUploading] = useState(false)
+    const [isLoadingEdit, setIsLoadingEdit] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const [crop, setCrop] = useState<CropState | null>(null)
     const [frameSize, setFrameSize] = useState({ width: 0, height: 0 })
@@ -157,6 +178,66 @@ export function ImageUploader({
         if (fileInputRef.current) fileInputRef.current.value = ''
     }, [])
 
+    const getStoragePath = (url: string) => {
+        try {
+            return new URL(url).pathname.split(`/storage/v1/object/public/${bucketName}/`)[1] ?? null
+        } catch {
+            return null
+        }
+    }
+
+    const startCrop = (source: Blob, imageId: string, pendingOriginal: Blob | null) => {
+        const objectUrl = URL.createObjectURL(source)
+        const img = new window.Image()
+        img.onload = () => {
+            setCrop({
+                objectUrl,
+                naturalWidth: img.naturalWidth,
+                naturalHeight: img.naturalHeight,
+                scale: 1,
+                offsetX: 0,
+                offsetY: 0,
+                imageId,
+                pendingOriginal,
+            })
+            setNeedsCenter(true)
+        }
+        img.onerror = () => {
+            URL.revokeObjectURL(objectUrl)
+            setError('Kunne ikke laste bildet')
+        }
+        img.src = objectUrl
+    }
+
+    const handleEditExisting = async () => {
+        if (!value) return
+        setIsLoadingEdit(true)
+        setError(null)
+
+        try {
+            const path = getStoragePath(value)
+            const originalPath = path ? originalPathFor(path) : null
+            if (originalPath) {
+                const { data } = await supabase.storage.from(bucketName).download(originalPath)
+                if (data) {
+                    startCrop(data, originalPath.replace(/\.original$/, ''), null)
+                    return
+                }
+            }
+
+            // No stored original (older uploads): edit the cropped image itself
+            const response = await fetch(value)
+            if (!response.ok) throw new Error('Kunne ikke laste bildet')
+            const blob = await response.blob()
+            startCrop(blob, newImageId(folder), blob)
+        } catch (err) {
+            console.error('Edit load error:', err)
+            setError(err instanceof Error ? err.message : 'Kunne ikke laste bildet')
+        } finally {
+            setIsLoadingEdit(false)
+        }
+    }
+
     const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0]
         if (!file) return
@@ -172,24 +253,7 @@ export function ImageUploader({
         }
 
         setError(null)
-        const objectUrl = URL.createObjectURL(file)
-        const img = new window.Image()
-        img.onload = () => {
-            setCrop({
-                objectUrl,
-                naturalWidth: img.naturalWidth,
-                naturalHeight: img.naturalHeight,
-                scale: 1,
-                offsetX: 0,
-                offsetY: 0,
-            })
-            setNeedsCenter(true)
-        }
-        img.onerror = () => {
-            URL.revokeObjectURL(objectUrl)
-            setError('Kunne ikke laste bildet')
-        }
-        img.src = objectUrl
+        startCrop(file, newImageId(folder), file)
     }
 
     const handleScaleChange = (nextScale: number) => {
@@ -314,7 +378,19 @@ export function ImageUploader({
 
         try {
             const blob = await cropToBlob(crop)
-            const fileName = `${folder}/${Date.now()}-${Math.random().toString(36).substring(2)}.jpg`
+
+            if (crop.pendingOriginal) {
+                const { error: originalError } = await supabase.storage
+                    .from(bucketName)
+                    .upload(`${crop.imageId}.original`, crop.pendingOriginal, {
+                        cacheControl: '3600',
+                        upsert: false,
+                        contentType: crop.pendingOriginal.type || 'image/jpeg',
+                    })
+                if (originalError) throw originalError
+            }
+
+            const fileName = `${crop.imageId}.${Date.now()}.jpg`
 
             const { data, error: uploadError } = await supabase.storage
                 .from(bucketName)
@@ -344,10 +420,12 @@ export function ImageUploader({
         if (!value) return
 
         try {
-            const url = new URL(value)
-            const path = url.pathname.split(`/storage/v1/object/public/${bucketName}/`)[1]
+            const path = getStoragePath(value)
             if (path) {
-                await supabase.storage.from(bucketName).remove([path])
+                const originalPath = originalPathFor(path)
+                await supabase.storage
+                    .from(bucketName)
+                    .remove(originalPath ? [path, originalPath] : [path])
             }
             onChange('')
             setError(null)
@@ -504,8 +582,17 @@ export function ImageUploader({
                         <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => fileInputRef.current?.click()}
+                            onClick={handleEditExisting}
+                            loading={isLoadingEdit}
                             disabled={isUploading}
+                        >
+                            Juster zoom
+                        </Button>
+                        <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => fileInputRef.current?.click()}
+                            disabled={isUploading || isLoadingEdit}
                         >
                             Bytt bilde
                         </Button>
