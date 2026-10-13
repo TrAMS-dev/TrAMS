@@ -1,4 +1,5 @@
-import { Box, Container, Link, Button } from '@chakra-ui/react';
+import { Box, Link, Button } from '@chakra-ui/react';
+import { PageContainer } from '@/components/PageContainer';
 import { PortableText } from 'next-sanity';
 import { client } from '@/sanity/lib/client';
 import { MarkorPage } from '@/types/sanity.types';
@@ -21,11 +22,11 @@ export default async function MarkorerPage() {
 
     if (!data) {
         return (
-            <Container maxW="80%" py={12}>
+            <PageContainer>
                 <Box textAlign="center">
                     Ingen informasjon tilgjengelig.
                 </Box>
-            </Container>
+            </PageContainer>
         );
     }
     return (
@@ -36,7 +37,7 @@ export default async function MarkorerPage() {
                 heading={<HeroHeading fontSize={{ base: "2rem", md: "2.5rem" }}>{data.title.toUpperCase()}</HeroHeading>}
                 showDecorativeBar={true}
             />
-            <Container maxW="80%" py={12}>
+            <PageContainer>
                 <Box
                     textAlign="center"
                 >
@@ -78,7 +79,7 @@ export default async function MarkorerPage() {
 
                     {data.gallery && <Gallery images={data.gallery} />}
                 </Box>
-            </Container >
+            </PageContainer>
         </>
     );
 }

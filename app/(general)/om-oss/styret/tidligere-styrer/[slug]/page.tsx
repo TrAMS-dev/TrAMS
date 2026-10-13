@@ -1,7 +1,8 @@
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import { PortableText } from '@portabletext/react'
-import { Box, Container, Heading, Text, Flex } from '@chakra-ui/react'
+import { Box, Heading, Text, Flex } from '@chakra-ui/react'
+import { PageContainer } from '@/components/PageContainer'
 import { getBoardMemberBySlug, getAllBoardMembers } from '@/utils/sanity/boardMembers'
 import { urlFor } from '@/sanity/lib/image'
 import { translateRole } from '@/utils/sanity/translateRole'
@@ -47,7 +48,7 @@ export default async function BoardMemberPage({ params }: { params: Promise<{ sl
         ? urlFor(boardMember.PersonalImage).url()
         : null
     return (
-        <Container maxW={{ base: '95%', md: '80%' }} py={{ base: 8, md: 12 }}>
+        <PageContainer>
             <Flex
                 flexDirection={{ base: 'column', md: 'row' }}
                 gap={{ base: 6, md: 8 }}
@@ -129,6 +130,6 @@ export default async function BoardMemberPage({ params }: { params: Promise<{ sl
                     )}
                 </Box>
             </Flex>
-        </Container >
+        </PageContainer>
     )
 }

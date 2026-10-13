@@ -1,9 +1,10 @@
-import { Box, Text } from '@chakra-ui/react';
+import { Text } from '@chakra-ui/react';
+import { PageContainer } from '@/components/PageContainer';
 
 export default function CasebankPage() {
     return (
-        <Box>
+        <PageContainer>
             <Text>Casebank</Text>
-        </Box>
+        </PageContainer>
     );
 }

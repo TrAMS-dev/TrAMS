@@ -6,6 +6,7 @@ import { InstruktorLink } from '@/types/sanity.types';
 import { INSTRUKT_LINKS_QUERY } from '@/sanity/lib/queries';
 import { SubsectionHeading } from '@/components/Typography';
 import { Box, Flex, Text, Link } from '@chakra-ui/react';
+import { cardStyles } from '@/components/ContentCard';
 
 export default function LinkGrid() {
     const [links, setLinks] = useState<InstruktorLink[]>([]);
@@ -21,9 +22,7 @@ export default function LinkGrid() {
                 <Box
                     key={box._id}
                     flex="1 1 300px"
-                    bg="var(--color-light)"
-                    boxShadow="0 2px 5px rgba(0,0,0,0.1)"
-                    borderRadius="8px"
+                    {...cardStyles}
                     p={6}
                     textAlign="center"
                     maxW="350px"

@@ -20,6 +20,7 @@ import {
     Switch,
     Field,
 } from '@chakra-ui/react'
+import { cardStyles } from '@/components/ContentCard'
 import { Calendar, List, MapPin, Clock, Users } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { APP_TIME_ZONE } from '@/lib/datetimeLocal'
@@ -213,12 +214,8 @@ export default function EventCalendar({ events }: EventCalendarProps) {
 
             {view === 'calendar' ? (
                 <Box
-                    bg="white"
+                    {...cardStyles}
                     p={4}
-                    borderRadius="xl"
-                    boxShadow="sm"
-                    border="1px solid"
-                    borderColor="gray.200"
                 >
                     <FullCalendar
                         plugins={[dayGridPlugin, interactionPlugin]}
@@ -323,7 +320,7 @@ export default function EventCalendar({ events }: EventCalendarProps) {
                             </Box>
                         ))
                     ) : (
-                        <Box p={8} textAlign="center" bg="white" borderRadius="xl" border="1px dashed" borderColor="gray.200">
+                        <Box p={8} textAlign="center" bg="white" borderRadius="lg" border="1px dashed" borderColor="gray.200">
                             <Text color="gray.500">Ingen arrangementer funnet.</Text>
                         </Box>
                     )}
