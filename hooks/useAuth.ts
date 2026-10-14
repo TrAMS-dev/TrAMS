@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import { User } from '@supabase/supabase-js'
 
@@ -21,7 +21,7 @@ export function useAuth() {
     const supabase = createClient()
 
     // Helper function to update auth state
-    const updateAuthState = (user: User | null, profile: Profile | null) => {
+    const updateAuthState = useCallback((user: User | null, profile: Profile | null) => {
         if (user && profile) {
             setUser(user)
             setIsAuthenticated(true)
@@ -35,10 +35,10 @@ export function useAuth() {
             setIsAdmin(false)
             setIsApproved(false)
         }
-    }
+    }, [])
 
     // Fetch user profile data
-    const fetchProfile = async (userId: string): Promise<Profile | null> => {
+    const fetchProfile = useCallback(async (userId: string): Promise<Profile | null> => {
         try {
             const { data: profile, error } = await supabase
                 .from('profiles')
@@ -56,10 +56,10 @@ export function useAuth() {
             console.error('Profile fetch error:', error)
             return null
         }
-    }
+    }, [supabase])
 
     // Sync session + profile; never call this from inside onAuthStateChange (Supabase holds a lock there).
-    const checkUser = async () => {
+    const checkUser = useCallback(async () => {
         try {
             const { data: { user } } = await supabase.auth.getUser()
 
@@ -75,7 +75,7 @@ export function useAuth() {
         } finally {
             setIsLoading(false)
         }
-    }
+    }, [supabase, fetchProfile, updateAuthState])
 
     useEffect(() => {
         const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
@@ -97,7 +97,7 @@ export function useAuth() {
         return () => {
             subscription.unsubscribe()
         }
-    }, [])
+    }, [supabase, checkUser, updateAuthState])
 
     const logout = async () => {
         try {
