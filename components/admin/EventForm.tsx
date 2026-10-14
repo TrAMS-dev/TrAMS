@@ -98,7 +98,10 @@ export function EventForm({
 }: EventFormProps) {
     const router = useRouter()
     const [dateUnspecified, setDateUnspecified] = useState(initialDateUnspecified)
-    const [signupUndecided, setSignupUndecided] = useState(initialSignupUndecided)
+    // Signup can't happen without a date, so an unspecified date implies undecided signup
+    const [signupUndecided, setSignupUndecided] = useState(
+        initialSignupUndecided || initialDateUnspecified
+    )
     const [hasFood, setHasFood] = useState(initialValues.has_food)
     const [formData, setFormData] = useState<EventFormValues>(() => ({
         ...initialValues,
@@ -226,7 +229,7 @@ export function EventForm({
             return
         }
 
-        const hideSignup = dateUnspecified || signupUndecided
+        const hideSignup = signupUndecided
 
         const payload: EventFormPayload = {
             title: formData.title,
@@ -306,7 +309,11 @@ export function EventForm({
 
                     <Checkbox.Root
                         checked={dateUnspecified}
-                        onCheckedChange={(details) => setDateUnspecified(!!details.checked)}
+                        onCheckedChange={(details) => {
+                            const checked = !!details.checked
+                            setDateUnspecified(checked)
+                            if (checked) setSignupUndecided(true)
+                        }}
                     >
                         <Checkbox.HiddenInput />
                         <Checkbox.Control />
@@ -437,6 +444,7 @@ export function EventForm({
                     <Field.Root>
                         <Checkbox.Root
                             checked={signupUndecided}
+                            disabled={dateUnspecified}
                             onCheckedChange={(details) => setSignupUndecided(!!details.checked)}
                         >
                             <Checkbox.HiddenInput />
@@ -444,7 +452,9 @@ export function EventForm({
                             <Checkbox.Label>Påmelding ikke bestemt enda</Checkbox.Label>
                         </Checkbox.Root>
                         <Field.HelperText>
-                            Skjuler all informasjon om påmelding på arrangementssiden
+                            {dateUnspecified
+                                ? 'Settes automatisk når arrangementsdato ikke er spesifisert'
+                                : 'Skjuler all informasjon om påmelding på arrangementssiden'}
                         </Field.HelperText>
                     </Field.Root>
 
@@ -474,7 +484,7 @@ export function EventForm({
                         </Box>
                     )}
 
-                    {!dateUnspecified && !signupUndecided && (
+                    {!signupUndecided && (
                         <>
                             <Field.Root>
                                 <Field.Label>Påmelding åpner</Field.Label>
