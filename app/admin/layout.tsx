@@ -86,6 +86,14 @@ export default function AdminLayout({
                                             <Box fontWeight="medium" fontSize="sm" color="gray.600">
                                                 Logget inn som: <Box as="span" color="gray.900">{userName}</Box>
                                             </Box>
+                                            <Link
+                                                href="/admin/innstillinger"
+                                                fontWeight="medium"
+                                                fontSize="sm"
+                                                _hover={{ color: 'var(--color-primary)' }}
+                                            >
+                                                Innstillinger
+                                            </Link>
                                             <Button
                                                 size="sm"
                                                 variant="outline"
