@@ -1,7 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react';
-import { Box, Container, Text } from '@chakra-ui/react';
+import { Box, Text } from '@chakra-ui/react';
+import { PageContainer } from '@/components/PageContainer';
 import { VEDTEKTER_QUERY } from '@/sanity/lib/queries';
 import { client } from '@/sanity/lib/client';
 import { PortableText } from 'next-sanity';
@@ -39,7 +40,7 @@ export default function VedtekterContent() {
 
 
             {/* Content Section */}
-            <Container maxW="900px" mx="auto" px={4} py={12}>
+            <PageContainer narrow>
                 {loading ? (
                     <Text textAlign="center" fontSize="1.2rem" color="gray.600">
                         Laster inn...
@@ -62,7 +63,7 @@ export default function VedtekterContent() {
                         <PortableText value={vedtekter.content} components={portableTextComponents} />
                     </>
                 )}
-            </Container>
+            </PageContainer>
         </>
     );
 }

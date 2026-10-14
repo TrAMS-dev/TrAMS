@@ -1,5 +1,7 @@
-import { Box, Flex, Link, Container, Text } from '@chakra-ui/react';
-import { PageHeading, SectionHeading, SubsectionHeading, BodyText, CenteredText } from '@/components/Typography';
+import { Box, Link, Button } from '@chakra-ui/react';
+import { PageContainer } from '@/components/PageContainer';
+import { ContentCard } from '@/components/ContentCard';
+import { SectionHeading, BodyText, CenteredText } from '@/components/Typography';
 import CommiteeCards from '@/components/CommiteeCards';
 import CourseCards from '@/components/CourseCards';
 import HeroImage from '@/components/HeroImage';
@@ -41,70 +43,48 @@ export default async function ForMedisinstudenter() {
       />
 
       {/* MEMBERSHIP SECTION */}
-      <Container maxW="1200px" my={8}>
-        <Box
-          bg="var(--color-altBg)"
-          boxShadow="0 10px 20px rgba(0,0,0,0.1)"
-          p={{ base: 4, md: 8 }}
-          borderRadius="8px"
-        >
-          <Flex flexWrap="wrap" gap={8}>
-            <Box flex="1 1 300px" p={4}>
-              <PageHeading mt={0}>Bli medlem!</PageHeading>
-              <BodyText>
-                TrAMS er studentforeningen for medisinstudenter ved NTNU som er interesserte i akuttmedisin! Som medlem kan
-                du blant annet delta på TrAMS-arrangementer forbeholdt medlemmer, du får gratis ferdighetskurs og muligheten
-                til å delta på vår generalforsamling.
-              </BodyText>
-              <BodyText>
-                Du kan også engasjere deg ytterligere i foreningen ved å bli instruktør eller bli med i foreningens
-                komiteer.
-              </BodyText>
-              <BodyText>
-                TrAMS-medlemskapet er et livstidsmedlemskap med kontingent på 250 kr. For å bli medlem må du være
-                medisinstudent ved NTNU, tidligere medisinstudent ved NTNU, eller lege ved St. Olavs Hospital.
-              </BodyText>
-            </Box>
-            <Box w={{ base: "0", md: "2px" }} bg="#ccc" mx={4} />
-            <Box flex="1 1 300px" p={4}>
-              <SubsectionHeading as="h3" mb={4} fontSize="1.4rem">Meld deg inn nå!</SubsectionHeading>
-              <Text mb={4}>
-                Ønsker du å engasjere deg i akuttmedisin, lære nye ferdigheter og bli en del av et engasjert
-                studentmiljø?
-              </Text>
-              <Text mb={4}>
-                <strong>Bli medlem i dag ved å klikke på knappen!</strong>
-              </Text>
-              <Link
-                href={membershipSignupUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                display="inline-block"
-                bg="var(--color-primary)"
-                color="var(--color-light)"
-                fontWeight={700}
-                textDecoration="none"
-                fontSize="1rem"
-                p="0.6rem 1.2rem"
-                borderRadius="4px"
-                transition="background 0.3s ease"
-                cursor="pointer"
-                mt={4}
-                _hover={{
-                  bg: 'var(--color-secondary)',
-                  color: 'black',
-                }}
-              >
-                Bli medlem!
-              </Link>
-            </Box>
-          </Flex>
-        </Box>
-      </Container>
+      <PageContainer>
+        <ContentCard>
+          <SectionHeading mt={0}>Bli medlem!</SectionHeading>
+          <BodyText>
+            TrAMS er studentforeningen for medisinstudenter ved NTNU som er interesserte i akuttmedisin! Som medlem kan
+            du blant annet delta på TrAMS-arrangementer forbeholdt medlemmer, du får gratis ferdighetskurs og muligheten
+            til å delta på vår generalforsamling.
+          </BodyText>
+          <BodyText>
+            Du kan også engasjere deg ytterligere i foreningen ved å bli instruktør eller bli med i foreningens
+            komiteer.
+          </BodyText>
+          <BodyText>
+            TrAMS-medlemskapet er et livstidsmedlemskap med kontingent på 250 kr. For å bli medlem må du være
+            medisinstudent ved NTNU, tidligere medisinstudent ved NTNU, eller lege ved St. Olavs Hospital.
+          </BodyText>
+          <BodyText>
+            Ønsker du å engasjere deg i akuttmedisin, lære nye ferdigheter og bli en del av et engasjert
+            studentmiljø? <strong>Bli medlem i dag ved å klikke på knappen!</strong>
+          </BodyText>
+          <Link
+            href={membershipSignupUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            display="block"
+            w="100%"
+            _hover={{ textDecoration: 'none' }}
+          >
+            <Button
+              bg="var(--color-primary)"
+              color="white"
+              mt={4}
+              _hover={{ bg: 'var(--color-secondary)', color: 'black' }}
+              w="100%"
+            >
+              Bli medlem!
+            </Button>
+          </Link>
+        </ContentCard>
 
-      {/* OUR OFFERS */}
-      <Container maxW="1200px" mx="auto" px={4}>
-        <SectionHeading>Våre tilbud</SectionHeading>
+        {/* OUR OFFERS */}
+        <SectionHeading mt={16}>Våre tilbud</SectionHeading>
         <CenteredText>
           TrAMS arrangerer en rekke kurs, foredrag, skillskvelder og annet moro i løpet av et semester. Klikk deg inn
           under for å lese mer om de ulike tilbudene. Noen tilbud er åpne for alle medisinstudenter, mens andre er kun
@@ -114,7 +94,7 @@ export default async function ForMedisinstudenter() {
         <CourseCards />
 
         {/* COMMITTEES SECTION */}
-        <Box my={16}>
+        <Box mt={16}>
           <SectionHeading>Komitéer</SectionHeading>
           <CenteredText mb={12}>
             Er du interessert i å fordype deg innenfor TrAMS? Som medlem i en av TrAMS sine komitéer kan du bli med å
@@ -131,7 +111,7 @@ export default async function ForMedisinstudenter() {
           </CenteredText>
           <CommiteeCards />
         </Box>
-      </Container>
+      </PageContainer>
 
     </>
   );

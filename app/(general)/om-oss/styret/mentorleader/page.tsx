@@ -1,8 +1,9 @@
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import { PortableText } from '@portabletext/react'
-import { Box, Container, Heading, Text, Flex } from '@chakra-ui/react'
+import { Box, Heading, Text, Flex } from '@chakra-ui/react'
 import { urlFor } from '@/sanity/lib/image'
+import { PageContainer } from '@/components/PageContainer'
 import { portableTextComponents } from '@/components/Typography'
 import { getBoardMemberByRole } from '@/utils/sanity/boardMembers'
 
@@ -35,7 +36,7 @@ export default async function MentorLeaderPage() {
             </Box>
             <Box h="10px" bg="var(--color-primary)" mx="auto" mt={4} w='80%' />
 
-            <Container maxW="container.lg" py={12}>
+            <PageContainer>
                 {/* Top Section: Role Description */}
                 <Box mb={12}>
                     <Text fontSize="1.1rem" lineHeight="1.8" mb={6} color="#4A5568">
@@ -98,7 +99,7 @@ export default async function MentorLeaderPage() {
                     </Box>
 
                 </Flex>
-            </Container>
+            </PageContainer>
         </>
     )
 }

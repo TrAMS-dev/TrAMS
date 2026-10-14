@@ -1,7 +1,8 @@
 "use client"
 
-import { Box, Heading, Text, Link, HStack } from "@chakra-ui/react";
+import { Box, Text, Link, HStack } from "@chakra-ui/react";
 import BoardMemberCard from '@/components/BoardMemberCard';
+import { SectionHeading } from '@/components/Typography';
 import { BoardMember } from "@/types/sanity.types";
 import { client } from "@/sanity/lib/client";
 import { BOARD_MEMBERS_QUERY } from "@/sanity/lib/queries";
@@ -23,19 +24,8 @@ export default function BoardMemberSection() {
     }, []);
 
     return (
-        <Box bg="white" borderRadius="8px" mb={{ base: 4, md: 8 }} p={{ base: 4, md: 8 }} id="BoardMembers">
-            <Heading
-                as="h2"
-                textAlign="center"
-                color="black"
-                fontWeight={700}
-                position="relative"
-                pb={2}
-                fontSize="2rem"
-            >
-                Styret i TrAMS
-                <Box display="block" w="120px" h="4px" bg="var(--color-primary)" mx="auto" mt={2} borderRadius="2px" />
-            </Heading>
+        <Box id="BoardMembers">
+            <SectionHeading mt={0}>Styret i TrAMS</SectionHeading>
             <HStack
                 gap={8}
                 overflowX="auto"

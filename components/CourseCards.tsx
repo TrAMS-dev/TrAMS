@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Box, Flex, Link, Container, Text } from '@chakra-ui/react';
+import { cardStyles } from '@/components/ContentCard';
 import Image from 'next/image';
 import { HeroHeading, HeroText, PageHeading, SectionHeading, SubsectionHeading, BodyText, CenteredText, portableTextComponents } from '@/components/Typography';
 import { COURSE_OFFERINGS_QUERY } from '@/sanity/lib/queries';
@@ -72,7 +73,7 @@ export default function CourseCards() {
     const grouped = groupOffersByCategory(offers);
 
     return (
-        <Box my={12} px={4} mb={16}>
+        <Box>
             {Array.from(grouped.entries()).map(([category, categoryOffers]) => (
                 <Box key={category} mb={12}>
                     <SectionHeading mb={6}>{CATEGORY_TITLES[category]}</SectionHeading>
@@ -87,10 +88,8 @@ export default function CourseCards() {
                                     key={offer._id}
                                     flex="0 0 auto"
                                     w="300px"
-                                    bg="#fff"
-                                    borderRadius="8px"
+                                    {...cardStyles}
                                     textAlign="center"
-                                    boxShadow="0 0 10px rgba(0,0,0,0.1)"
                                     display="flex"
                                     flexDirection="column"
                                     overflow="hidden"

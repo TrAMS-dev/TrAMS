@@ -16,6 +16,7 @@ import {
 import EventSignupDialog from '@/components/EventSignupDialog'
 import EventParticipantListDialog from '@/components/EventParticipantListDialog'
 import { LinkifiedText } from '@/components/LinkifiedText'
+import { PageContainer } from '@/components/PageContainer'
 import { createClient } from '@/utils/supabase/client'
 import type { Tables } from '@/types/supabase'
 import { useParams, useRouter } from 'next/navigation'
@@ -216,7 +217,7 @@ export default function EventArrangementDetailClient({
             </Box>
 
             {/* Content Section */}
-            <Box maxW="1200px" mx="auto" p={{ base: 4, md: 8 }}>
+            <PageContainer>
                 <Stack gap={6}>
                     {/* Event Info Cards */}
                     <Flex
@@ -602,7 +603,7 @@ export default function EventArrangementDetailClient({
                         )}
                     </Flex>
                 </Stack>
-            </Box>
+            </PageContainer>
 
             {/* Signup Dialog */}
             <EventSignupDialog
