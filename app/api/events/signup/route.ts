@@ -2,17 +2,19 @@ import { createClient } from '@/utils/supabase/server'
 import { sendEventSignupEmail } from '@/lib/eventSignupEmail'
 import { NextResponse } from 'next/server'
 import { isKullAllowed } from '@/utils/functions/activeYears'
+import { hasFreeSpotForKull, parseKullPools } from '@/lib/kullPools'
 
-/** Rows that count toward max_attendees (excludes waitlist). */
-function confirmedParticipantsQuery(
+/** Kull of rows that count toward max_attendees (excludes waitlist). */
+async function confirmedParticipantKull(
     supabase: Awaited<ReturnType<typeof createClient>>,
     eventId: number
 ) {
-    return supabase
+    const { data, error } = await supabase
         .from('EventParticipants')
-        .select('*', { count: 'exact', head: true })
+        .select('kull')
         .eq('eventId', eventId)
         .or('status.eq.confirmed,status.is.null')
+    return { kull: data?.map((r) => r.kull) ?? null, error }
 }
 
 export async function POST(request: Request) {
@@ -90,6 +92,8 @@ export async function POST(request: Request) {
             )
         }
 
+        const kullPools = parseKullPools(event.kull_pools)
+
         const now = new Date()
 
         if (event.reg_opens) {
@@ -128,15 +132,18 @@ export async function POST(request: Request) {
                 )
             }
 
+            let confirmedKull: (number | null)[] = []
             if (event.max_attendees) {
-                const { count, error: countError } = await confirmedParticipantsQuery(
+                const { kull: rows, error: countError } = await confirmedParticipantKull(
                     supabase,
                     eventIdNum
                 )
-                if (countError) {
+                if (countError || !rows) {
                     console.error('Error counting participants (promote):', countError)
+                } else {
+                    confirmedKull = rows
                 }
-                if (count !== null && count >= event.max_attendees) {
+                if (!hasFreeSpotForKull(event.max_attendees, kullPools, confirmedKull, kullNum)) {
                     return NextResponse.json(
                         {
                             error: 'Arrangementet er fortsatt fullt. Du står fortsatt på venteliste.',
@@ -148,7 +155,7 @@ export async function POST(request: Request) {
 
             const { data: waitlistRows, error: waitlistError } = await supabase
                 .from('EventParticipants')
-                .select('id')
+                .select('id, kull')
                 .eq('eventId', eventIdNum)
                 .eq('status', 'waitlist')
                 .order('created_at', { ascending: true })
@@ -161,14 +168,23 @@ export async function POST(request: Request) {
                 )
             }
 
-            if (!waitlistRows?.length) {
+            // With reserved spots, the free spot may only fit some kull: the first in line
+            // is the earliest waitlisted participant whose kull can take it.
+            const firstInLine = waitlistRows?.find(
+                (w) =>
+                    w.id === existingParticipant.id ||
+                    w.kull == null ||
+                    hasFreeSpotForKull(event.max_attendees, kullPools, confirmedKull, w.kull)
+            )
+
+            if (!firstInLine) {
                 return NextResponse.json(
                     { error: 'Kunne ikke verifisere venteliste. Prøv igjen senere.' },
                     { status: 500 }
                 )
             }
 
-            if (waitlistRows[0].id !== existingParticipant.id) {
+            if (firstInLine.id !== existingParticipant.id) {
                 return NextResponse.json(
                     {
                         error: 'Du er ikke først på ventelisten. Vent til det er din tur.',
@@ -231,14 +247,16 @@ export async function POST(request: Request) {
         let status: 'confirmed' | 'waitlist' = 'confirmed'
 
         if (event.max_attendees) {
-            const { count, error: countError } = await confirmedParticipantsQuery(
+            const { kull: confirmedKull, error: countError } = await confirmedParticipantKull(
                 supabase,
                 eventIdNum
             )
 
-            if (countError) {
+            if (countError || !confirmedKull) {
                 console.error('Error counting participants:', countError)
-            } else if (count !== null && count >= event.max_attendees) {
+            } else if (
+                !hasFreeSpotForKull(event.max_attendees, kullPools, confirmedKull, kullNum)
+            ) {
                 status = 'waitlist'
             }
         }

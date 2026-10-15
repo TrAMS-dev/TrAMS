@@ -11,6 +11,7 @@ import {
     Button,
     Field,
     Checkbox,
+    NativeSelect,
 } from '@chakra-ui/react'
 import { useRouter } from 'next/navigation'
 import { ImageUploader } from '@/components/admin/ImageUploader'
@@ -18,6 +19,7 @@ import { PlannedMonthSelector } from '@/components/admin/PlannedMonthSelector'
 import { toaster } from '@/components/ui/toaster'
 import { datetimeLocalToUtcIso } from '@/lib/datetimeLocal'
 import { activeYears, kullToKlasse } from '@/utils/functions/activeYears'
+import { type KullPool, validateKullPools } from '@/lib/kullPools'
 
 export interface EventFormValues {
     title: string
@@ -37,6 +39,8 @@ export interface EventFormValues {
     require_phone: boolean
     /** Empty means every kull may sign up (all boxes checked). */
     allowed_kull: number[]
+    /** Reserved spots per kull; spots is the raw input value. */
+    kull_pools: { kull: number; spots: string }[]
 }
 
 export interface EventFormPayload {
@@ -58,6 +62,7 @@ export interface EventFormPayload {
     custom_question: string | null
     require_phone: boolean
     allowed_kull: number[] | null
+    kull_pools: KullPool[]
 }
 
 export const emptyEventFormValues: EventFormValues = {
@@ -77,6 +82,7 @@ export const emptyEventFormValues: EventFormValues = {
     custom_question: '',
     require_phone: false,
     allowed_kull: [],
+    kull_pools: [],
 }
 
 interface EventFormProps {
@@ -121,8 +127,43 @@ export function EventForm({
             allowed_kull: checked
                 ? [...prev.allowed_kull, kull]
                 : prev.allowed_kull.filter((k) => k !== kull),
+            // A kull that can't sign up can't have reserved spots
+            kull_pools: checked ? prev.kull_pools : prev.kull_pools.filter((p) => p.kull !== kull),
         }))
     }
+
+    const poolKullOptions = kullOptions.filter((k) => formData.allowed_kull.includes(k))
+    const unusedPoolKull = poolKullOptions.filter(
+        (k) => !formData.kull_pools.some((p) => p.kull === k)
+    )
+
+    const addKullPool = () => {
+        if (unusedPoolKull.length === 0) return
+        setFormData((prev) => ({
+            ...prev,
+            kull_pools: [...prev.kull_pools, { kull: unusedPoolKull[0], spots: '' }],
+        }))
+    }
+
+    const updateKullPool = (index: number, change: Partial<{ kull: number; spots: string }>) => {
+        setFormData((prev) => ({
+            ...prev,
+            kull_pools: prev.kull_pools.map((p, i) => (i === index ? { ...p, ...change } : p)),
+        }))
+    }
+
+    const removeKullPool = (index: number) => {
+        setFormData((prev) => ({
+            ...prev,
+            kull_pools: prev.kull_pools.filter((_, i) => i !== index),
+        }))
+    }
+
+    const reservedSpots = formData.kull_pools.reduce(
+        (sum, p) => sum + (Number.parseInt(p.spots, 10) || 0),
+        0
+    )
+    const maxAttendeesInput = Number.parseInt(formData.max_attendees, 10)
 
     // datetime-local values share one format, so string comparison orders them correctly
     const endBeforeStart =
@@ -231,6 +272,29 @@ export function EventForm({
 
         const hideSignup = signupUndecided
 
+        const allowedKull =
+            signupUndecided || activeYears().every((k) => formData.allowed_kull.includes(k))
+                ? null
+                : [...formData.allowed_kull].sort((a, b) => a - b)
+
+        const kullPools: KullPool[] = hideSignup
+            ? []
+            : formData.kull_pools.map((p) => ({
+                  kull: p.kull,
+                  spots: Number(p.spots.trim() === '' ? Number.NaN : p.spots),
+              }))
+        const poolError = validateKullPools(kullPools, max_attendees, allowedKull)
+        if (poolError) {
+            toaster.create({
+                title: 'Ugyldige reserverte plasser',
+                description: poolError,
+                type: 'error',
+                duration: 5000,
+            })
+            setIsSubmitting(false)
+            return
+        }
+
         const payload: EventFormPayload = {
             title: formData.title,
             description: formData.description,
@@ -250,10 +314,8 @@ export function EventForm({
             custom_question: signupUndecided ? null : formData.custom_question.trim() || null,
             require_phone: !signupUndecided && formData.require_phone,
             // All active kull checked means no restriction
-            allowed_kull:
-                signupUndecided || activeYears().every((k) => formData.allowed_kull.includes(k))
-                    ? null
-                    : [...formData.allowed_kull].sort((a, b) => a - b),
+            allowed_kull: allowedKull,
+            kull_pools: kullPools,
         }
 
         try {
@@ -526,6 +588,85 @@ export function EventForm({
                                         onChange={handleChange}
                                     />
                                 </Field.Root>
+                            </Box>
+
+                            <Box>
+                                <Text fontSize="sm" fontWeight="medium" mb={1}>
+                                    Reserverte plasser
+                                </Text>
+                                <Text fontSize="xs" color="fg.muted" mb={3}>
+                                    Reserver et antall av plassene for et bestemt kull. Resten av
+                                    plassene er åpne for alle. Kullet fyller først sine reserverte
+                                    plasser, og kan deretter også få de åpne plassene.
+                                </Text>
+                                <Stack gap={2}>
+                                    {formData.kull_pools.map((pool, index) => (
+                                        <Box key={index} display="flex" gap={2} alignItems="center">
+                                            <NativeSelect.Root flex="1">
+                                                <NativeSelect.Field
+                                                    aria-label="Kull"
+                                                    value={pool.kull}
+                                                    onChange={(e) =>
+                                                        updateKullPool(index, {
+                                                            kull: Number(e.target.value),
+                                                        })
+                                                    }
+                                                >
+                                                    {poolKullOptions
+                                                        .filter(
+                                                            (k) =>
+                                                                k === pool.kull ||
+                                                                !formData.kull_pools.some(
+                                                                    (p) => p.kull === k
+                                                                )
+                                                        )
+                                                        .map((k) => (
+                                                            <option key={k} value={k}>
+                                                                {kullToKlasse(k)}. klasse (kull {k})
+                                                            </option>
+                                                        ))}
+                                                </NativeSelect.Field>
+                                                <NativeSelect.Indicator />
+                                            </NativeSelect.Root>
+                                            <Input
+                                                aria-label="Antall plasser"
+                                                type="number"
+                                                min="1"
+                                                w="8rem"
+                                                value={pool.spots}
+                                                onChange={(e) =>
+                                                    updateKullPool(index, { spots: e.target.value })
+                                                }
+                                                placeholder="Plasser"
+                                            />
+                                            <Button
+                                                type="button"
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() => removeKullPool(index)}
+                                            >
+                                                Fjern
+                                            </Button>
+                                        </Box>
+                                    ))}
+                                </Stack>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    mt={formData.kull_pools.length > 0 ? 3 : 0}
+                                    onClick={addKullPool}
+                                    disabled={unusedPoolKull.length === 0}
+                                >
+                                    Legg til reserverte plasser
+                                </Button>
+                                {formData.kull_pools.length > 0 && (
+                                    <Text fontSize="xs" color="fg.muted" mt={2}>
+                                        {Number.isFinite(maxAttendeesInput)
+                                            ? `${reservedSpots} reservert, ${Math.max(0, maxAttendeesInput - reservedSpots)} åpne for alle.`
+                                            : 'Sett maks antall deltakere for å bruke reserverte plasser.'}
+                                    </Text>
+                                )}
                             </Box>
                         </>
                     )}
