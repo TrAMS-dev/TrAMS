@@ -37,25 +37,24 @@ export default function AdminUsersPage() {
     }, [authLoading, isAuthenticated, isAdmin, router])
 
     useEffect(() => {
-        fetchUsers()
-    }, [])
+        const fetchUsers = async () => {
+            try {
+                const { data, error } = await supabase
+                    .from('profiles')
+                    .select('*')
+                    .order('created_at', { ascending: false })
 
-    const fetchUsers = async () => {
-        try {
-            const { data, error } = await supabase
-                .from('profiles')
-                .select('*')
-                .order('created_at', { ascending: false })
-
-            if (error) throw error
-            setUsers(data || [])
-        } catch (error) {
-            console.error('Error fetching users:', error)
-            alert('Kunne ikke laste brukere')
-        } finally {
-            setIsLoading(false)
+                if (error) throw error
+                setUsers(data || [])
+            } catch (error) {
+                console.error('Error fetching users:', error)
+                alert('Kunne ikke laste brukere')
+            } finally {
+                setIsLoading(false)
+            }
         }
-    }
+        void fetchUsers()
+    }, [supabase])
 
     const toggleApproval = async (
         userId: string,

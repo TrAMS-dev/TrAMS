@@ -156,8 +156,8 @@ export function ImageUploader({
         }
     }, [crop?.objectUrl])
 
-    useEffect(() => {
-        if (!crop || !needsCenter || frameWidth === 0) return
+    // Center a newly loaded image as soon as the frame has been measured
+    if (crop && needsCenter && frameWidth !== 0) {
         const offsets = centeredOffsets(
             crop.naturalWidth,
             crop.naturalHeight,
@@ -165,9 +165,9 @@ export function ImageUploader({
             frameHeight,
             crop.scale
         )
-        setCrop((prev) => (prev ? { ...prev, ...offsets } : prev))
+        setCrop({ ...crop, ...offsets })
         setNeedsCenter(false)
-    }, [crop, needsCenter, frameWidth, frameHeight])
+    }
 
     const resetCrop = useCallback(() => {
         setCrop((prev) => {

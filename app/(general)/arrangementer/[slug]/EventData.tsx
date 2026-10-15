@@ -57,90 +57,95 @@ export default function EventArrangementDetailClient({
     const [signupOpen, setSignupOpen] = useState(false)
     const [participantListOpen, setParticipantListOpen] = useState(false)
 
-    const fetchEventData = async () => {
-        const supabase = createClient()
+    /** Bumped to refetch, e.g. after a new signup. */
+    const [reloadKey, setReloadKey] = useState(0)
 
-        // Fetch event
-        const { data: eventData, error: eventError } = await supabase
-            .from('Events')
-            .select(
+    useEffect(() => {
+        const fetchEventData = async () => {
+            const supabase = createClient()
+
+            // Fetch event
+            const { data: eventData, error: eventError } = await supabase
+                .from('Events')
+                .select(
+                    `
+                    *,
+                    profiles!author (
+                        full_name,
+                        email
+                    )
                 `
-                *,
-                profiles!author (
-                    full_name,
-                    email
                 )
-            `
+                .eq('slug', slug)
+                .single()
+
+            if (eventError || !eventData) {
+                console.error('Error fetching event:', eventError)
+                setLoading(false)
+                return
+            }
+
+            const row = eventData as EventWithAuthorProfile
+            const { profiles, ...eventRow } = row
+            setEvent(eventRow)
+            setAuthorDisplayName(
+                profiles?.full_name?.trim() || profiles?.email?.trim() || null
             )
-            .eq('slug', slug)
-            .single()
 
-        if (eventError || !eventData) {
-            console.error('Error fetching event:', eventError)
+            const { data: participantRows, error: participantsError } = await supabase
+                .from('EventParticipants')
+                .select('id, name, kull, status, created_at')
+                .eq('eventId', eventData.id)
+
+            if (!participantsError && participantRows) {
+                const sortByName = (
+                    a: Pick<Tables<'EventParticipants'>, 'id' | 'name' | 'kull'>,
+                    b: Pick<Tables<'EventParticipants'>, 'id' | 'name' | 'kull'>
+                ) => {
+                    const an = (a.name ?? '').trim()
+                    const bn = (b.name ?? '').trim()
+                    return an.localeCompare(bn, 'nb-NO', { sensitivity: 'base' })
+                }
+
+                const confirmed = participantRows
+                    .filter((p) => p.status !== 'waitlist')
+                    .map(({ id, name, kull }) => ({ id, name, kull }))
+                    .sort(sortByName)
+
+                const waitlist = participantRows
+                    .filter((p) => p.status === 'waitlist')
+                    .sort(
+                        (a, b) =>
+                            new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+                    )
+                    .map(({ id, name, kull }) => ({ id, name, kull }))
+
+                setPublicParticipants(confirmed)
+                setPublicWaitlist(waitlist)
+                setParticipantCount(confirmed.length)
+            } else {
+                setPublicParticipants([])
+                setPublicWaitlist([])
+                setParticipantCount(0)
+                if (participantsError) {
+                    console.error('Error fetching public participant list:', participantsError)
+                }
+            }
+
             setLoading(false)
-            return
         }
+        void fetchEventData()
+    }, [slug, reloadKey])
 
-        const row = eventData as EventWithAuthorProfile
-        const { profiles, ...eventRow } = row
-        setEvent(eventRow)
-        setAuthorDisplayName(
-            profiles?.full_name?.trim() || profiles?.email?.trim() || null
-        )
-
-        const { data: participantRows, error: participantsError } = await supabase
-            .from('EventParticipants')
-            .select('id, name, kull, status, created_at')
-            .eq('eventId', eventData.id)
-
-        if (!participantsError && participantRows) {
-            const sortByName = (
-                a: Pick<Tables<'EventParticipants'>, 'id' | 'name' | 'kull'>,
-                b: Pick<Tables<'EventParticipants'>, 'id' | 'name' | 'kull'>
-            ) => {
-                const an = (a.name ?? '').trim()
-                const bn = (b.name ?? '').trim()
-                return an.localeCompare(bn, 'nb-NO', { sensitivity: 'base' })
-            }
-
-            const confirmed = participantRows
-                .filter((p) => p.status !== 'waitlist')
-                .map(({ id, name, kull }) => ({ id, name, kull }))
-                .sort(sortByName)
-
-            const waitlist = participantRows
-                .filter((p) => p.status === 'waitlist')
-                .sort(
-                    (a, b) =>
-                        new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-                )
-                .map(({ id, name, kull }) => ({ id, name, kull }))
-
-            setPublicParticipants(confirmed)
-            setPublicWaitlist(waitlist)
-            setParticipantCount(confirmed.length)
-        } else {
-            setPublicParticipants([])
-            setPublicWaitlist([])
-            setParticipantCount(0)
-            if (participantsError) {
-                console.error('Error fetching public participant list:', participantsError)
-            }
-        }
-
-        setLoading(false)
+    // Close the participant list when navigating to another event
+    const [prevSlug, setPrevSlug] = useState(slug)
+    if (slug !== prevSlug) {
+        setPrevSlug(slug)
+        setParticipantListOpen(false)
     }
 
-    useEffect(() => {
-        fetchEventData()
-    }, [slug])
-
-    useEffect(() => {
-        setParticipantListOpen(false)
-    }, [slug])
-
     const handleSignupSuccess = () => {
-        fetchEventData() // Refresh participant count
+        setReloadKey((k) => k + 1) // Refresh participant count
     }
 
     if (loading) {
