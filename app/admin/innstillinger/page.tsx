@@ -1,7 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Box, Heading, Input, Button, Stack, Field, Text, Spinner, Center } from '@chakra-ui/react'
+import { Box, Heading, Input, Button, Stack, Field, Text, Spinner, Center, Flex } from '@chakra-ui/react'
+import { useRouter } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
 import { useAuth } from '@/hooks/useAuth'
 import { toaster } from '@/components/ui/toaster'
@@ -9,7 +10,8 @@ import { toaster } from '@/components/ui/toaster'
 const MIN_PASSWORD_LENGTH = 6
 
 export default function SettingsPage() {
-    const { user, isLoading: isAuthLoading } = useAuth()
+    const { user, isLoading: isAuthLoading, logout } = useAuth()
+    const router = useRouter()
     const supabase = createClient()
 
     const [fullName, setFullName] = useState('')
@@ -110,6 +112,11 @@ export default function SettingsPage() {
         }
     }
 
+    const handleLogout = async () => {
+        await logout()
+        router.push('/admin/login')
+    }
+
     if (isAuthLoading) {
         return (
             <Center minH="40vh">
@@ -122,7 +129,12 @@ export default function SettingsPage() {
 
     return (
         <Box maxW="lg">
-            <Heading size="xl" mb={6}>Innstillinger</Heading>
+            <Flex justify="space-between" align="center" mb={6}>
+                <Heading size="xl">Innstillinger</Heading>
+                <Button size="sm" variant="outline" onClick={handleLogout} colorPalette="gray">
+                    Logg ut
+                </Button>
+            </Flex>
 
             <Stack gap={6}>
                 <Box p={6} bg="white" rounded="lg" shadow="sm" borderWidth="1px" borderColor="gray.200">
