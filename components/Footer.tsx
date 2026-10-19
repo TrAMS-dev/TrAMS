@@ -48,8 +48,8 @@ export default function Footer() {
             </Text>
             <Text m={0} color="black">
               <strong>E-post:</strong>{' '}
-              <Link href="mailto:web@trams.no" color="black" textDecoration="none" _hover={{ color: 'var(--color-primary)' }}>
-                web@trams.no
+              <Link href="mailto:ekstern@trams.no" color="black" textDecoration="none" _hover={{ color: 'var(--color-primary)' }}>
+                ekstern@trams.no
               </Link>
             </Text>
           </VStack>
@@ -93,7 +93,7 @@ export default function Footer() {
         </Box>
       </Flex>
       <Box textAlign="center" mt={4} fontSize="0.8rem" color="black">
-        <Text m={0}>&copy; 2024 Trondheim Akuttmedisinske Studentforening</Text>
+        <Text m={0}>&copy; 2026 Trondheim Akuttmedisinske Studentforening</Text>
         <Link
           href="/admin"
           color="gray.500"
