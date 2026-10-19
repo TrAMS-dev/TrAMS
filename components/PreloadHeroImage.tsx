@@ -1,37 +1,25 @@
+import { preload } from 'react-dom';
+
 /**
- * Server component that injects a preload link for hero images.
- * This script runs immediately when the page loads, before React hydrates,
- * ensuring the image starts loading as early as possible.
+ * Preloads a hero image with high priority.
+ * React hoists the resulting <link rel="preload"> into <head> during server
+ * rendering (and dedupes it), so the image starts loading before hydration.
  */
 export default function PreloadHeroImage({ imageUrl }: { imageUrl: string }) {
   // Determine image type from extension
-  const getImageType = (url: string): string => {
+  const getImageType = (url: string): string | undefined => {
     if (url.match(/\.(jpg|jpeg)$/i)) return 'image/jpeg';
     if (url.match(/\.png$/i)) return 'image/png';
     if (url.match(/\.webp$/i)) return 'image/webp';
     if (url.match(/\.svg$/i)) return 'image/svg+xml';
-    return 'image';
+    return undefined;
   };
 
-  const imageType = getImageType(imageUrl);
-  const escapedUrl = imageUrl.replace(/'/g, "\\'");
+  preload(imageUrl, {
+    as: 'image',
+    fetchPriority: 'high',
+    type: getImageType(imageUrl),
+  });
 
-  return (
-    <script
-      dangerouslySetInnerHTML={{
-        __html: `
-          (function() {
-            if (document.querySelector('link[rel="preload"][href="${escapedUrl}"]')) return;
-            var link = document.createElement('link');
-            link.rel = 'preload';
-            link.as = 'image';
-            link.href = '${escapedUrl}';
-            link.fetchPriority = 'high';
-            ${imageType !== 'image' ? `link.type = '${imageType}';` : ''}
-            document.head.appendChild(link);
-          })();
-        `,
-      }}
-    />
-  );
+  return null;
 }

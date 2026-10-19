@@ -15,11 +15,14 @@ import {
 } from '@chakra-ui/react'
 import EventSignupDialog from '@/components/EventSignupDialog'
 import EventParticipantListDialog from '@/components/EventParticipantListDialog'
+import { LinkifiedText } from '@/components/LinkifiedText'
+import { PageContainer } from '@/components/PageContainer'
 import { createClient } from '@/utils/supabase/client'
 import type { Tables } from '@/types/supabase'
 import { useParams, useRouter } from 'next/navigation'
 import { APP_TIME_ZONE } from '@/lib/datetimeLocal'
 import { formatEventDate, isDateUnspecifiedEvent } from '@/lib/eventDate'
+import { kullToKlasse } from '@/utils/functions/activeYears'
 
 type EventWithAuthorProfile = Tables<'Events'> & {
     profiles: { full_name: string | null; email: string | null } | null
@@ -54,90 +57,95 @@ export default function EventArrangementDetailClient({
     const [signupOpen, setSignupOpen] = useState(false)
     const [participantListOpen, setParticipantListOpen] = useState(false)
 
-    const fetchEventData = async () => {
-        const supabase = createClient()
+    /** Bumped to refetch, e.g. after a new signup. */
+    const [reloadKey, setReloadKey] = useState(0)
 
-        // Fetch event
-        const { data: eventData, error: eventError } = await supabase
-            .from('Events')
-            .select(
+    useEffect(() => {
+        const fetchEventData = async () => {
+            const supabase = createClient()
+
+            // Fetch event
+            const { data: eventData, error: eventError } = await supabase
+                .from('Events')
+                .select(
+                    `
+                    *,
+                    profiles!author (
+                        full_name,
+                        email
+                    )
                 `
-                *,
-                profiles!author (
-                    full_name,
-                    email
                 )
-            `
+                .eq('slug', slug)
+                .single()
+
+            if (eventError || !eventData) {
+                console.error('Error fetching event:', eventError)
+                setLoading(false)
+                return
+            }
+
+            const row = eventData as EventWithAuthorProfile
+            const { profiles, ...eventRow } = row
+            setEvent(eventRow)
+            setAuthorDisplayName(
+                profiles?.full_name?.trim() || profiles?.email?.trim() || null
             )
-            .eq('slug', slug)
-            .single()
 
-        if (eventError || !eventData) {
-            console.error('Error fetching event:', eventError)
+            const { data: participantRows, error: participantsError } = await supabase
+                .from('EventParticipants')
+                .select('id, name, kull, status, created_at')
+                .eq('eventId', eventData.id)
+
+            if (!participantsError && participantRows) {
+                const sortByName = (
+                    a: Pick<Tables<'EventParticipants'>, 'id' | 'name' | 'kull'>,
+                    b: Pick<Tables<'EventParticipants'>, 'id' | 'name' | 'kull'>
+                ) => {
+                    const an = (a.name ?? '').trim()
+                    const bn = (b.name ?? '').trim()
+                    return an.localeCompare(bn, 'nb-NO', { sensitivity: 'base' })
+                }
+
+                const confirmed = participantRows
+                    .filter((p) => p.status !== 'waitlist')
+                    .map(({ id, name, kull }) => ({ id, name, kull }))
+                    .sort(sortByName)
+
+                const waitlist = participantRows
+                    .filter((p) => p.status === 'waitlist')
+                    .sort(
+                        (a, b) =>
+                            new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+                    )
+                    .map(({ id, name, kull }) => ({ id, name, kull }))
+
+                setPublicParticipants(confirmed)
+                setPublicWaitlist(waitlist)
+                setParticipantCount(confirmed.length)
+            } else {
+                setPublicParticipants([])
+                setPublicWaitlist([])
+                setParticipantCount(0)
+                if (participantsError) {
+                    console.error('Error fetching public participant list:', participantsError)
+                }
+            }
+
             setLoading(false)
-            return
         }
+        void fetchEventData()
+    }, [slug, reloadKey])
 
-        const row = eventData as EventWithAuthorProfile
-        const { profiles, ...eventRow } = row
-        setEvent(eventRow)
-        setAuthorDisplayName(
-            profiles?.full_name?.trim() || profiles?.email?.trim() || null
-        )
-
-        const { data: participantRows, error: participantsError } = await supabase
-            .from('EventParticipants')
-            .select('id, name, kull, status, created_at')
-            .eq('eventId', eventData.id)
-
-        if (!participantsError && participantRows) {
-            const sortByName = (
-                a: Pick<Tables<'EventParticipants'>, 'id' | 'name' | 'kull'>,
-                b: Pick<Tables<'EventParticipants'>, 'id' | 'name' | 'kull'>
-            ) => {
-                const an = (a.name ?? '').trim()
-                const bn = (b.name ?? '').trim()
-                return an.localeCompare(bn, 'nb-NO', { sensitivity: 'base' })
-            }
-
-            const confirmed = participantRows
-                .filter((p) => p.status !== 'waitlist')
-                .map(({ id, name, kull }) => ({ id, name, kull }))
-                .sort(sortByName)
-
-            const waitlist = participantRows
-                .filter((p) => p.status === 'waitlist')
-                .sort(
-                    (a, b) =>
-                        new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-                )
-                .map(({ id, name, kull }) => ({ id, name, kull }))
-
-            setPublicParticipants(confirmed)
-            setPublicWaitlist(waitlist)
-            setParticipantCount(confirmed.length)
-        } else {
-            setPublicParticipants([])
-            setPublicWaitlist([])
-            setParticipantCount(0)
-            if (participantsError) {
-                console.error('Error fetching public participant list:', participantsError)
-            }
-        }
-
-        setLoading(false)
+    // Close the participant list when navigating to another event
+    const [prevSlug, setPrevSlug] = useState(slug)
+    if (slug !== prevSlug) {
+        setPrevSlug(slug)
+        setParticipantListOpen(false)
     }
 
-    useEffect(() => {
-        fetchEventData()
-    }, [slug])
-
-    useEffect(() => {
-        setParticipantListOpen(false)
-    }, [slug])
-
     const handleSignupSuccess = () => {
-        fetchEventData() // Refresh participant count
+        setReloadKey((k) => k + 1) // Refresh participant count
     }
 
     if (loading) {
@@ -164,6 +172,7 @@ export default function EventArrangementDetailClient({
     const hasFood: boolean = event.has_food
 
     const isDateUnspecified = isDateUnspecifiedEvent(event)
+    const isSignupUndecided = event.signup_undecided
     const startDate = event.start_datetime ? new Date(event.start_datetime) : null
     const endDate = event.end_datetime ? new Date(event.end_datetime) : null
     const regOpens = event.reg_opens ? new Date(event.reg_opens) : null
@@ -213,7 +222,7 @@ export default function EventArrangementDetailClient({
             </Box>
 
             {/* Content Section */}
-            <Box maxW="1200px" mx="auto" p={{ base: 4, md: 8 }}>
+            <PageContainer>
                 <Stack gap={6}>
                     {/* Event Info Cards */}
                     <Flex
@@ -380,212 +389,226 @@ export default function EventArrangementDetailClient({
                                             Om arrangementet
                                         </Heading>
                                         <Text whiteSpace="pre-wrap" lineHeight="1.8">
-                                            {event.description}
+                                            <LinkifiedText text={event.description} />
                                         </Text>
                                     </Box>
                                 )}
-                                <Box
-                                    borderTopWidth={event.description ? '1px' : undefined}
-                                    borderColor="gray.100"
-                                    pt={event.description ? 6 : 0}
-                                >
-                                    <Heading size={{ base: 'md', md: 'lg' }} mb={3}>
-                                        Hvis du ikke møter
+                                {!isSignupUndecided && (
+                                    <Box
+                                        borderTopWidth={event.description ? '1px' : undefined}
+                                        borderColor="gray.100"
+                                        pt={event.description ? 6 : 0}
+                                    >
+                                        <Heading size={{ base: 'md', md: 'lg' }} mb={3}>
+                                            Hvis du ikke møter
+                                        </Heading>
+                                        <Text color="gray.700" lineHeight="1.8">
+                                            Dersom du ikke har mulighet til å møte opp på arrangementet, ta kontakt
+                                            med arrangøren. Dette må gjøres innen 24 timer før arrangementet starter.
+                                            Dersom du ikke gjør dette, vil du bli nedprioritert på senere
+                                            TrAMS-arrangementer.
+                                        </Text>
+                                    </Box>
+                                )}
+                            </Stack>
+                        </Box>
+
+                        {!isSignupUndecided && (
+                            <Box
+                                flexShrink={0}
+                                w={{ base: 'full', lg: 'min(100%, 17rem)' }}
+                                maxW={{ lg: '17rem' }}
+                                p={4}
+                                bg="gray.50"
+                                borderRadius="md"
+                                borderWidth="1px"
+                                borderColor="gray.200"
+                            >
+                                <Stack gap={4}>
+                                    <Heading size="sm" color="gray.600" fontWeight="semibold">
+                                        Påmelding
                                     </Heading>
-                                    <Text color="gray.700" lineHeight="1.8">
-                                        Dersom du ikke har mulighet til å møte opp på arrangementet, ta kontakt
-                                        med arrangøren. Dette må gjøres innen 24 timer før arrangementet starter.
-                                        Dersom du ikke gjør dette, vil du bli nedprioritert på senere
-                                        TrAMS-arrangementer.
-                                    </Text>
-                                </Box>
-                            </Stack>
-                        </Box>
-
-                        <Box
-                            flexShrink={0}
-                            w={{ base: 'full', lg: 'min(100%, 17rem)' }}
-                            maxW={{ lg: '17rem' }}
-                            p={4}
-                            bg="gray.50"
-                            borderRadius="md"
-                            borderWidth="1px"
-                            borderColor="gray.200"
-                        >
-                            <Stack gap={4}>
-                                <Heading size="sm" color="gray.600" fontWeight="semibold">
-                                    Påmelding
-                                </Heading>
-                                <Stack gap={2} fontSize="sm" color="gray.700">
-                                    {event.max_attendees && (
-                                        <Text>
-                                            <strong>Plasser:</strong> {participantCount} /{' '}
-                                            {event.max_attendees}
-                                            {isFull && (
-                                                <Badge ml={2} size="sm" colorPalette="red">
-                                                    Fullt – venteliste
-                                                </Badge>
-                                            )}
-                                        </Text>
-                                    )}
-                                    {regOpens && (
-                                        <Text>
-                                            <strong>Påmelding åpner:</strong>{' '}
-                                            {regOpens.toLocaleDateString('nb-NO', {
-                                                timeZone: APP_TIME_ZONE,
-                                                year: 'numeric',
-                                                month: 'long',
-                                                day: 'numeric',
-                                                hour: '2-digit',
-                                                minute: '2-digit',
-                                            })}
-                                            {isRegistrationNotYetOpen && (
-                                                <Badge ml={2} size="sm" colorPalette="orange">
-                                                    Ikke åpnet
-                                                </Badge>
-                                            )}
-                                        </Text>
-                                    )}
-                                    {regDeadline && (
-                                        <Text>
-                                            <strong>Påmeldingsfrist:</strong>{' '}
-                                            {regDeadline.toLocaleDateString('nb-NO', {
-                                                timeZone: APP_TIME_ZONE,
-                                                year: 'numeric',
-                                                month: 'long',
-                                                day: 'numeric',
-                                                hour: '2-digit',
-                                                minute: '2-digit',
-                                            })}
-                                            {isRegistrationClosed && (
-                                                <Badge ml={2} size="sm" colorPalette="red">
-                                                    Utløpt
-                                                </Badge>
-                                            )}
-                                        </Text>
-                                    )}
+                                    <Stack gap={2} fontSize="sm" color="gray.700">
+                                        {event.allowed_kull && event.allowed_kull.length > 0 && (
+                                            <Text>
+                                                <strong>Åpen for:</strong>{' '}
+                                                {[...event.allowed_kull]
+                                                    .sort((a, b) => b - a)
+                                                    .map((k) => `${kullToKlasse(k)}.`)
+                                                    .join(', ')}{' '}
+                                                klasse
+                                            </Text>
+                                        )}
+                                        {event.max_attendees && (
+                                            <Text>
+                                                <strong>Plasser:</strong> {participantCount} /{' '}
+                                                {event.max_attendees}
+                                                {isFull && (
+                                                    <Badge ml={2} size="sm" colorPalette="red">
+                                                        Fullt – venteliste
+                                                    </Badge>
+                                                )}
+                                            </Text>
+                                        )}
+                                        {regOpens && (
+                                            <Text>
+                                                <strong>Påmelding åpner:</strong>{' '}
+                                                {regOpens.toLocaleDateString('nb-NO', {
+                                                    timeZone: APP_TIME_ZONE,
+                                                    year: 'numeric',
+                                                    month: 'long',
+                                                    day: 'numeric',
+                                                    hour: '2-digit',
+                                                    minute: '2-digit',
+                                                })}
+                                                {isRegistrationNotYetOpen && (
+                                                    <Badge ml={2} size="sm" colorPalette="orange">
+                                                        Ikke åpnet
+                                                    </Badge>
+                                                )}
+                                            </Text>
+                                        )}
+                                        {regDeadline && (
+                                            <Text>
+                                                <strong>Påmeldingsfrist:</strong>{' '}
+                                                {regDeadline.toLocaleDateString('nb-NO', {
+                                                    timeZone: APP_TIME_ZONE,
+                                                    year: 'numeric',
+                                                    month: 'long',
+                                                    day: 'numeric',
+                                                    hour: '2-digit',
+                                                    minute: '2-digit',
+                                                })}
+                                                {isRegistrationClosed && (
+                                                    <Badge ml={2} size="sm" colorPalette="red">
+                                                        Utløpt
+                                                    </Badge>
+                                                )}
+                                            </Text>
+                                        )}
+                                    </Stack>
+                                    <Button
+                                        size="md"
+                                        w="full"
+                                        bg="var(--color-primary)"
+                                        color="white"
+                                        onClick={() => setSignupOpen(true)}
+                                        disabled={!canSignup}
+                                    >
+                                        {isDateUnspecified
+                                            ? 'Påmelding ikke tilgjengelig ennå'
+                                            : isRegistrationNotYetOpen
+                                                ? 'Påmelding ikke åpnet'
+                                                : isRegistrationClosed
+                                                    ? 'Påmelding stengt'
+                                                    : isFull
+                                                        ? 'Meld deg på venteliste'
+                                                        : 'Meld deg på'}
+                                    </Button>
                                 </Stack>
-                                <Button
-                                    size="md"
-                                    w="full"
-                                    bg="var(--color-primary)"
-                                    color="white"
-                                    onClick={() => setSignupOpen(true)}
-                                    disabled={!canSignup}
-                                >
-                                    {isDateUnspecified
-                                        ? 'Påmelding ikke tilgjengelig ennå'
-                                        : isRegistrationNotYetOpen
-                                            ? 'Påmelding ikke åpnet'
-                                            : isRegistrationClosed
-                                                ? 'Påmelding stengt'
-                                                : isFull
-                                                    ? 'Meld deg på venteliste'
-                                                    : 'Meld deg på'}
-                                </Button>
-                            </Stack>
 
-                            {(publicParticipants.length > 0 || publicWaitlist.length > 0) && (
-                                <Box mt={5} pt={5} borderTopWidth="1px" borderColor="gray.200">
-                                    {publicParticipants.length > 0 && (
-                                        <Box
-                                            mb={publicWaitlist.length > 0 ? 5 : 0}
-                                            pb={publicWaitlist.length > 0 ? 5 : 0}
-                                            borderBottomWidth={
-                                                publicWaitlist.length > 0 ? '1px' : undefined
-                                            }
-                                            borderColor="gray.200"
-                                        >
-                                            <Text
-                                                fontSize="xs"
-                                                fontWeight="semibold"
-                                                color="gray.500"
-                                                textTransform="uppercase"
-                                                letterSpacing="0.05em"
-                                                mb={2}
+                                {(publicParticipants.length > 0 || publicWaitlist.length > 0) && (
+                                    <Box mt={5} pt={5} borderTopWidth="1px" borderColor="gray.200">
+                                        {publicParticipants.length > 0 && (
+                                            <Box
+                                                mb={publicWaitlist.length > 0 ? 5 : 0}
+                                                pb={publicWaitlist.length > 0 ? 5 : 0}
+                                                borderBottomWidth={
+                                                    publicWaitlist.length > 0 ? '1px' : undefined
+                                                }
+                                                borderColor="gray.200"
                                             >
-                                                Påmeldte
-                                            </Text>
-                                            <Text fontSize="xs" color="gray.500" mb={2}>
-                                                Bekreftede plasser.
-                                            </Text>
-                                            <Wrap gap={1.5}>
-                                                {confirmedNamesToShow.map((p) => (
-                                                    <Badge
-                                                        key={p.id}
-                                                        size="sm"
-                                                        variant="subtle"
+                                                <Text
+                                                    fontSize="xs"
+                                                    fontWeight="semibold"
+                                                    color="gray.500"
+                                                    textTransform="uppercase"
+                                                    letterSpacing="0.05em"
+                                                    mb={2}
+                                                >
+                                                    Påmeldte
+                                                </Text>
+                                                <Text fontSize="xs" color="gray.500" mb={2}>
+                                                    Bekreftede plasser.
+                                                </Text>
+                                                <Wrap gap={1.5}>
+                                                    {confirmedNamesToShow.map((p) => (
+                                                        <Badge
+                                                            key={p.id}
+                                                            size="sm"
+                                                            variant="subtle"
+                                                            colorPalette="gray"
+                                                            px={2}
+                                                            py={0.5}
+                                                        >
+                                                            {(p.name ?? 'Uten navn').trim() || 'Uten navn'}
+                                                            {p.kull != null ? ` - kull ${p.kull}` : ''}
+                                                        </Badge>
+                                                    ))}
+                                                </Wrap>
+                                                {hasMoreConfirmedNames && (
+                                                    <Button
+                                                        mt={2}
+                                                        size="xs"
+                                                        variant="ghost"
                                                         colorPalette="gray"
-                                                        px={2}
-                                                        py={0.5}
+                                                        onClick={() => setParticipantListOpen(true)}
                                                     >
-                                                        {(p.name ?? 'Uten navn').trim() || 'Uten navn'}
-                                                        {p.kull != null ? ` - kull ${p.kull}` : ''}
-                                                    </Badge>
-                                                ))}
-                                            </Wrap>
-                                            {hasMoreConfirmedNames && (
-                                                <Button
-                                                    mt={2}
-                                                    size="xs"
-                                                    variant="ghost"
-                                                    colorPalette="gray"
-                                                    onClick={() => setParticipantListOpen(true)}
+                                                        Se mer ({remainingConfirmed} til)
+                                                    </Button>
+                                                )}
+                                            </Box>
+                                        )}
+                                        {publicWaitlist.length > 0 && (
+                                            <Box>
+                                                <Text
+                                                    fontSize="xs"
+                                                    fontWeight="semibold"
+                                                    color="gray.500"
+                                                    textTransform="uppercase"
+                                                    letterSpacing="0.05em"
+                                                    mb={2}
                                                 >
-                                                    Se mer ({remainingConfirmed} til)
-                                                </Button>
-                                            )}
-                                        </Box>
-                                    )}
-                                    {publicWaitlist.length > 0 && (
-                                        <Box>
-                                            <Text
-                                                fontSize="xs"
-                                                fontWeight="semibold"
-                                                color="gray.500"
-                                                textTransform="uppercase"
-                                                letterSpacing="0.05em"
-                                                mb={2}
-                                            >
-                                                Venteliste
-                                            </Text>
-                                            <Text fontSize="xs" color="gray.500" mb={2}>
-                                                Meldt på når arrangementet var fullt.
-                                            </Text>
-                                            <Wrap gap={1.5}>
-                                                {waitlistNamesToShow.map((p) => (
-                                                    <Badge
-                                                        key={p.id}
-                                                        size="sm"
-                                                        variant="subtle"
-                                                        colorPalette="orange"
-                                                        px={2}
-                                                        py={0.5}
+                                                    Venteliste
+                                                </Text>
+                                                <Text fontSize="xs" color="gray.500" mb={2}>
+                                                    Meldt på når arrangementet var fullt.
+                                                </Text>
+                                                <Wrap gap={1.5}>
+                                                    {waitlistNamesToShow.map((p) => (
+                                                        <Badge
+                                                            key={p.id}
+                                                            size="sm"
+                                                            variant="subtle"
+                                                            colorPalette="orange"
+                                                            px={2}
+                                                            py={0.5}
+                                                        >
+                                                            {(p.name ?? 'Uten navn').trim() || 'Uten navn'}
+                                                            {p.kull != null ? ` - kull ${p.kull}` : ''}
+                                                        </Badge>
+                                                    ))}
+                                                </Wrap>
+                                                {hasMoreWaitlistNames && (
+                                                    <Button
+                                                        mt={2}
+                                                        size="xs"
+                                                        variant="ghost"
+                                                        colorPalette="gray"
+                                                        onClick={() => setParticipantListOpen(true)}
                                                     >
-                                                        {(p.name ?? 'Uten navn').trim() || 'Uten navn'}
-                                                        {p.kull != null ? ` - kull ${p.kull}` : ''}
-                                                    </Badge>
-                                                ))}
-                                            </Wrap>
-                                            {hasMoreWaitlistNames && (
-                                                <Button
-                                                    mt={2}
-                                                    size="xs"
-                                                    variant="ghost"
-                                                    colorPalette="gray"
-                                                    onClick={() => setParticipantListOpen(true)}
-                                                >
-                                                    Se mer ({remainingWaitlist} til)
-                                                </Button>
-                                            )}
-                                        </Box>
-                                    )}
-                                </Box>
-                            )}
-                        </Box>
+                                                        Se mer ({remainingWaitlist} til)
+                                                    </Button>
+                                                )}
+                                            </Box>
+                                        )}
+                                    </Box>
+                                )}
+                            </Box>
+                        )}
                     </Flex>
                 </Stack>
-            </Box>
+            </PageContainer>
 
             {/* Signup Dialog */}
             <EventSignupDialog
@@ -597,6 +620,8 @@ export default function EventArrangementDetailClient({
                 membershipSignupHref={membershipSignupHref}
                 eventHasFood={hasFood}
                 eventCustomQuestion={event.custom_question}
+                eventRequiresPhone={event.require_phone}
+                eventAllowedKull={event.allowed_kull}
             />
 
             <EventParticipantListDialog

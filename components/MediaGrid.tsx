@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { Box, Container, Heading, Text, SimpleGrid, Link as ChakraLink, AspectRatio } from '@chakra-ui/react';
+import { Box, Heading, Text, SimpleGrid, Link as ChakraLink, AspectRatio } from '@chakra-ui/react';
+import { PageContainer } from '@/components/PageContainer';
 import Image from 'next/image';
 import { MEDIA_ITEMS_QUERY } from '@/sanity/lib/queries';
 import { urlFor } from '@/sanity/lib/image';
@@ -34,7 +35,7 @@ export default function MediaGrid() {
         return match && match[2].length === 11 ? match[2] : null;
     };
     return (
-        <Container maxW="1200px" mx="auto" px={4} py={12}>
+        <PageContainer>
             {
                 loading ? (
                     <Text textAlign="center" fontSize="1.2rem" color="gray.600" >
@@ -140,6 +141,6 @@ export default function MediaGrid() {
                     </SimpleGrid>
                 )
             }
-        </Container >
+        </PageContainer>
     );
 }

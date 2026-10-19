@@ -20,6 +20,7 @@ import {
     Switch,
     Field,
 } from '@chakra-ui/react'
+import { cardStyles } from '@/components/ContentCard'
 import { Calendar, List, MapPin, Clock, Users } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { APP_TIME_ZONE } from '@/lib/datetimeLocal'
@@ -36,6 +37,7 @@ interface EventCalendarProps {
 }
 
 function isRegistrationWindowOpen(event: Tables<'Events'>): boolean {
+    if (event.signup_undecided) return false
     const t = new Date()
     const pastOpens = !event.reg_opens || t >= new Date(event.reg_opens)
     const beforeDeadline = !event.reg_deadline || t <= new Date(event.reg_deadline)
@@ -212,12 +214,8 @@ export default function EventCalendar({ events }: EventCalendarProps) {
 
             {view === 'calendar' ? (
                 <Box
-                    bg="white"
+                    {...cardStyles}
                     p={4}
-                    borderRadius="xl"
-                    boxShadow="sm"
-                    border="1px solid"
-                    borderColor="gray.200"
                 >
                     <FullCalendar
                         plugins={[dayGridPlugin, interactionPlugin]}
@@ -310,7 +308,7 @@ export default function EventCalendar({ events }: EventCalendarProps) {
                                                 <MapPin size={16} />
                                                 <Text lineClamp={1}>{event.location || 'Sted kommer'}</Text>
                                             </HStack>
-                                            {event.max_attendees && (
+                                            {event.max_attendees && !event.signup_undecided && (
                                                 <HStack color="gray.500" fontSize="sm">
                                                     <Users size={16} />
                                                     <Text>{event.max_attendees} plasser</Text>
@@ -322,7 +320,7 @@ export default function EventCalendar({ events }: EventCalendarProps) {
                             </Box>
                         ))
                     ) : (
-                        <Box p={8} textAlign="center" bg="white" borderRadius="xl" border="1px dashed" borderColor="gray.200">
+                        <Box p={8} textAlign="center" bg="white" borderRadius="lg" border="1px dashed" borderColor="gray.200">
                             <Text color="gray.500">Ingen arrangementer funnet.</Text>
                         </Box>
                     )}

@@ -1,6 +1,7 @@
 'use client';
 
-import { Box, Container, Heading, Text, Link as ChakraLink } from '@chakra-ui/react';
+import { Box, Heading, Text, Link as ChakraLink } from '@chakra-ui/react';
+import { PageContainer } from '@/components/PageContainer';
 import Image from 'next/image';
 import { urlFor } from '@/sanity/lib/image';
 import { PortableText } from 'next-sanity';
@@ -11,7 +12,7 @@ import HeroImage from '@/components/HeroImage';
 export default function CommitteeView({ committee }: { committee: Committee | null }) {
     if (!committee) {
         return (
-            <Container maxW="1200px" mx="auto" px={4} py={12}>
+            <PageContainer>
                 <Box textAlign="center" py={12}>
                     <Heading as="h1" fontSize="2rem" mb={4} color="var(--color-primary)">
                         Komité ikke funnet
@@ -27,7 +28,7 @@ export default function CommitteeView({ committee }: { committee: Committee | nu
                         Gå tilbake til oversikten
                     </ChakraLink>
                 </Box>
-            </Container>
+            </PageContainer>
         );
     }
 
@@ -48,7 +49,7 @@ export default function CommitteeView({ committee }: { committee: Committee | nu
             />
 
             {/* Content Section */}
-            <Container maxW="1200px" mx="auto" px={4} py={12}>
+            <PageContainer>
                 {/* Contact Info */}
                 {committee.email && (
                     <Box textAlign="center" mb={8}>
@@ -87,7 +88,7 @@ export default function CommitteeView({ committee }: { committee: Committee | nu
                         />
                     </Box>
                 )}
-            </Container >
+            </PageContainer>
         </>
     );
 }

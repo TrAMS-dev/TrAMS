@@ -1,4 +1,5 @@
-import { Box, Container, Link, Button, SimpleGrid } from '@chakra-ui/react';
+import { Box, Link, Button, SimpleGrid } from '@chakra-ui/react';
+import { PageContainer } from '@/components/PageContainer';
 import { PortableText } from 'next-sanity';
 import { client } from '@/sanity/lib/client';
 import { AkuttCalling } from '@/types/sanity.types';
@@ -32,11 +33,11 @@ export default async function AkuttCallingPage() {
 
     if (!data) {
         return (
-            <Container maxW="80%" py={12}>
+            <PageContainer>
                 <Box textAlign="center">
                     Ingen informasjon tilgjengelig.
                 </Box>
-            </Container>
+            </PageContainer>
         );
     }
 
@@ -48,7 +49,7 @@ export default async function AkuttCallingPage() {
                 heading={<HeroHeading fontSize={{ base: "2rem", md: "2.5rem" }}>{data.title.toUpperCase()}</HeroHeading>}
                 showDecorativeBar={true}
             />
-            <Container maxW="80%" py={12}>
+            <PageContainer>
                 <Box
                     textAlign="center"
                 >
@@ -104,7 +105,7 @@ export default async function AkuttCallingPage() {
                         </SimpleGrid>
                     )}
                 </Box>
-            </Container >
+            </PageContainer>
         </>
     );
 }

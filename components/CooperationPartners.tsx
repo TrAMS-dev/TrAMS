@@ -2,6 +2,7 @@ import Image from 'next/image';
 import { Box, Flex, Heading, Link } from '@chakra-ui/react';
 import { CooperationPartners } from '@/types/sanity.types';
 import { urlFor } from '@/sanity/lib/image';
+import { SectionHeading } from '@/components/Typography';
 
 
 interface PartnersSectionProps {
@@ -14,28 +15,10 @@ export const PartnersSection = ({ data }: PartnersSectionProps) => {
     const { partners, sisterOrganizations } = data;
 
     return (
-        <Box textAlign="center" mb={{ base: 4, md: 8 }}>
+        <Box textAlign="center">
             {partners && partners.length > 0 && (
                 <>
-                    <Heading
-                        as="h2"
-                        position="relative"
-                        color="black"
-                        pb={2}
-                        mb={4}
-                        fontSize="2rem"
-                    >
-                        Samarbeidspartnere
-                        <Box
-                            display="block"
-                            w="120px"
-                            h="4px"
-                            bg="var(--color-primary)"
-                            mx="auto"
-                            mt={2}
-                            borderRadius="2px"
-                        />
-                    </Heading>
+                    <SectionHeading mt={0}>Samarbeidspartnere</SectionHeading>
 
                     <Flex flexWrap="wrap" gap={8} justify="center" align="center">
                         {partners.map((partner, index) => {
@@ -69,26 +52,8 @@ export const PartnersSection = ({ data }: PartnersSectionProps) => {
             )}
 
             {sisterOrganizations && sisterOrganizations.length > 0 && (
-                <Box id="sosterforeninger" mt={8}>
-                    <Heading
-                        as="h3"
-                        position="relative"
-                        color="black"
-                        pb={2}
-                        mb={4}
-                        fontSize="2rem"
-                    >
-                        Søsterforeninger
-                        <Box
-                            display="block"
-                            w="80px"
-                            h="3px"
-                            bg="var(--color-primary)"
-                            mx="auto"
-                            mt={2}
-                            borderRadius="2px"
-                        />
-                    </Heading>
+                <Box id="sosterforeninger" mt={16}>
+                    <SectionHeading as="h3" mt={0}>Søsterforeninger</SectionHeading>
                     <Flex flexWrap="wrap" gap={8} justify="center" align="center">
                         {sisterOrganizations.map((org, index) => {
                             if (!org.logo) return null;
