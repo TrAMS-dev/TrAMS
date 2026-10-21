@@ -47,7 +47,7 @@ const REGISTRATION_LABELS: Record<RegistrationStatus, { label: string; color: st
     open: { label: 'Påmelding åpen', color: 'green' },
     'not-open': { label: 'Ikke åpnet', color: 'blue' },
     closed: { label: 'Påmelding stengt', color: 'orange' },
-    undecided: { label: 'Påmelding ikke bestemt', color: 'gray' },
+    undecided: { label: 'Påmelding skjult', color: 'gray' },
 }
 
 function formatAdminDate(event: Tables<'Events'>): string {

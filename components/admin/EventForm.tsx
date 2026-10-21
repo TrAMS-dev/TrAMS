@@ -515,7 +515,7 @@ export function EventForm({
                         >
                             <Checkbox.HiddenInput />
                             <Checkbox.Control />
-                            <Checkbox.Label>Påmelding ikke bestemt enda</Checkbox.Label>
+                            <Checkbox.Label>Påmelding ikke synlig for deltakere</Checkbox.Label>
                         </Checkbox.Root>
                         <Field.HelperText>
                             {dateUnspecified
