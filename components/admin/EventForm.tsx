@@ -18,6 +18,7 @@ import { PlannedMonthSelector } from '@/components/admin/PlannedMonthSelector'
 import { toaster } from '@/components/ui/toaster'
 import { datetimeLocalToUtcIso } from '@/lib/datetimeLocal'
 import { activeYears, kullToKlasse } from '@/utils/functions/activeYears'
+import { type KullPool, formatPoolKlasser, validateKullPools } from '@/lib/kullPools'
 
 export interface EventFormValues {
     title: string
@@ -37,6 +38,8 @@ export interface EventFormValues {
     require_phone: boolean
     /** Empty means every kull may sign up (all boxes checked). */
     allowed_kull: number[]
+    /** Reserved spots per kull; spots is the raw input value. */
+    kull_pools: { kull: number[]; spots: string }[]
 }
 
 export interface EventFormPayload {
@@ -58,6 +61,7 @@ export interface EventFormPayload {
     custom_question: string | null
     require_phone: boolean
     allowed_kull: number[] | null
+    kull_pools: KullPool[]
 }
 
 export const emptyEventFormValues: EventFormValues = {
@@ -77,6 +81,7 @@ export const emptyEventFormValues: EventFormValues = {
     custom_question: '',
     require_phone: false,
     allowed_kull: [],
+    kull_pools: [],
 }
 
 interface EventFormProps {
@@ -121,8 +126,48 @@ export function EventForm({
             allowed_kull: checked
                 ? [...prev.allowed_kull, kull]
                 : prev.allowed_kull.filter((k) => k !== kull),
+            // A kull that can't sign up can't have reserved spots
+            kull_pools: checked
+                ? prev.kull_pools
+                : prev.kull_pools.map((p) => ({ ...p, kull: p.kull.filter((k) => k !== kull) })),
         }))
     }
+
+    const poolKullOptions = kullOptions.filter((k) => formData.allowed_kull.includes(k))
+
+    const addKullPool = () => {
+        setFormData((prev) => ({
+            ...prev,
+            kull_pools: [...prev.kull_pools, { kull: [], spots: '' }],
+        }))
+    }
+
+    const updateKullPool = (index: number, change: Partial<{ kull: number[]; spots: string }>) => {
+        setFormData((prev) => ({
+            ...prev,
+            kull_pools: prev.kull_pools.map((p, i) => (i === index ? { ...p, ...change } : p)),
+        }))
+    }
+
+    const togglePoolKull = (index: number, kull: number, checked: boolean) => {
+        const pool = formData.kull_pools[index]
+        updateKullPool(index, {
+            kull: checked ? [...pool.kull, kull] : pool.kull.filter((k) => k !== kull),
+        })
+    }
+
+    const removeKullPool = (index: number) => {
+        setFormData((prev) => ({
+            ...prev,
+            kull_pools: prev.kull_pools.filter((_, i) => i !== index),
+        }))
+    }
+
+    const reservedSpots = formData.kull_pools.reduce(
+        (sum, p) => sum + (Number.parseInt(p.spots, 10) || 0),
+        0
+    )
+    const maxAttendeesInput = Number.parseInt(formData.max_attendees, 10)
 
     // datetime-local values share one format, so string comparison orders them correctly
     const endBeforeStart =
@@ -231,6 +276,29 @@ export function EventForm({
 
         const hideSignup = signupUndecided
 
+        const allowedKull =
+            signupUndecided || activeYears().every((k) => formData.allowed_kull.includes(k))
+                ? null
+                : [...formData.allowed_kull].sort((a, b) => a - b)
+
+        const kullPools: KullPool[] = hideSignup
+            ? []
+            : formData.kull_pools.map((p) => ({
+                  kull: [...p.kull].sort((a, b) => a - b),
+                  spots: Number(p.spots.trim() === '' ? Number.NaN : p.spots),
+              }))
+        const poolError = validateKullPools(kullPools, max_attendees, allowedKull)
+        if (poolError) {
+            toaster.create({
+                title: 'Ugyldige reserverte plasser',
+                description: poolError,
+                type: 'error',
+                duration: 5000,
+            })
+            setIsSubmitting(false)
+            return
+        }
+
         const payload: EventFormPayload = {
             title: formData.title,
             description: formData.description,
@@ -250,10 +318,8 @@ export function EventForm({
             custom_question: signupUndecided ? null : formData.custom_question.trim() || null,
             require_phone: !signupUndecided && formData.require_phone,
             // All active kull checked means no restriction
-            allowed_kull:
-                signupUndecided || activeYears().every((k) => formData.allowed_kull.includes(k))
-                    ? null
-                    : [...formData.allowed_kull].sort((a, b) => a - b),
+            allowed_kull: allowedKull,
+            kull_pools: kullPools,
         }
 
         try {
@@ -449,7 +515,7 @@ export function EventForm({
                         >
                             <Checkbox.HiddenInput />
                             <Checkbox.Control />
-                            <Checkbox.Label>Påmelding ikke bestemt enda</Checkbox.Label>
+                            <Checkbox.Label>Påmelding ikke synlig for deltakere</Checkbox.Label>
                         </Checkbox.Root>
                         <Field.HelperText>
                             {dateUnspecified
@@ -526,6 +592,105 @@ export function EventForm({
                                         onChange={handleChange}
                                     />
                                 </Field.Root>
+                            </Box>
+
+                            <Box>
+                                <Text fontSize="sm" fontWeight="medium" mb={1}>
+                                    Reserverte plasser
+                                </Text>
+                                <Text fontSize="xs" color="fg.muted" mb={3}>
+                                    Reserver et antall av plassene for én eller flere klasser.
+                                    Resten av plassene er åpne for alle. Deltakere havner i den
+                                    mest spesifikke puljen de passer i, deretter i bredere puljer,
+                                    og til slutt på de åpne plassene. Puljer kan ligge inni
+                                    hverandre (f.eks. 3.–6. og 6. klasse), men ikke delvis
+                                    overlappe.
+                                </Text>
+                                <Stack gap={2}>
+                                    {formData.kull_pools.map((pool, index) => (
+                                        <Box
+                                            key={index}
+                                            p={3}
+                                            borderWidth="1px"
+                                            borderColor="gray.200"
+                                            rounded="md"
+                                        >
+                                            <Box
+                                                display="flex"
+                                                flexWrap="wrap"
+                                                gap={3}
+                                                mb={3}
+                                                role="group"
+                                                aria-label={`Klasser i pulje ${index + 1}`}
+                                            >
+                                                {poolKullOptions.map((kull) => (
+                                                    <Checkbox.Root
+                                                        key={kull}
+                                                        size="sm"
+                                                        checked={pool.kull.includes(kull)}
+                                                        onCheckedChange={(details) =>
+                                                            togglePoolKull(
+                                                                index,
+                                                                kull,
+                                                                !!details.checked
+                                                            )
+                                                        }
+                                                    >
+                                                        <Checkbox.HiddenInput />
+                                                        <Checkbox.Control />
+                                                        <Checkbox.Label>
+                                                            {kullToKlasse(kull)}. klasse
+                                                        </Checkbox.Label>
+                                                    </Checkbox.Root>
+                                                ))}
+                                            </Box>
+                                            <Box display="flex" gap={2} alignItems="center">
+                                                <Input
+                                                    aria-label="Antall plasser"
+                                                    type="number"
+                                                    min="1"
+                                                    w="8rem"
+                                                    value={pool.spots}
+                                                    onChange={(e) =>
+                                                        updateKullPool(index, {
+                                                            spots: e.target.value,
+                                                        })
+                                                    }
+                                                    placeholder="Plasser"
+                                                />
+                                                <Text fontSize="sm" color="fg.muted" flex="1">
+                                                    {pool.kull.length > 0
+                                                        ? `plasser for ${formatPoolKlasser(pool.kull)}`
+                                                        : 'Velg klasser'}
+                                                </Text>
+                                                <Button
+                                                    type="button"
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={() => removeKullPool(index)}
+                                                >
+                                                    Fjern
+                                                </Button>
+                                            </Box>
+                                        </Box>
+                                    ))}
+                                </Stack>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    mt={formData.kull_pools.length > 0 ? 3 : 0}
+                                    onClick={addKullPool}
+                                >
+                                    Legg til reserverte plasser
+                                </Button>
+                                {formData.kull_pools.length > 0 && (
+                                    <Text fontSize="xs" color="fg.muted" mt={2}>
+                                        {Number.isFinite(maxAttendeesInput)
+                                            ? `${reservedSpots} reservert, ${Math.max(0, maxAttendeesInput - reservedSpots)} åpne for alle.`
+                                            : 'Sett maks antall deltakere for å bruke reserverte plasser.'}
+                                    </Text>
+                                )}
                             </Box>
                         </>
                     )}

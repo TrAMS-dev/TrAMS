@@ -56,6 +56,7 @@ export default function AdminParticipantsPage() {
     const [promoteCountInput, setPromoteCountInput] = useState('1')
     const [promoting, setPromoting] = useState(false)
     const [promotingId, setPromotingId] = useState<number | null>(null)
+    const [demotingId, setDemotingId] = useState<number | null>(null)
     const [exportDialogOpen, setExportDialogOpen] = useState(false)
     const [comments, setComments] = useState<ParticipantComment[]>([])
     const [commentsParticipantId, setCommentsParticipantId] = useState<number | null>(null)
@@ -216,7 +217,7 @@ export default function AdminParticipantsPage() {
 
     const handleRemoveParticipant = async (participantId: number, displayName: string) => {
         const ok = window.confirm(
-            `Fjerne «${displayName}» fra arrangementet? Dette kan ikke angres.`
+            `Fjerne «${displayName}» fra arrangementet? Vedkommende vil motta e-post om at de er fjernet. Dette kan ikke angres.`
         )
         if (!ok) return
 
@@ -381,6 +382,63 @@ export default function AdminParticipantsPage() {
         }
     }
 
+    const handleMoveToWaitlist = async (participantId: number, displayName: string) => {
+        const ok = window.confirm(
+            `Flytt «${displayName}» fra bekreftet plass til venteliste? Vedkommende beholder påmeldingstidspunktet sitt i køen og vil motta e-post om at de er flyttet til venteliste.`
+        )
+        if (!ok) return
+
+        setDemotingId(participantId)
+        try {
+            const res = await fetch('/api/admin/event-participants/demote', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ participantId }),
+            })
+            const payload = (await res.json().catch(() => ({}))) as {
+                error?: string
+                moved?: number
+            }
+
+            if (!res.ok) {
+                throw new Error(payload.error || 'Kunne ikke flytte deltakeren til venteliste')
+            }
+
+            const n = typeof payload.moved === 'number' ? payload.moved : 0
+            if (n > 0) {
+                setParticipants((prev) =>
+                    prev.map((p) => (p.id === participantId ? { ...p, status: 'waitlist' } : p))
+                )
+                toaster.create({
+                    title: 'Flyttet til venteliste',
+                    description: `${displayName} står nå på venteliste og har mottatt e-post.`,
+                    type: 'success',
+                    duration: 5000,
+                })
+            } else {
+                toaster.create({
+                    title: 'Ingen endring',
+                    description: 'Deltakeren hadde ikke lenger bekreftet plass.',
+                    type: 'warning',
+                    duration: 5000,
+                })
+            }
+        } catch (e) {
+            console.error('Move to waitlist error:', e)
+            toaster.create({
+                title: 'Kunne ikke flytte deltakeren til venteliste',
+                description:
+                    e instanceof Error ? e.message : 'Prøv igjen eller kontakt administrator.',
+                type: 'error',
+                duration: 6000,
+            })
+        } finally {
+            setDemotingId(null)
+        }
+    }
+
+    const busy = promoting || promotingId !== null || deletingId !== null || demotingId !== null
+
     if (authLoading || loading) return <Flex justify="center" align="center" h="50vh"><Spinner size="xl" /></Flex>
 
     if (!isAuthenticated || !isApproved) return null
@@ -461,7 +519,7 @@ export default function AdminParticipantsPage() {
                         </Field.Root>
                         <Button
                             loading={promoting}
-                            disabled={promoting || deletingId !== null || promotingId !== null}
+                            disabled={busy}
                             colorPalette="orange"
                             onClick={handlePromoteWaitlist}
                         >
@@ -597,17 +655,13 @@ export default function AdminParticipantsPage() {
                                 </Table.Cell>
                                 <Table.Cell textAlign="right">
                                     <HStack gap={2} justify="flex-end" flexWrap="nowrap">
-                                        {p.status === 'waitlist' && (
+                                        {p.status === 'waitlist' ? (
                                             <Button
                                                 size="sm"
                                                 variant="outline"
                                                 colorPalette="orange"
                                                 loading={promotingId === p.id}
-                                                disabled={
-                                                    promotingId !== null ||
-                                                    deletingId !== null ||
-                                                    promoting
-                                                }
+                                                disabled={busy}
                                                 onClick={() =>
                                                     handlePromoteParticipant(
                                                         p.id,
@@ -617,13 +671,29 @@ export default function AdminParticipantsPage() {
                                             >
                                                 Flytt opp
                                             </Button>
+                                        ) : (
+                                            <Button
+                                                size="sm"
+                                                variant="outline"
+                                                colorPalette="orange"
+                                                loading={demotingId === p.id}
+                                                disabled={busy}
+                                                onClick={() =>
+                                                    handleMoveToWaitlist(
+                                                        p.id,
+                                                        p.name?.trim() || p.email || 'Deltaker'
+                                                    )
+                                                }
+                                            >
+                                                Til venteliste
+                                            </Button>
                                         )}
                                         <Button
                                             size="sm"
                                             variant="outline"
                                             colorPalette="red"
                                             loading={deletingId === p.id}
-                                            disabled={deletingId !== null || promotingId !== null}
+                                            disabled={busy}
                                             onClick={() =>
                                                 handleRemoveParticipant(
                                                     p.id,

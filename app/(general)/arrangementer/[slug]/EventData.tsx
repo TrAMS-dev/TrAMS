@@ -23,6 +23,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { APP_TIME_ZONE } from '@/lib/datetimeLocal'
 import { formatEventDate, isDateUnspecifiedEvent } from '@/lib/eventDate'
 import { kullToKlasse } from '@/utils/functions/activeYears'
+import { formatPoolKlasser, parseKullPools, summarizeCapacity } from '@/lib/kullPools'
 
 type EventWithAuthorProfile = Tables<'Events'> & {
     profiles: { full_name: string | null; email: string | null } | null
@@ -182,6 +183,15 @@ export default function EventArrangementDetailClient({
     const isRegistrationNotYetOpen = regOpens ? now < regOpens : false
     const isRegistrationClosed = regDeadline ? now > regDeadline : false
     const isFull = event.max_attendees ? participantCount >= event.max_attendees : false
+    const kullPools = parseKullPools(event.kull_pools)
+    const capacity =
+        event.max_attendees && kullPools.length > 0
+            ? summarizeCapacity(
+                  event.max_attendees,
+                  kullPools,
+                  publicParticipants.map((p) => p.kull)
+              )
+            : null
     const canSignup = !isDateUnspecified && !isRegistrationNotYetOpen && !isRegistrationClosed
 
     const confirmedNamesToShow = publicParticipants.slice(0, PARTICIPANT_NAMES_PREVIEW)
@@ -449,6 +459,20 @@ export default function EventArrangementDetailClient({
                                                     </Badge>
                                                 )}
                                             </Text>
+                                        )}
+                                        {capacity && (
+                                            <Stack gap={0.5} pl={3} fontSize="xs" color="gray.600">
+                                                {capacity.pools.map((pool) => (
+                                                    <Text key={pool.kull.join(',')}>
+                                                        Reservert {formatPoolKlasser(pool.kull)}:{' '}
+                                                        {pool.taken} / {pool.spots}
+                                                    </Text>
+                                                ))}
+                                                <Text>
+                                                    Åpne for alle: {capacity.open.taken} /{' '}
+                                                    {capacity.open.spots}
+                                                </Text>
+                                            </Stack>
                                         )}
                                         {regOpens && (
                                             <Text>

@@ -13,6 +13,7 @@ import {
 import { toaster } from '@/components/ui/toaster'
 import { utcIsoToDatetimeLocalValue } from '@/lib/datetimeLocal'
 import { useAuth } from '@/hooks/useAuth'
+import { parseKullPools } from '@/lib/kullPools'
 
 export default function AdminEditEventPage() {
     const router = useRouter()
@@ -74,6 +75,10 @@ export default function AdminEditEventPage() {
                 custom_question: data.custom_question || '',
                 require_phone: Boolean(data.require_phone),
                 allowed_kull: data.allowed_kull ?? [],
+                kull_pools: parseKullPools(data.kull_pools).map((p) => ({
+                    kull: p.kull,
+                    spots: String(p.spots),
+                })),
             })
             setLoading(false)
         }
@@ -107,6 +112,7 @@ export default function AdminEditEventPage() {
                     custom_question: payload.custom_question,
                     require_phone: payload.require_phone,
                     allowed_kull: payload.allowed_kull,
+                    kull_pools: payload.kull_pools,
                 })
                 .eq('id', eventId)
 

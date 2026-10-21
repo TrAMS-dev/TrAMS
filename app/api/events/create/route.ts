@@ -1,5 +1,6 @@
 import { createClient } from '@/utils/supabase/server'
 import { NextResponse } from 'next/server'
+import { parseKullPools, validateKullPools } from '@/lib/kullPools'
 
 function generateSlug(title: string): string {
     return title
@@ -33,6 +34,7 @@ export async function POST(request: Request) {
             custom_question,
             require_phone,
             allowed_kull,
+            kull_pools,
         } = body
 
         const isDateUnspecified = Boolean(date_unspecified)
@@ -70,6 +72,17 @@ export async function POST(request: Request) {
                 ? allowed_kull.filter((k: unknown): k is number => Number.isInteger(k))
                 : []
 
+        const maxAttendees = hideSignup ? null : (max_attendees || null)
+        const kullPools = hideSignup ? [] : parseKullPools(kull_pools)
+        const poolError = validateKullPools(
+            kullPools,
+            maxAttendees,
+            allowedKull.length > 0 ? allowedKull : null
+        )
+        if (poolError) {
+            return NextResponse.json({ error: poolError }, { status: 400 })
+        }
+
         const supabase = await createClient()
 
         // Generate unique slug
@@ -102,7 +115,7 @@ export async function POST(request: Request) {
                 end_datetime: isDateUnspecified ? null : end_datetime,
                 location: isDateUnspecified ? null : (location || null),
                 image: image || null,
-                max_attendees: hideSignup ? null : (max_attendees || null),
+                max_attendees: maxAttendees,
                 reg_deadline: hideSignup ? null : (reg_deadline || null),
                 reg_opens: hideSignup ? null : (reg_opens || null),
                 author: author || null,
@@ -115,6 +128,7 @@ export async function POST(request: Request) {
                 custom_question: isSignupUndecided ? null : (custom_question || null),
                 require_phone: !isSignupUndecided && require_phone === true,
                 allowed_kull: allowedKull.length > 0 ? allowedKull : null,
+                kull_pools: kullPools,
             })
             .select()
             .single()

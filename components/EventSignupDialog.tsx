@@ -122,7 +122,7 @@ export default function EventSignupDialog({
                 title: onWaitlist ? 'Du står på venteliste' : 'Påmelding vellykket!',
                 type: 'success',
                 description: onWaitlist
-                    ? `Arrangementet er fullt. Du er satt på venteliste for ${eventTitle}. Du får en bekreftelse på e-post.`
+                    ? `Det er ingen ledige plasser for kullet ditt. Du er satt på venteliste for ${eventTitle}. Du får en bekreftelse på e-post.`
                     : `Du er påmeldt ${eventTitle}. Du får en bekreftelse på e-post.`,
                 duration: 6000,
             })
