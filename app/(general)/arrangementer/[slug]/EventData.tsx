@@ -23,7 +23,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { APP_TIME_ZONE } from '@/lib/datetimeLocal'
 import { formatEventDate, isDateUnspecifiedEvent } from '@/lib/eventDate'
 import { kullToKlasse } from '@/utils/functions/activeYears'
-import { parseKullPools, summarizeCapacity } from '@/lib/kullPools'
+import { formatPoolKlasser, parseKullPools, summarizeCapacity } from '@/lib/kullPools'
 
 type EventWithAuthorProfile = Tables<'Events'> & {
     profiles: { full_name: string | null; email: string | null } | null
@@ -463,8 +463,8 @@ export default function EventArrangementDetailClient({
                                         {capacity && (
                                             <Stack gap={0.5} pl={3} fontSize="xs" color="gray.600">
                                                 {capacity.pools.map((pool) => (
-                                                    <Text key={pool.kull}>
-                                                        Reservert {kullToKlasse(pool.kull)}. klasse:{' '}
+                                                    <Text key={pool.kull.join(',')}>
+                                                        Reservert {formatPoolKlasser(pool.kull)}:{' '}
                                                         {pool.taken} / {pool.spots}
                                                     </Text>
                                                 ))}
