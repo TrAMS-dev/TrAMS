@@ -186,29 +186,30 @@ export async function sendEventSignupEmail(
     }
 }
 
-/** E-post til en deltaker som er flyttet opp fra venteliste til bekreftet plass av en admin. */
-export async function sendWaitlistPromotedEmail(
-    ctx: EventSignupEmailContext
+function replyToFor(contactEmail: string | null): string | undefined {
+    const raw = contactEmail?.trim().toLowerCase()
+    return raw && raw.length <= 320 && EMAIL_RE.test(raw) ? contactEmail!.trim() : undefined
+}
+
+/** Sender én hendelses-e-post fra web@trams.no. Logger og hopper over ved ugyldig mottaker eller manglende nøkkel. */
+async function sendSingleEventEmail(
+    label: string,
+    ctx: EventSignupEmailContext,
+    subject: string,
+    html: string
 ): Promise<void> {
     const to = ctx.recipientEmail.trim().toLowerCase()
     if (!to || to.length > 320 || !EMAIL_RE.test(to)) {
-        console.error('sendWaitlistPromotedEmail: invalid recipient')
+        console.error(`${label}: invalid recipient`)
         return
     }
 
     if (!process.env.RESEND_API_KEY) {
-        console.warn('sendWaitlistPromotedEmail: RESEND_API_KEY missing, skipping')
+        console.warn(`${label}: RESEND_API_KEY missing, skipping`)
         return
     }
 
-    const subject = SUBJECT_WAITLIST_PROMOTED(ctx.eventTitle.trim())
-    const html = waitlistPromotedEmailHtml(ctx)
-
-    const replyToRaw = ctx.contactEmail?.trim().toLowerCase()
-    const replyTo =
-        replyToRaw && replyToRaw.length <= 320 && EMAIL_RE.test(replyToRaw)
-            ? ctx.contactEmail!.trim()
-            : undefined
+    const replyTo = replyToFor(ctx.contactEmail)
 
     const result = await resend.emails.send({
         from: 'TrAMS <web@trams.no>',
@@ -219,8 +220,97 @@ export async function sendWaitlistPromotedEmail(
     })
 
     if (result.error) {
-        console.error('sendWaitlistPromotedEmail: Resend error', result.error)
+        console.error(`${label}: Resend error`, result.error)
     }
+}
+
+/** E-post til en deltaker som er flyttet opp fra venteliste til bekreftet plass av en admin. */
+export async function sendWaitlistPromotedEmail(
+    ctx: EventSignupEmailContext
+): Promise<void> {
+    await sendSingleEventEmail(
+        'sendWaitlistPromotedEmail',
+        ctx,
+        SUBJECT_WAITLIST_PROMOTED(ctx.eventTitle.trim()),
+        waitlistPromotedEmailHtml(ctx)
+    )
+}
+
+const SUBJECT_MOVED_TO_WAITLIST = (title: string) => `Flyttet til venteliste: ${title}`
+
+const SUBJECT_REMOVED = (title: string) => `Fjernet fra påmelding: ${title}`
+
+function greetingFor(recipientName: string): string {
+    const name = (recipientName || '').trim()
+    return name ? `Hei ${escapeHtml(name)}!` : 'Hei!'
+}
+
+function questionsParagraph(contactEmail: string | null): string {
+    const contact = replyToFor(contactEmail)
+    const how = contact
+        ? `send en e-post til <a href="mailto:${escapeHtml(contact)}" style="color:#c41e3a;">${escapeHtml(contact)}</a> (eller svar på denne e-posten)`
+        : 'svar på denne e-posten'
+    return `<p style="color:#555;line-height:1.6;">Har du spørsmål, ${how}.</p>`
+}
+
+function movedToWaitlistEmailHtml(ctx: EventSignupEmailContext): string {
+    const title = ctx.eventTitle.trim()
+    const when = formatNbDate(ctx.startDatetime)
+    const where = ctx.location ? escapeHtml(ctx.location.trim()) : null
+    const link = eventPageUrl(ctx.eventSlug)
+    const detail = courseWhenWhereFragment(title, when, where, 'på')
+
+    const queuePositionText = ctx.waitlistQueuePosition
+        ? `<p style="color:#555;line-height:1.6;">Du har plass nummer <strong>${ctx.waitlistQueuePosition}</strong> på ventelisten.</p>`
+        : ''
+
+    const body = `<p style="color:#555;line-height:1.6;margin-top:0;">${greetingFor(ctx.recipientName)} Du er dessverre <strong>flyttet fra bekreftet plass til venteliste</strong> ${detail}.</p>
+${queuePositionText}
+<p style="color:#555;line-height:1.6;">Dersom det blir ledig plass, får du e-post om at du har fått plass.</p>
+${linkParagraph(link)}
+${questionsParagraph(ctx.contactEmail)}`
+
+    return emailShell(body)
+}
+
+function removedEmailHtml(ctx: EventSignupEmailContext, wasWaitlisted: boolean): string {
+    const title = ctx.eventTitle.trim()
+    const when = formatNbDate(ctx.startDatetime)
+    const where = ctx.location ? escapeHtml(ctx.location.trim()) : null
+    const link = eventPageUrl(ctx.eventSlug)
+    const detail = courseWhenWhereFragment(title, when, where, 'til')
+    const what = wasWaitlisted ? 'fjernet fra ventelisten' : 'fjernet fra påmeldingen'
+
+    const body = `<p style="color:#555;line-height:1.6;margin-top:0;">${greetingFor(ctx.recipientName)} Du er <strong>${what}</strong> ${detail}, og har ikke lenger plass på arrangementet.</p>
+${linkParagraph(link)}
+${questionsParagraph(ctx.contactEmail)}`
+
+    return emailShell(body)
+}
+
+/** E-post til en deltaker som er flyttet fra bekreftet plass til venteliste av en admin. */
+export async function sendMovedToWaitlistEmail(
+    ctx: EventSignupEmailContext
+): Promise<void> {
+    await sendSingleEventEmail(
+        'sendMovedToWaitlistEmail',
+        ctx,
+        SUBJECT_MOVED_TO_WAITLIST(ctx.eventTitle.trim()),
+        movedToWaitlistEmailHtml(ctx)
+    )
+}
+
+/** E-post til en deltaker som er fjernet fra et arrangement (bekreftet plass eller venteliste) av en admin. */
+export async function sendParticipantRemovedEmail(
+    ctx: EventSignupEmailContext,
+    wasWaitlisted: boolean
+): Promise<void> {
+    await sendSingleEventEmail(
+        'sendParticipantRemovedEmail',
+        ctx,
+        SUBJECT_REMOVED(ctx.eventTitle.trim()),
+        removedEmailHtml(ctx, wasWaitlisted)
+    )
 }
 
 const SUBJECT_REMINDER = (title: string) => `Påminnelse: ${title}`

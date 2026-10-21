@@ -1,5 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import { sendWaitlistPromotedEmail } from '@/lib/eventSignupEmail'
+import { sendMovedToWaitlistEmail, sendWaitlistPromotedEmail } from '@/lib/eventSignupEmail'
 import type { Database } from '@/types/supabase'
 
 type DbClient = SupabaseClient<Database>
@@ -129,4 +129,91 @@ export async function promoteFromWaitlist(
         eventId: params.eventId,
         participantIds: waiters.map((w) => w.id),
     })
+}
+
+export interface MoveToWaitlistResult {
+    moved: number
+    participantIds: number[]
+}
+
+/**
+ * Flytter bekreftede deltakere tilbake til venteliste og sender hver av dem en
+ * e-post om det. De beholder påmeldingstidspunktet sitt, så plassen i køen
+ * bestemmes av når de meldte seg på.
+ */
+export async function moveParticipantsToWaitlist(
+    supabase: DbClient,
+    params: { eventId: number; participantIds: number[] }
+): Promise<MoveToWaitlistResult> {
+    const ids = Array.from(
+        new Set(
+            params.participantIds
+                .map((n) => Math.floor(Number(n)))
+                .filter((n) => Number.isInteger(n) && n >= 1)
+        )
+    )
+    if (ids.length === 0) return { moved: 0, participantIds: [] }
+
+    const { data: event, error: eventError } = await supabase
+        .from('Events')
+        .select('title, slug, start_datetime, location, reg_deadline, contact_email')
+        .eq('id', params.eventId)
+        .single()
+
+    if (eventError || !event) {
+        throw new Error('Fant ikke arrangementet')
+    }
+
+    const { data: updated, error: updateError } = await supabase
+        .from('EventParticipants')
+        .update({ status: 'waitlist' })
+        .eq('eventId', params.eventId)
+        .neq('status', 'waitlist')
+        .in('id', ids)
+        .select('id, email, name, created_at')
+
+    if (updateError) {
+        throw new Error('Kunne ikke oppdatere status på deltakerne')
+    }
+
+    if (!updated || updated.length === 0) return { moved: 0, participantIds: [] }
+
+    const { data: waitlist, error: waitlistError } = await supabase
+        .from('EventParticipants')
+        .select('id')
+        .eq('eventId', params.eventId)
+        .eq('status', 'waitlist')
+        .order('created_at', { ascending: true })
+
+    if (waitlistError) {
+        console.error('Could not load waitlist for queue positions:', waitlistError)
+    }
+    const queueIds = (waitlist ?? []).map((w) => w.id)
+
+    const ctxBase = {
+        eventTitle: event.title || 'Arrangement',
+        eventSlug: event.slug,
+        startDatetime: event.start_datetime,
+        location: event.location,
+        regDeadline: event.reg_deadline,
+        contactEmail: event.contact_email,
+    }
+
+    for (const p of updated) {
+        const em = p.email?.trim()
+        if (!em) continue
+        const position = queueIds.indexOf(p.id)
+        try {
+            await sendMovedToWaitlistEmail({
+                ...ctxBase,
+                recipientName: (p.name ?? '').trim(),
+                recipientEmail: em,
+                waitlistQueuePosition: position >= 0 ? position + 1 : null,
+            })
+        } catch (e) {
+            console.error('Moved-to-waitlist email failed:', e)
+        }
+    }
+
+    return { moved: updated.length, participantIds: updated.map((p) => p.id) }
 }
