@@ -1,11 +1,12 @@
 import { Box, Link, Button } from '@chakra-ui/react';
 import { PageContainer } from '@/components/PageContainer';
-import { ContentCard } from '@/components/ContentCard';
-import { SectionHeading, BodyText, CenteredText } from '@/components/Typography';
+import { SectionHeading, CenteredText } from '@/components/Typography';
 import CommiteeCards from '@/components/CommiteeCards';
 import CourseCards from '@/components/CourseCards';
 import HeroImage from '@/components/HeroImage';
 import PreloadHeroImage from '@/components/PreloadHeroImage';
+import LatestEventCards from '@/components/LatestEventCards';
+import { createClient } from '@/utils/supabase/server';
 import { client } from '@/sanity/lib/client';
 import { FOR_MEDISINSTUDENTER_PAGE_QUERY } from '@/sanity/lib/queries';
 
@@ -26,11 +27,16 @@ export const metadata: Metadata = {
 };
 
 export default async function ForMedisinstudenter() {
-  const pageData = await client.fetch<{ membershipSignupUrl?: string | null }>(
-    FOR_MEDISINSTUDENTER_PAGE_QUERY
-  );
+  const supabase = await createClient();
+  const [{ data: events, error }, pageData] = await Promise.all([
+    supabase.from('Events').select('*'),
+    client.fetch<{ membershipSignupUrl?: string | null }>(FOR_MEDISINSTUDENTER_PAGE_QUERY),
+  ]);
   const membershipSignupUrl =
     pageData?.membershipSignupUrl?.trim() || FALLBACK_MEMBERSHIP_SIGNUP_URL;
+  if (error) {
+    console.error('Error fetching events:', error);
+  }
 
   return (
     <>
@@ -42,46 +48,46 @@ export default async function ForMedisinstudenter() {
         text="Her kan du lese mer om medlemskap i TrAMS, våre kurs og aktiviteter som er spesielt rettet mot medisinstudenter."
       />
 
-      {/* MEMBERSHIP SECTION */}
+      {/* UPCOMING EVENTS */}
       <PageContainer>
-        <ContentCard>
-          <SectionHeading mt={0}>Bli medlem!</SectionHeading>
-          <BodyText>
+        <SectionHeading mt={0}>Kommende arrangementer</SectionHeading>
+        <LatestEventCards events={events ?? []} />
+        <Box textAlign="center" mt={6}>
+          <Link href="/arrangementer" color="var(--color-primary)" textDecoration="underline">
+            Se alle arrangementer
+          </Link>
+        </Box>
+
+        {/* MEMBERSHIP SECTION */}
+        <Box mt={16}>
+          <SectionHeading>Bli medlem!</SectionHeading>
+          <CenteredText>
             TrAMS er studentforeningen for medisinstudenter ved NTNU som er interesserte i akuttmedisin! Som medlem kan
             du blant annet delta på TrAMS-arrangementer forbeholdt medlemmer, du får gratis ferdighetskurs og muligheten
-            til å delta på vår generalforsamling.
-          </BodyText>
-          <BodyText>
-            Du kan også engasjere deg ytterligere i foreningen ved å bli instruktør eller bli med i foreningens
-            komiteer.
-          </BodyText>
-          <BodyText>
+            til å delta på vår generalforsamling. Du kan også engasjere deg ytterligere i foreningen ved å bli instruktør
+            eller bli med i foreningens komiteer.
+            <br />
+            <br />
             TrAMS-medlemskapet er et livstidsmedlemskap med kontingent på 250 kr. For å bli medlem må du være
             medisinstudent ved NTNU, tidligere medisinstudent ved NTNU, eller lege ved St. Olavs Hospital.
-          </BodyText>
-          <BodyText>
+            <br />
+            <br />
             Ønsker du å engasjere deg i akuttmedisin, lære nye ferdigheter og bli en del av et engasjert
             studentmiljø? <strong>Bli medlem i dag ved å klikke på knappen!</strong>
-          </BodyText>
-          <Link
-            href={membershipSignupUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            display="block"
-            w="100%"
-            _hover={{ textDecoration: 'none' }}
-          >
-            <Button
-              bg="var(--color-primary)"
-              color="white"
-              mt={4}
-              _hover={{ bg: 'var(--color-secondary)', color: 'black' }}
-              w="100%"
-            >
-              Bli medlem!
-            </Button>
-          </Link>
-        </ContentCard>
+          </CenteredText>
+          <Box textAlign="center" mt={6}>
+            <Link href={membershipSignupUrl} target="_blank" rel="noopener noreferrer" _hover={{ textDecoration: 'none' }}>
+              <Button
+                bg="var(--color-primary)"
+                color="white"
+                px={8}
+                _hover={{ bg: 'var(--color-secondary)', color: 'black' }}
+              >
+                Bli medlem!
+              </Button>
+            </Link>
+          </Box>
+        </Box>
 
         {/* OUR OFFERS */}
         <SectionHeading mt={16}>Våre tilbud</SectionHeading>
