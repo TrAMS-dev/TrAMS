@@ -1,6 +1,7 @@
 
 import BookKursForm from '@/components/BookKursForm';
-import { SectionHeading } from '@/components/Typography';
+import HeroImage from '@/components/HeroImage';
+import PreloadHeroImage from '@/components/PreloadHeroImage';
 import { PageContainer } from '@/components/PageContainer';
 import type { Metadata } from "next";
 
@@ -17,9 +18,16 @@ export const metadata: Metadata = {
 
 export default function BookKursPage() {
     return (
-        <PageContainer>
-            <SectionHeading mt={0}>Book Kurs med TrAMS</SectionHeading>
-            <BookKursForm />
-        </PageContainer>
+        <>
+            <PreloadHeroImage imageUrl="/assets/images/markor_2.jpg" />
+            <HeroImage
+                imageUrl="/assets/images/markor_2.jpg"
+                heading="Book kurs"
+                text="Bestill førstehjelpskurs med TrAMS for din bedrift eller organisasjon."
+            />
+            <PageContainer narrow>
+                <BookKursForm />
+            </PageContainer>
+        </>
     );
 }

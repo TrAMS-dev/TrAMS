@@ -21,7 +21,8 @@ import {
     Field,
 } from '@chakra-ui/react'
 import { cardStyles } from '@/components/ContentCard'
-import { Calendar, List, MapPin, Clock, Users } from 'lucide-react'
+import { Calendar, LayoutGrid, List, MapPin, Clock, Users } from 'lucide-react'
+import { EventCard } from '@/components/LatestEventCards'
 import { useRouter } from 'next/navigation'
 import { APP_TIME_ZONE } from '@/lib/datetimeLocal'
 import {
@@ -46,7 +47,7 @@ function isRegistrationWindowOpen(event: Tables<'Events'>): boolean {
 }
 
 export default function EventCalendar({ events }: EventCalendarProps) {
-    const [view, setView] = useState<'calendar' | 'list'>('list')
+    const [view, setView] = useState<'cards' | 'list' | 'calendar'>('cards')
     const [searchTerm, setSearchTerm] = useState('')
     const [locationFilter, setLocationFilter] = useState('all')
     const [sortBy, setSortBy] = useState<'date-asc' | 'date-desc' | 'title-asc' | 'title-desc'>('date-asc')
@@ -134,6 +135,15 @@ export default function EventCalendar({ events }: EventCalendarProps) {
                 <HStack gap={2} bg="gray.100" p={1} borderRadius="lg">
                     <Button
                         size="sm"
+                        variant={view === 'cards' ? 'solid' : 'ghost'}
+                        colorScheme={view === 'cards' ? 'blue' : 'gray'}
+                        onClick={() => setView('cards')}
+                    >
+                        <LayoutGrid size={16} style={{ marginRight: '8px' }} />
+                        Kort
+                    </Button>
+                    <Button
+                        size="sm"
                         variant={view === 'calendar' ? 'solid' : 'ghost'}
                         colorScheme={view === 'calendar' ? 'blue' : 'gray'}
                         onClick={() => setView('calendar')}
@@ -153,7 +163,7 @@ export default function EventCalendar({ events }: EventCalendarProps) {
                 </HStack>
             </Flex>
 
-            {view === 'list' && (
+            {view !== 'calendar' && (
                 <SimpleGrid columns={{ base: 1, md: 4 }} gap={4} mb={6}>
                     <Field.Root>
                         <Field.Label fontSize="sm" color="gray.600">Søk</Field.Label>
@@ -244,88 +254,107 @@ export default function EventCalendar({ events }: EventCalendarProps) {
                     />
                 </Box>
             ) : (
-                <SimpleGrid columns={{ base: 1, md: 1 }} gap={4}>
-                    {sortedEvents.length > 0 ? (
-                        sortedEvents.map((event) => (
-                            <Box
-                                key={event.id}
-                                borderWidth="1px"
-                                borderRadius="lg"
-                                overflow="hidden"
-                                bg="white"
-                                borderColor="gray.200"
-                                _hover={{ borderColor: 'blue.400', boxShadow: 'md', transform: 'translateY(-2px)' }}
-                                transition="all 0.2s"
-                                cursor="pointer"
-                                onClick={() => event.slug && router.push(`/arrangementer/${event.slug}`)}
-                                display="flex"
-                                flexDirection={{ base: 'column', sm: 'row' }}
-                            >
-                                {event.image && (
-                                    <Image
-                                        objectFit="cover"
-                                        maxW={{ base: '100%', sm: '200px' }}
-                                        src={event.image}
-                                        alt={event.title || 'Event image'}
-                                    />
-                                )}
-
-                                <Box p={4} flex="1">
-                                    <Flex direction="column" justify="space-between" h="100%" gap={3}>
-                                        <Box>
-                                            <Flex justify="space-between" align="start">
-                                                <Badge colorScheme="blue" mb={2} borderRadius="full" px={2}>
-                                                    {formatEventDate(event, { style: 'short' })}
-                                                </Badge>
-                                                {isRegistrationWindowOpen(event) && (
-                                                    <Badge
-                                                        colorScheme="green"
-                                                        variant="subtle"
-                                                        borderRadius="full"
-                                                    >
-                                                        Påmelding åpen
-                                                    </Badge>
-                                                )}
-                                            </Flex>
-                                            <Heading size="md" mb={2}>{event.title}</Heading>
-                                            <Text lineClamp={2} color="gray.500" fontSize="sm">
-                                                {event.description}
-                                            </Text>
-                                        </Box>
-
-                                        <SimpleGrid columns={{ base: 1, sm: 2 }} gap={4} mt="auto">
-                                            <HStack color="gray.500" fontSize="sm">
-                                                <Clock size={16} />
-                                                <Text>
-                                                    {isDateUnspecifiedEvent(event)
-                                                        ? 'Tid kommer'
-                                                        : event.start_datetime
-                                                          ? new Date(event.start_datetime).toLocaleTimeString('nb-NO', { timeZone: APP_TIME_ZONE, hour: '2-digit', minute: '2-digit' })
-                                                          : 'Tid kommer'}
-                                                </Text>
-                                            </HStack>
-                                            <HStack color="gray.500" fontSize="sm">
-                                                <MapPin size={16} />
-                                                <Text lineClamp={1}>{event.location || 'Sted kommer'}</Text>
-                                            </HStack>
-                                            {event.max_attendees && !event.signup_undecided && (
-                                                <HStack color="gray.500" fontSize="sm">
-                                                    <Users size={16} />
-                                                    <Text>{event.max_attendees} plasser</Text>
-                                                </HStack>
-                                            )}
-                                        </SimpleGrid>
-                                    </Flex>
-                                </Box>
-                            </Box>
-                        ))
+                view === 'cards' ? (
+                    sortedEvents.length > 0 ? (
+                        <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} gap={6}>
+                            {sortedEvents.map((event) => (
+                                <EventCard key={event.id} event={event} />
+                            ))}
+                        </SimpleGrid>
                     ) : (
-                        <Box p={8} textAlign="center" bg="white" borderRadius="lg" border="1px dashed" borderColor="gray.200">
-                            <Text color="gray.500">Ingen arrangementer funnet.</Text>
-                        </Box>
-                    )}
-                </SimpleGrid>
+                        <NoEventsFound />
+                    )
+                ) : (
+                    <SimpleGrid columns={{ base: 1, md: 1 }} gap={4}>
+                        {sortedEvents.length > 0 ? (
+                            sortedEvents.map((event) => (
+                                <Box
+                                    key={event.id}
+                                    borderWidth="1px"
+                                    borderRadius="lg"
+                                    overflow="hidden"
+                                    bg="white"
+                                    borderColor="gray.200"
+                                    _hover={{ borderColor: 'blue.400', boxShadow: 'md', transform: 'translateY(-2px)' }}
+                                    transition="all 0.2s"
+                                    cursor="pointer"
+                                    onClick={() => event.slug && router.push(`/arrangementer/${event.slug}`)}
+                                    display="flex"
+                                    flexDirection={{ base: 'column', sm: 'row' }}
+                                >
+                                    {event.image && (
+                                        <Image
+                                            objectFit="cover"
+                                            maxW={{ base: '100%', sm: '200px' }}
+                                            src={event.image}
+                                            alt={event.title || 'Event image'}
+                                        />
+                                    )}
+
+                                    <Box p={4} flex="1">
+                                        <Flex direction="column" justify="space-between" h="100%" gap={3}>
+                                            <Box>
+                                                <Flex justify="space-between" align="start">
+                                                    <Badge colorScheme="blue" mb={2} borderRadius="full" px={2}>
+                                                        {formatEventDate(event, { style: 'short' })}
+                                                    </Badge>
+                                                    {isRegistrationWindowOpen(event) && (
+                                                        <Badge
+                                                            colorScheme="green"
+                                                            variant="subtle"
+                                                            borderRadius="full"
+                                                        >
+                                                            Påmelding åpen
+                                                        </Badge>
+                                                    )}
+                                                </Flex>
+                                                <Heading size="md" mb={2}>{event.title}</Heading>
+                                                <Text lineClamp={2} color="gray.500" fontSize="sm">
+                                                    {event.description}
+                                                </Text>
+                                            </Box>
+
+                                            <SimpleGrid columns={{ base: 1, sm: 2 }} gap={4} mt="auto">
+                                                <HStack color="gray.500" fontSize="sm">
+                                                    <Clock size={16} />
+                                                    <Text>
+                                                        {isDateUnspecifiedEvent(event)
+                                                            ? 'Tid kommer'
+                                                            : event.start_datetime
+                                                              ? new Date(event.start_datetime).toLocaleTimeString('nb-NO', { timeZone: APP_TIME_ZONE, hour: '2-digit', minute: '2-digit' })
+                                                              : 'Tid kommer'}
+                                                    </Text>
+                                                </HStack>
+                                                <HStack color="gray.500" fontSize="sm">
+                                                    <MapPin size={16} />
+                                                    <Text lineClamp={1}>{event.location || 'Sted kommer'}</Text>
+                                                </HStack>
+                                                {event.max_attendees && !event.signup_undecided && (
+                                                    <HStack color="gray.500" fontSize="sm">
+                                                        <Users size={16} />
+                                                        <Text>{event.max_attendees} plasser</Text>
+                                                    </HStack>
+                                                )}
+                                            </SimpleGrid>
+                                        </Flex>
+                                    </Box>
+                                </Box>
+                            ))
+                        ) : (
+                            <NoEventsFound />
+                        )}
+                    </SimpleGrid>
+                )
             )}
         </Box>
     )
 }
+
+function NoEventsFound() {
+    return (
+        <Box p={8} textAlign="center" bg="white" borderRadius="lg" border="1px dashed" borderColor="gray.200">
+            <Text color="gray.500">Ingen arrangementer funnet.</Text>
+        </Box>
+    )
+}
+

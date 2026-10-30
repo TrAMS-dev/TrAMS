@@ -1,11 +1,13 @@
 'use client';
 
-import { Box, Heading, Text, Link as ChakraLink } from '@chakra-ui/react';
+import { Box, Link as ChakraLink } from '@chakra-ui/react';
 import { PageContainer } from '@/components/PageContainer';
+import { ContentCard } from '@/components/ContentCard';
+import { PrimaryLinkButton } from '@/components/PrimaryLinkButton';
 import Image from 'next/image';
 import { urlFor } from '@/sanity/lib/image';
 import { PortableText } from 'next-sanity';
-import { portableTextComponents } from '@/components/Typography';
+import { portableTextComponents, SectionHeading, BodyText } from '@/components/Typography';
 import { Committee } from '@/types/sanity.types';
 import HeroImage from '@/components/HeroImage';
 
@@ -13,21 +15,13 @@ export default function CommitteeView({ committee }: { committee: Committee | nu
     if (!committee) {
         return (
             <PageContainer>
-                <Box textAlign="center" py={12}>
-                    <Heading as="h1" fontSize="2rem" mb={4} color="var(--color-primary)">
-                        Komité ikke funnet
-                    </Heading>
-                    <Text fontSize="1.2rem" color="gray.600" mb={4}>
-                        Vi kunne ikke finne denne komiteen.
-                    </Text>
-                    <ChakraLink
-                        href="/for-medisinstudenter"
-                        color="var(--color-primary)"
-                        textDecoration="underline"
-                    >
+                <ContentCard textAlign="center">
+                    <SectionHeading as="h1" mt={0}>Komité ikke funnet</SectionHeading>
+                    <BodyText>Vi kunne ikke finne denne komiteen.</BodyText>
+                    <PrimaryLinkButton href="/for-medisinstudenter">
                         Gå tilbake til oversikten
-                    </ChakraLink>
-                </Box>
+                    </PrimaryLinkButton>
+                </ContentCard>
             </PageContainer>
         );
     }
@@ -50,10 +44,13 @@ export default function CommitteeView({ committee }: { committee: Committee | nu
 
             {/* Content Section */}
             <PageContainer>
-                {/* Contact Info */}
-                {committee.email && (
-                    <Box textAlign="center" mb={8}>
-                        <Text fontSize="1.1rem" color="gray.700">
+                <ContentCard>
+                    {/* Description */}
+                    <PortableText value={committee.description} components={portableTextComponents} />
+
+                    {/* Contact Info */}
+                    {committee.email && (
+                        <BodyText mb={0}>
                             Kontakt:{' '}
                             <ChakraLink
                                 href={`mailto:${committee.email}`}
@@ -62,29 +59,19 @@ export default function CommitteeView({ committee }: { committee: Committee | nu
                             >
                                 {committee.email}
                             </ChakraLink>
-                        </Text>
-                    </Box>
-                )}
-
-                {/* Description */}
-                <Box mb={8}>
-                    <PortableText value={committee.description} components={portableTextComponents} />
-                </Box>
+                        </BodyText>
+                    )}
+                </ContentCard>
 
                 {/* Committee Image */}
                 {committeeImageUrl && (
-                    <Box mb={8} textAlign="center">
+                    <Box mt={16} borderRadius="lg" overflow="hidden">
                         <Image
                             src={committeeImageUrl}
                             alt={`${committee.name} medlemmer`}
                             width={1200}
                             height={800}
-                            style={{
-                                width: '75%',
-                                height: 'auto',
-                                borderRadius: '8px',
-                                boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-                            }}
+                            style={{ width: '100%', height: 'auto' }}
                         />
                     </Box>
                 )}

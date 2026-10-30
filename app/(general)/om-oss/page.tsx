@@ -10,6 +10,7 @@ import HeroImage from "@/components/HeroImage";
 import PreloadHeroImage from "@/components/PreloadHeroImage";
 import { PageContainer } from "@/components/PageContainer";
 import { ContentCard } from "@/components/ContentCard";
+import { PrimaryLinkButton } from "@/components/PrimaryLinkButton";
 import { SectionHeading, BodyText } from "@/components/Typography";
 
 import type { Metadata } from "next";
@@ -82,21 +83,7 @@ export default async function OmOss() {
                                     Foreningen deltar aktivt i det norske og skandinaviske studentmiljøet innen akuttmedisin gjennom NAMS
                                     - Norsk Akuttmedisinsk Studentforum.
                                 </BodyText>
-                                <Link
-                                    href="/om-oss/vedtekter"
-                                    display="block"
-                                    w="100%"
-                                >
-                                    <Button
-                                        bg="var(--color-primary)"
-                                        color="white"
-                                        mt={4}
-                                        _hover={{ bg: 'var(--color-secondary)', color: 'black' }}
-                                        w="100%"
-                                    >
-                                        Vedtekter
-                                    </Button>
-                                </Link>
+                                <PrimaryLinkButton href="/om-oss/vedtekter">Vedtekter</PrimaryLinkButton>
                             </Box>
                         </Flex>
                     </ContentCard>

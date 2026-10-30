@@ -60,14 +60,7 @@ export default function CourseCards() {
 
     if (loading) {
         return (
-            <Flex
-                justifyContent="center"
-                alignItems="center"
-                height="100vh"
-                bg="var(--color-altBg)"
-            >
-                <Text fontSize="2rem" fontWeight="bold" color="var(--color-primary)">Loading...</Text>
-            </Flex>
+            <Text textAlign="center" color="gray.600">Laster inn...</Text>
         );
     }
     const grouped = groupOffersByCategory(offers);
@@ -76,7 +69,9 @@ export default function CourseCards() {
         <Box>
             {Array.from(grouped.entries()).map(([category, categoryOffers]) => (
                 <Box key={category} mb={12}>
-                    <SectionHeading mb={6}>{CATEGORY_TITLES[category]}</SectionHeading>
+                    <SubsectionHeading as="h3" textAlign="center" fontSize="1.5rem" mb={6}>
+                        {CATEGORY_TITLES[category]}
+                    </SubsectionHeading>
                     <Flex gap={8} overflowX="auto" className="scroll-smooth" pb={2} justify="center">
                         {categoryOffers.map((offer) => {
                             const imageUrl = offer.image

@@ -1,15 +1,14 @@
 'use client'
 
 import { useEffect, useState } from 'react';
-import { Box, Text } from '@chakra-ui/react';
 import { PageContainer } from '@/components/PageContainer';
 import { VEDTEKTER_QUERY } from '@/sanity/lib/queries';
 import { client } from '@/sanity/lib/client';
 import { PortableText } from 'next-sanity';
-import { portableTextComponents } from '@/components/Typography';
+import { portableTextComponents, BodyText } from '@/components/Typography';
+import { ContentCard } from '@/components/ContentCard';
 import { Vedtekter } from '@/types/sanity.types';
 import { formatNorwegianDate } from '@/sanity/lib/date';
-import HeroImage from '@/components/HeroImage';
 
 export default function VedtekterContent() {
 
@@ -41,28 +40,26 @@ export default function VedtekterContent() {
 
             {/* Content Section */}
             <PageContainer narrow>
-                {loading ? (
-                    <Text textAlign="center" fontSize="1.2rem" color="gray.600">
-                        Laster inn...
-                    </Text>
-                ) : !vedtekter ? (
-                    <>
-                        <Text fontSize="1.2rem" color="gray.600" mb={4}>
-                            Ingen vedtekter funnet
-                        </Text>
-                        <Text fontSize="1rem" color="gray.500">
-                            Vedtekter vil vises her når de er lagt til
-                        </Text>
-                    </>
-                ) : (
+                <ContentCard>
+                    {loading ? (
+                        <BodyText mb={0} textAlign="center" color="gray.600">Laster inn...</BodyText>
+                    ) : !vedtekter ? (
+                        <>
+                            <BodyText textAlign="center">Ingen vedtekter funnet</BodyText>
+                            <BodyText mb={0} textAlign="center" color="gray.500">
+                                Vedtekter vil vises her når de er lagt til
+                            </BodyText>
+                        </>
+                    ) : (
 
-                    <>
-                        <Text fontSize="1.2rem" color="gray.600" mb={4}>
-                            Sist oppdatert {formatNorwegianDate(vedtekter.lastUpdated)}
-                        </Text>
-                        <PortableText value={vedtekter.content} components={portableTextComponents} />
-                    </>
-                )}
+                        <>
+                            <BodyText color="gray.500">
+                                Sist oppdatert {formatNorwegianDate(vedtekter.lastUpdated)}
+                            </BodyText>
+                            <PortableText value={vedtekter.content} components={portableTextComponents} />
+                        </>
+                    )}
+                </ContentCard>
             </PageContainer>
         </>
     );

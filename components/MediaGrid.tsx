@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { Box, Heading, Text, SimpleGrid, Link as ChakraLink, AspectRatio } from '@chakra-ui/react';
+import { Box, Text, SimpleGrid, Link as ChakraLink, AspectRatio } from '@chakra-ui/react';
 import { PageContainer } from '@/components/PageContainer';
 import Image from 'next/image';
 import { MEDIA_ITEMS_QUERY } from '@/sanity/lib/queries';
@@ -9,7 +9,8 @@ import { urlFor } from '@/sanity/lib/image';
 import { client } from '@/sanity/lib/client';
 import { MediaItem } from '@/types/sanity.types';
 import { PortableText } from 'next-sanity';
-import { portableTextComponents } from '@/components/Typography';
+import { portableTextComponents, SubsectionHeading } from '@/components/Typography';
+import { cardStyles } from '@/components/ContentCard';
 
 export default function MediaGrid() {
     const [mediaItems, setMediaItems] = useState<MediaItem[]>([]);
@@ -38,15 +39,15 @@ export default function MediaGrid() {
         <PageContainer>
             {
                 loading ? (
-                    <Text textAlign="center" fontSize="1.2rem" color="gray.600" >
+                    <Text textAlign="center" color="gray.600">
                         Laster inn...
                     </Text>
                 ) : mediaItems.length === 0 ? (
-                    <Box textAlign="center" py={12}>
-                        <Text fontSize="1.2rem" color="gray.600" mb={4}>
+                    <Box textAlign="center">
+                        <Text color="gray.600" mb={4}>
                             Ingen medieelementer funnet
                         </Text>
-                        <Text fontSize="1rem" color="gray.500">
+                        <Text color="gray.500">
                             Medieelementer vil vises her når de er lagt til
                         </Text>
                     </Box>
@@ -62,15 +63,8 @@ export default function MediaGrid() {
                             return (
                                 <Box
                                     key={item._id}
-                                    bg="white"
-                                    borderRadius="12px"
+                                    {...cardStyles}
                                     overflow="hidden"
-                                    boxShadow="0 4px 12px rgba(0,0,0,0.1)"
-                                    transition="all 0.3s ease"
-                                    _hover={{
-                                        transform: 'translateY(-4px)',
-                                        boxShadow: '0 8px 20px rgba(0,0,0,0.15)',
-                                    }}
                                 >
                                     {/* Media Content - Video or Image */}
                                     {youtubeId ? (
@@ -121,16 +115,10 @@ export default function MediaGrid() {
 
                                     {/* Content */}
                                     <Box p={6}>
-                                        <Heading
-                                            as="h2"
-                                            fontSize="1.5rem"
-                                            mb={2}
-                                            color="var(--color-primary)"
-                                            fontWeight={600}
-                                        >
+                                        <SubsectionHeading as="h2" fontSize="1.4rem" mb={1}>
                                             {item.title}
-                                        </Heading>
-                                        <Text fontSize="0.9rem" color="gray.600" mb={3} fontWeight={500}>
+                                        </SubsectionHeading>
+                                        <Text color="gray.500" mb={3} fontWeight={600}>
                                             {item.year}
                                         </Text>
                                         <PortableText value={item.description} components={portableTextComponents} />

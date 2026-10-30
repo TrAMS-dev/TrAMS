@@ -10,6 +10,7 @@ import HeroImage from '@/components/HeroImage';
 import PreloadHeroImage from '@/components/PreloadHeroImage';
 import { PageContainer } from '@/components/PageContainer';
 import { ContentCard } from '@/components/ContentCard';
+import { PrimaryLinkButton } from '@/components/PrimaryLinkButton';
 
 
 
@@ -53,17 +54,7 @@ export default async function Forstehjelpskurs() {
         <ContentCard>
           <SectionHeading mt={0}>Førstehjelpskurs for bedrifter i Trondheim</SectionHeading>
           <BodyText>{pageData.introText}</BodyText>
-          <Link href="/forstehjelpskurs/book-kurs" display="block" w="100%" _hover={{ textDecoration: 'none' }}>
-            <Button
-              mt={4}
-              w="100%"
-              bg="var(--color-primary)"
-              color="white"
-              _hover={{ bg: 'var(--color-secondary)', color: 'black' }}
-            >
-              Book førstehjelpskurs
-            </Button>
-          </Link>
+          <PrimaryLinkButton href="/forstehjelpskurs/book-kurs">Book førstehjelpskurs</PrimaryLinkButton>
         </ContentCard>
 
         {/* COURSES */}
@@ -125,22 +116,9 @@ export default async function Forstehjelpskurs() {
                 eksternsjef@trams.no
               </Link>.
             </BodyText>
-            <Link
-              href="https://docs.google.com/forms/d/e/1FAIpQLSd11lYE-qow-milodSmnsL_OlqLE20vV8ZNGyLkg-F-cdJVtA/viewform?usp=sharing"
-              target="_blank"
-              rel="noopener noreferrer"
-              _hover={{ textDecoration: 'none' }}
-              display="block"
-            >
-              <Button
-                bg="var(--color-primary)"
-                color="white"
-                _hover={{ bg: 'var(--color-secondary)', color: 'black' }}
-                w="full"
-              >
-                Gå til evalueringsskjema
-              </Button>
-            </Link>
+            <PrimaryLinkButton href="https://docs.google.com/forms/d/e/1FAIpQLSd11lYE-qow-milodSmnsL_OlqLE20vV8ZNGyLkg-F-cdJVtA/viewform?usp=sharing" external>
+              Gå til evalueringsskjema
+            </PrimaryLinkButton>
           </InfoCard>
         </SimpleGrid>
       </PageContainer>

@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import {
     Box,
-    Heading,
     Text,
     Stack,
     Badge,
@@ -17,9 +16,13 @@ import EventSignupDialog from '@/components/EventSignupDialog'
 import EventParticipantListDialog from '@/components/EventParticipantListDialog'
 import { LinkifiedText } from '@/components/LinkifiedText'
 import { PageContainer } from '@/components/PageContainer'
+import { ContentCard, cardStyles } from '@/components/ContentCard'
+import { PrimaryLinkButton } from '@/components/PrimaryLinkButton'
+import { SectionHeading, SubsectionHeading, BodyText } from '@/components/Typography'
+import HeroImage from '@/components/HeroImage'
 import { createClient } from '@/utils/supabase/client'
 import type { Tables } from '@/types/supabase'
-import { useParams, useRouter } from 'next/navigation'
+import { useParams } from 'next/navigation'
 import { APP_TIME_ZONE } from '@/lib/datetimeLocal'
 import { formatEventDate, isDateUnspecifiedEvent } from '@/lib/eventDate'
 import { kullToKlasse } from '@/utils/functions/activeYears'
@@ -40,7 +43,6 @@ export default function EventArrangementDetailClient({
     membershipSignupHref,
 }: EventArrangementDetailClientProps) {
     const params = useParams()
-    const router = useRouter()
     const slug = params.slug as string
 
     const [event, setEvent] = useState<Tables<'Events'> | null>(null)
@@ -159,14 +161,12 @@ export default function EventArrangementDetailClient({
 
     if (!event) {
         return (
-            <Box textAlign="center" py={10}>
-                <Heading size="lg" mb={4}>
-                    Arrangement ikke funnet
-                </Heading>
-                <Button onClick={() => router.push('/arrangementer')}>
-                    Tilbake til arrangementer
-                </Button>
-            </Box>
+            <PageContainer>
+                <ContentCard textAlign="center">
+                    <SectionHeading as="h1" mt={0}>Arrangement ikke funnet</SectionHeading>
+                    <PrimaryLinkButton href="/arrangementer">Tilbake til arrangementer</PrimaryLinkButton>
+                </ContentCard>
+            </PageContainer>
         )
     }
 
@@ -204,32 +204,12 @@ export default function EventArrangementDetailClient({
     return (
         <>
             {/* Hero Section */}
-            <Box
-                position="relative"
-                h={{ base: '30vh', md: '40vh' }}
-                bgImage={event.image ? `url('${event.image}')` : "url('https://i.imgur.com/oc9gbos.png')"}
-                backgroundPosition="center"
-                backgroundSize="cover"
-                backgroundRepeat="no-repeat"
-                color="white"
-                display="flex"
-                flexDirection="column"
-                justifyContent="flex-end"
-                p={{ base: 4, md: 8 }}
-                boxShadow="0 10px 20px rgba(0,0,0,0.3)"
-            >
-                <Box position="absolute" inset={0} bg="rgba(0,0,0,0.6)" zIndex={1} />
-                <Box position="relative" zIndex={2} maxW="1200px" mx="auto" w="full">
-                    <Heading size={{ base: 'xl', md: '2xl' }} mb={2}>
-                        {event.title}
-                    </Heading>
-                    {authorDisplayName && (
-                        <Text fontSize={{ base: 'sm', md: 'md' }} opacity={0.9}>
-                            Arrangør: {authorDisplayName}
-                        </Text>
-                    )}
-                </Box>
-            </Box>
+            <HeroImage
+                imageUrl={event.image || 'https://i.imgur.com/oc9gbos.png'}
+                heading={event.title}
+                text={authorDisplayName ? `Arrangør: ${authorDisplayName}` : undefined}
+                unoptimized
+            />
 
             {/* Content Section */}
             <PageContainer>
@@ -245,11 +225,7 @@ export default function EventArrangementDetailClient({
                                 flex="1"
                                 minW="250px"
                                 p={4}
-                                bg="white"
-                                borderRadius="md"
-                                boxShadow="sm"
-                                borderLeft="4px solid"
-                                borderColor="blue.500"
+                                {...cardStyles}
                             >
                                 <Text fontWeight="bold" fontSize="sm" color="gray.600" mb={1}>
                                     DATO
@@ -268,11 +244,7 @@ export default function EventArrangementDetailClient({
                                         flex="1"
                                         minW="250px"
                                         p={4}
-                                        bg="white"
-                                        borderRadius="md"
-                                        boxShadow="sm"
-                                        borderLeft="4px solid"
-                                        borderColor="blue.500"
+                                        {...cardStyles}
                                     >
                                         <Text fontWeight="bold" fontSize="sm" color="gray.600" mb={1}>
                                             START
@@ -302,11 +274,7 @@ export default function EventArrangementDetailClient({
                                         flex="1"
                                         minW="250px"
                                         p={4}
-                                        bg="white"
-                                        borderRadius="md"
-                                        boxShadow="sm"
-                                        borderLeft="4px solid"
-                                        borderColor="green.500"
+                                        {...cardStyles}
                                     >
                                         <Text fontWeight="bold" fontSize="sm" color="gray.600" mb={1}>
                                             SLUTT
@@ -338,11 +306,7 @@ export default function EventArrangementDetailClient({
                                 flex="1"
                                 minW="250px"
                                 p={4}
-                                bg="white"
-                                borderRadius="md"
-                                boxShadow="sm"
-                                borderLeft="4px solid"
-                                borderColor="purple.500"
+                                {...cardStyles}
                             >
                                 <Text fontWeight="bold" fontSize="sm" color="gray.600" mb={1}>
                                     LOKASJON
@@ -356,11 +320,7 @@ export default function EventArrangementDetailClient({
                                 flex="1"
                                 minW="250px"
                                 p={4}
-                                bg="white"
-                                borderRadius="md"
-                                boxShadow="sm"
-                                borderLeft="4px solid"
-                                borderColor="teal.500"
+                                {...cardStyles}
                             >
                                 <Text fontWeight="bold" fontSize="sm" color="gray.600" mb={1}>
                                     KONTAKT
@@ -387,20 +347,18 @@ export default function EventArrangementDetailClient({
                         <Box
                             flex="1"
                             minW={0}
-                            p={{ base: 5, md: 7 }}
-                            bg="white"
-                            borderRadius="md"
-                            boxShadow="sm"
+                            p={{ base: 6, md: 8 }}
+                            {...cardStyles}
                         >
                             <Stack gap={6}>
                                 {event.description && (
                                     <Box>
-                                        <Heading size={{ base: 'md', md: 'lg' }} mb={4}>
+                                        <SubsectionHeading as="h2" fontSize="1.4rem" mb={4}>
                                             Om arrangementet
-                                        </Heading>
-                                        <Text whiteSpace="pre-wrap" lineHeight="1.8">
+                                        </SubsectionHeading>
+                                        <BodyText whiteSpace="pre-wrap" mb={0}>
                                             <LinkifiedText text={event.description} />
-                                        </Text>
+                                        </BodyText>
                                     </Box>
                                 )}
                                 {!isSignupUndecided && (
@@ -409,15 +367,15 @@ export default function EventArrangementDetailClient({
                                         borderColor="gray.100"
                                         pt={event.description ? 6 : 0}
                                     >
-                                        <Heading size={{ base: 'md', md: 'lg' }} mb={3}>
+                                        <SubsectionHeading as="h2" fontSize="1.4rem" mb={4}>
                                             Hvis du ikke møter
-                                        </Heading>
-                                        <Text color="gray.700" lineHeight="1.8">
+                                        </SubsectionHeading>
+                                        <BodyText mb={0}>
                                             Dersom du ikke har mulighet til å møte opp på arrangementet, ta kontakt
                                             med arrangøren. Dette må gjøres innen 24 timer før arrangementet starter.
                                             Dersom du ikke gjør dette, vil du bli nedprioritert på senere
                                             TrAMS-arrangementer.
-                                        </Text>
+                                        </BodyText>
                                     </Box>
                                 )}
                             </Stack>
@@ -428,16 +386,13 @@ export default function EventArrangementDetailClient({
                                 flexShrink={0}
                                 w={{ base: 'full', lg: 'min(100%, 17rem)' }}
                                 maxW={{ lg: '17rem' }}
-                                p={4}
-                                bg="gray.50"
-                                borderRadius="md"
-                                borderWidth="1px"
-                                borderColor="gray.200"
+                                p={6}
+                                {...cardStyles}
                             >
                                 <Stack gap={4}>
-                                    <Heading size="sm" color="gray.600" fontWeight="semibold">
+                                    <SubsectionHeading as="h2" fontSize="1.4rem" mb={0}>
                                         Påmelding
-                                    </Heading>
+                                    </SubsectionHeading>
                                     <Stack gap={2} fontSize="sm" color="gray.700">
                                         {event.allowed_kull && event.allowed_kull.length > 0 && (
                                             <Text>
