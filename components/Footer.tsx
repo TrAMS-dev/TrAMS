@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import { Box, Flex, VStack, Link, Text } from '@chakra-ui/react';
 import { Facebook, Instagram, Github } from 'lucide-react';
+import FeedbackDialog from '@/components/FeedbackDialog';
 
 export default function Footer() {
   return (
@@ -90,6 +91,12 @@ export default function Footer() {
               <Github size={24} />
             </Link>
           </Flex>
+        </Box>
+        <Box flex="1 1 200px">
+          <Text as="h3" mt={0} fontWeight={700} mb={2}>
+            Tilbakemelding
+          </Text>
+          <FeedbackDialog />
         </Box>
       </Flex>
       <Box textAlign="center" mt={4} fontSize="0.8rem" color="black">

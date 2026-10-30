@@ -16,8 +16,9 @@ All emails are sent through [Resend](https://resend.com) from `web@trams.no` and
 | 8 | Account approved | `Kontoen din er godkjent – TrAMS` | The approved user | Admin approves a pending user |
 | 9 | Course booking – customer confirmation | `Bekreftelse på kursbestilling - TrAMS` | The booking contact person | Course booking form submitted |
 | 10 | Course booking – admin notification | `Ny kursbestilling: <course> - <name>` | `ADMIN_EMAIL` (default `ekstern@trams.no`) or `ADMIN_EMAIL_LEVANGER` (default `levanger@trams.no`) | Course booking form submitted |
+| 11 | Website feedback | `Tilbakemelding på nettsiden` | `WEB_NOTIFY_EMAIL` (default `web@trams.no`) | Someone sends feedback from the footer |
 
-Reply-To: emails 1–6 use the event's `contact_email` when it is set; otherwise replies go to `web@trams.no`. Email 7 replies to the new user; email 10 replies to the booking contact person.
+Reply-To: emails 1–6 use the event's `contact_email` when it is set; otherwise replies go to `web@trams.no`. Email 7 replies to the new user; email 10 replies to the booking contact person; email 11 replies to the sender if they gave an email address.
 
 ## Event emails
 
@@ -81,6 +82,13 @@ Code: [app/api/send/form-complete/route.ts](app/api/send/form-complete/route.ts)
 - **When:** Same submission as above (both are sent at the same time).
 - **Recipient:** Levanger bookings go to the Levanger address; all others go to the Trondheim address.
 - **Content:** All booking details.
+
+## Website feedback emails
+
+### 11. Website feedback
+- **Sent from:** [app/api/send/feedback/route.ts](app/api/send/feedback/route.ts), called by [components/FeedbackDialog.tsx](components/FeedbackDialog.tsx) ("Gi tilbakemelding på nettsiden" in the footer)
+- **When:** Someone submits the feedback form.
+- **Content:** The feedback message, the page it was sent from, and the sender's email if they gave one. Submissions that fill in the hidden honeypot field are dropped without sending.
 
 ## Not sent by this app
 
