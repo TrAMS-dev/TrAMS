@@ -1,10 +1,12 @@
-import { Box, Link, Button, SimpleGrid } from '@chakra-ui/react';
+import { Box, SimpleGrid } from '@chakra-ui/react';
 import { PageContainer } from '@/components/PageContainer';
+import { ContentCard } from '@/components/ContentCard';
+import { PrimaryLinkButton } from '@/components/PrimaryLinkButton';
 import { PortableText } from 'next-sanity';
 import { client } from '@/sanity/lib/client';
 import { AkuttCalling } from '@/types/sanity.types';
 import { AKUTTKALLING_QUERY } from '@/sanity/lib/queries';
-import { portableTextComponents, HeroHeading } from '@/components/Typography';
+import { portableTextComponents, BodyText } from '@/components/Typography';
 import { urlFor } from '@/sanity/lib/image';
 import Image from 'next/image';
 import { SanityImageSource } from "@sanity/image-url/lib/types/types";
@@ -34,9 +36,9 @@ export default async function AkuttCallingPage() {
     if (!data) {
         return (
             <PageContainer>
-                <Box textAlign="center">
-                    Ingen informasjon tilgjengelig.
-                </Box>
+                <ContentCard>
+                    <BodyText mb={0} textAlign="center">Ingen informasjon tilgjengelig.</BodyText>
+                </ContentCard>
             </PageContainer>
         );
     }
@@ -46,65 +48,32 @@ export default async function AkuttCallingPage() {
             <PreloadHeroImage imageUrl="/assets/images/ambulanse.png" />
             <HeroImage
                 imageUrl="/assets/images/ambulanse.png"
-                heading={<HeroHeading fontSize={{ base: "2rem", md: "2.5rem" }}>{data.title.toUpperCase()}</HeroHeading>}
-                showDecorativeBar={true}
+                heading={data.title}
             />
             <PageContainer>
-                <Box
-                    textAlign="center"
-                >
-
-
+                <ContentCard>
                     {data.link && (
-                        <Box mb={10}>
-                            <Link
-                                href={data.link}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                _hover={{ textDecoration: 'none' }}
-                            >
-                                <Button
-                                    bg="var(--color-primary)"
-                                    color="white"
-                                    _hover={{
-                                        bg: 'var(--color-secondary)',
-                                        color: 'black',
-                                        transform: 'scale(1.02)'
-                                    }}
-                                    size="lg"
-                                    px={8}
-                                    h="56px"
-                                    fontSize="1.1rem"
-                                    borderRadius="md"
-                                    transition="all 0.2s"
-                                >
-                                    Gå til skjema
-                                </Button>
-                            </Link>
-                        </Box>
+                        <PrimaryLinkButton href={data.link} external mt={0} mb={8}>
+                            Gå til skjema
+                        </PrimaryLinkButton>
                     )}
-                    <Box className="portable-text" mx="auto" mb={8} textAlign="left">
-                        {data.content && <PortableText value={data.content} components={portableTextComponents} />}
-                    </Box>
+                    {data.content && <PortableText value={data.content} components={portableTextComponents} />}
+                </ContentCard>
 
-
-
-                    {data.gallery && data.gallery.length > 0 && (
-                        <SimpleGrid columns={{ base: 1, lg: 2 }} gap={4}>
-                            {data.gallery.map((image: SanityImageSource, index: number) => (
-                                <Box key={index} display="flex" justifyContent="center" alignItems="center" height="500px" overflow="hidden">
-                                    <Image
-                                        src={urlFor(image).url()}
-                                        alt={`Akuttcalling bilde ${index + 1}`}
-                                        width={500}
-                                        height={500}
-                                        objectFit="contain"
-                                    />
-                                </Box>
-                            ))}
-                        </SimpleGrid>
-                    )}
-                </Box>
+                {data.gallery && data.gallery.length > 0 && (
+                    <SimpleGrid columns={{ base: 1, lg: 2 }} gap={8} mt={16}>
+                        {data.gallery.map((image: SanityImageSource, index: number) => (
+                            <Box key={index} position="relative" h={{ base: '300px', md: '400px' }} borderRadius="lg" overflow="hidden">
+                                <Image
+                                    src={urlFor(image).url()}
+                                    alt={`Akuttcalling bilde ${index + 1}`}
+                                    fill
+                                    style={{ objectFit: 'cover' }}
+                                />
+                            </Box>
+                        ))}
+                    </SimpleGrid>
+                )}
             </PageContainer>
         </>
     );

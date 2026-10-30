@@ -60,14 +60,7 @@ export default function CourseCards() {
 
     if (loading) {
         return (
-            <Flex
-                justifyContent="center"
-                alignItems="center"
-                height="100vh"
-                bg="var(--color-altBg)"
-            >
-                <Text fontSize="2rem" fontWeight="bold" color="var(--color-primary)">Loading...</Text>
-            </Flex>
+            <Text textAlign="center" color="gray.600">Laster inn...</Text>
         );
     }
     const grouped = groupOffersByCategory(offers);

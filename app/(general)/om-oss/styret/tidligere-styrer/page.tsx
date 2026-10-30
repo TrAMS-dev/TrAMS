@@ -1,6 +1,7 @@
-import { Heading, Box } from "@chakra-ui/react";
 import { PageContainer } from "@/components/PageContainer";
 import EarilerMembersSection from "@/components/EarilerMembersSection";
+import HeroImage from "@/components/HeroImage";
+import PreloadHeroImage from "@/components/PreloadHeroImage";
 
 
 export const metadata = {
@@ -12,12 +13,16 @@ export default function TidligereStyrerPage() {
 
 
     return (
-        <PageContainer>
-            <Heading as="h1" textAlign="center" mb={15} fontSize="2.5rem">
-                Tidligere styrer
-                <Box display="block" w="100px" h="4px" bg="var(--color-primary)" mx="auto" mt={4} borderRadius="2px" />
-            </Heading>
-            <EarilerMembersSection />
-        </PageContainer>
+        <>
+            <PreloadHeroImage imageUrl="/assets/images/gruppebilde.jpg" />
+            <HeroImage
+                imageUrl="/assets/images/gruppebilde.jpg"
+                heading="Tidligere styrer"
+                text="Oversikt over tidligere styremedlemmer i TrAMS gjennom årene"
+            />
+            <PageContainer>
+                <EarilerMembersSection />
+            </PageContainer>
+        </>
     );
 }

@@ -1,10 +1,12 @@
-import { Box, Link, Button } from '@chakra-ui/react';
+import { Box } from '@chakra-ui/react';
 import { PageContainer } from '@/components/PageContainer';
+import { ContentCard } from '@/components/ContentCard';
+import { PrimaryLinkButton } from '@/components/PrimaryLinkButton';
 import { PortableText } from 'next-sanity';
 import { client } from '@/sanity/lib/client';
 import { MarkorPage } from '@/types/sanity.types';
 import { MARKOR_PAGE_QUERY } from '@/sanity/lib/queries';
-import { portableTextComponents, HeroHeading } from '@/components/Typography';
+import { portableTextComponents, BodyText } from '@/components/Typography';
 import Gallery from '@/components/Gallery';
 import HeroImage from '@/components/HeroImage';
 import PreloadHeroImage from '@/components/PreloadHeroImage';
@@ -23,9 +25,9 @@ export default async function MarkorerPage() {
     if (!data) {
         return (
             <PageContainer>
-                <Box textAlign="center">
-                    Ingen informasjon tilgjengelig.
-                </Box>
+                <ContentCard>
+                    <BodyText mb={0} textAlign="center">Ingen informasjon tilgjengelig.</BodyText>
+                </ContentCard>
             </PageContainer>
         );
     }
@@ -34,51 +36,23 @@ export default async function MarkorerPage() {
             <PreloadHeroImage imageUrl="/assets/images/markor.jpg" />
             <HeroImage
                 imageUrl="/assets/images/markor.jpg"
-                heading={<HeroHeading fontSize={{ base: "2rem", md: "2.5rem" }}>{data.title.toUpperCase()}</HeroHeading>}
-                showDecorativeBar={true}
+                heading={data.title}
             />
             <PageContainer>
-                <Box
-                    textAlign="center"
-                >
-
-
+                <ContentCard>
+                    {data.content && <PortableText value={data.content} components={portableTextComponents} />}
                     {data.link && (
-                        <Box mb={10}>
-                            <Link
-                                href={data.link}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                _hover={{ textDecoration: 'none' }}
-                            >
-                                <Button
-                                    bg="var(--color-primary)"
-                                    color="white"
-                                    _hover={{
-                                        bg: 'var(--color-secondary)',
-                                        color: 'black',
-                                        transform: 'scale(1.02)'
-                                    }}
-                                    size="lg"
-                                    px={8}
-                                    h="56px"
-                                    fontSize="1.1rem"
-                                    borderRadius="md"
-                                    transition="all 0.2s"
-                                >
-                                    Gå til skjema
-                                </Button>
-                            </Link>
-                        </Box>
+                        <PrimaryLinkButton href={data.link} external>
+                            Gå til skjema
+                        </PrimaryLinkButton>
                     )}
-                    <Box className="portable-text" mx="auto" mb={8} textAlign="left">
-                        {data.content && <PortableText value={data.content} components={portableTextComponents} />}
+                </ContentCard>
+
+                {data.gallery && (
+                    <Box mt={16}>
+                        <Gallery images={data.gallery} />
                     </Box>
-
-
-
-                    {data.gallery && <Gallery images={data.gallery} />}
-                </Box>
+                )}
             </PageContainer>
         </>
     );
