@@ -73,11 +73,12 @@ export default function FeedbackDialog() {
                     textDecoration="none"
                     display="inline-flex"
                     alignItems="center"
+                    textAlign="left"
                     gap={2}
                     _hover={{ color: 'var(--color-primary)' }}
                 >
                     <MessageSquare size={20} />
-                    Gi tilbakemelding på nettsiden
+                    Gi tilbakemelding
                 </Link>
             </Dialog.Trigger>
             <Dialog.Backdrop />

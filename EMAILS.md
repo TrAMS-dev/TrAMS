@@ -86,7 +86,7 @@ Code: [app/api/send/form-complete/route.ts](app/api/send/form-complete/route.ts)
 ## Website feedback emails
 
 ### 11. Website feedback
-- **Sent from:** [app/api/send/feedback/route.ts](app/api/send/feedback/route.ts), called by [components/FeedbackDialog.tsx](components/FeedbackDialog.tsx) ("Gi tilbakemelding på nettsiden" in the footer)
+- **Sent from:** [app/api/send/feedback/route.ts](app/api/send/feedback/route.ts), called by [components/FeedbackDialog.tsx](components/FeedbackDialog.tsx) ("Tilbakemelding" column in the footer)
 - **When:** Someone submits the feedback form.
 - **Content:** The feedback message, the page it was sent from, and the sender's email if they gave one. Submissions that fill in the hidden honeypot field are dropped without sending.
 

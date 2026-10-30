@@ -1,7 +1,25 @@
 import Image from 'next/image';
-import { Box, Flex, VStack, Link, Text } from '@chakra-ui/react';
+import { Box, Flex, Grid, VStack, Link, Text } from '@chakra-ui/react';
 import { Facebook, Instagram, Github } from 'lucide-react';
+import { ReactNode } from 'react';
 import FeedbackDialog from '@/components/FeedbackDialog';
+
+const SOCIAL_LINKS = [
+  { href: 'https://www.instagram.com/trondheimams/', label: 'Instagram', icon: Instagram },
+  { href: 'https://www.facebook.com/trondheimams/', label: 'Facebook', icon: Facebook },
+  { href: 'https://github.com/trondheimams', label: 'GitHub', icon: Github },
+];
+
+function FooterColumn({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <Box>
+      <Text as="h3" fontWeight={700} fontSize="1rem" mb={3}>
+        {title}
+      </Text>
+      {children}
+    </Box>
+  );
+}
 
 export default function Footer() {
   return (
@@ -9,18 +27,18 @@ export default function Footer() {
       as="footer"
       bg="var(--color-secondary)"
       color="black"
-      p={8}
+      px={{ base: 4, md: 8 }}
+      pt={{ base: 10, md: 12 }}
+      pb={6}
       fontSize="0.9rem"
     >
-      <Flex
-        justify="space-between"
-        flexWrap="wrap"
-        gap={8}
-        maxW="1200px"
-        mx="auto"
-      >
-        <Box flex="1 1 200px">
-          <Flex align="center" gap={4} mb={4}>
+      <Box maxW="1200px" mx="auto">
+        <Grid
+          templateColumns={{ base: '1fr', md: 'repeat(2, 1fr)', lg: '1.2fr 1.5fr 1fr 1fr' }}
+          gap={{ base: 8, lg: 12 }}
+        >
+          {/* Brand */}
+          <Flex align="center" gap={4} alignSelf="start">
             <Image
               src="/assets/Logo.png"
               alt="TrAMS logo"
@@ -28,91 +46,76 @@ export default function Footer() {
               height={60}
               className="w-[60px]"
             />
-            <VStack align="start" gap={0} lineHeight="1.2">
-              <Text as="span" display="block" fontWeight="bold" color="black">
-                Trondheim
-              </Text>
-              <Text as="span" display="block" fontWeight="bold" color="black">
-                Akuttmedisinske
-              </Text>
-              <Text as="span" display="block" fontWeight="bold" color="black">
-                Studentforening
-              </Text>
-            </VStack>
+            <Text fontWeight="bold" lineHeight="1.3">
+              Trondheim
+              <br />
+              Akuttmedisinske
+              <br />
+              Studentforening
+            </Text>
           </Flex>
-          <VStack align="start" gap={1}>
-            <Text m={0} color="black">
-              <strong>Adresse:</strong> Fred Kavli-bygget, 1. et ved varemottak St. Olavs Hospital 7491 Trondheim
-            </Text>
-            <Text m={0} color="black">
-              <strong>Org.nr:</strong> 994089358
-            </Text>
-            <Text m={0} color="black">
-              <strong>E-post:</strong>{' '}
-              <Link href="mailto:ekstern@trams.no" color="black" textDecoration="none" _hover={{ color: 'var(--color-primary)' }}>
+
+          <FooterColumn title="Kontakt">
+            <VStack align="start" gap={2}>
+              <Text>
+                Fred Kavli-bygget, 1. et ved varemottak
+                <br />
+                St. Olavs Hospital, 7491 Trondheim
+              </Text>
+              <Text>
+                <strong>Org.nr:</strong> 994089358
+              </Text>
+              <Link href="mailto:ekstern@trams.no" color="black" _hover={{ color: 'var(--color-primary)' }}>
                 ekstern@trams.no
               </Link>
-            </Text>
-          </VStack>
-        </Box>
-        <Box flex="1 1 200px">
-          <Text as="h3" mt={0} fontWeight={700} mb={2}>
-            Sosiale medier
-          </Text>
-          <Flex gap={4}>
-            <Link
-              href="https://www.instagram.com/trondheimams/"
-              target="_blank"
-              rel="noopener noreferrer"
-              color="black"
-              _hover={{ color: 'var(--color-primary)' }}
-              aria-label="Instagram"
-            >
-              <Instagram size={24} />
-            </Link>
-            <Link
-              href="https://www.facebook.com/trondheimams/"
-              target="_blank"
-              rel="noopener noreferrer"
-              color="black"
-              _hover={{ color: 'var(--color-primary)' }}
-              aria-label="Facebook"
-            >
-              <Facebook size={24} />
-            </Link>
-            <Link
-              href="https://github.com/trondheimams"
-              target="_blank"
-              rel="noopener noreferrer"
-              color="black"
-              _hover={{ color: 'var(--color-primary)' }}
-              aria-label="GitHub"
-            >
-              <Github size={24} />
-            </Link>
-          </Flex>
-        </Box>
-        <Box flex="1 1 200px">
-          <Text as="h3" mt={0} fontWeight={700} mb={2}>
-            Tilbakemelding
-          </Text>
-          <FeedbackDialog />
-        </Box>
-      </Flex>
-      <Box textAlign="center" mt={4} fontSize="0.8rem" color="black">
-        <Text m={0}>&copy; 2026 Trondheim Akuttmedisinske Studentforening</Text>
-        <Link
-          href="/admin"
-          color="gray.500"
-          textDecoration="none"
-          _hover={{ color: 'var(--color-primary)', opacity: 1 }}
-          fontSize="0.7rem"
-          mt={2}
-          display="inline-block"
-          opacity={0.5}
+            </VStack>
+          </FooterColumn>
+
+          <FooterColumn title="Sosiale medier">
+            <Flex gap={4}>
+              {SOCIAL_LINKS.map(({ href, label, icon: Icon }) => (
+                <Link
+                  key={label}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  color="black"
+                  _hover={{ color: 'var(--color-primary)' }}
+                  aria-label={label}
+                >
+                  <Icon size={24} />
+                </Link>
+              ))}
+            </Flex>
+          </FooterColumn>
+
+          <FooterColumn title="Tilbakemelding">
+            <FeedbackDialog />
+          </FooterColumn>
+        </Grid>
+
+        {/* Bottom bar */}
+        <Flex
+          direction={{ base: 'column', md: 'row' }}
+          justify="space-between"
+          align="center"
+          gap={2}
+          mt={{ base: 8, md: 10 }}
+          pt={6}
+          borderTop="1px solid"
+          borderColor="blackAlpha.200"
+          fontSize="0.8rem"
         >
-          Adminside
-        </Link>
+          <Text>&copy; 2026 Trondheim Akuttmedisinske Studentforening</Text>
+          <Link
+            href="/admin"
+            color="black"
+            opacity={0.5}
+            _hover={{ color: 'var(--color-primary)', opacity: 1 }}
+          >
+            Adminside
+          </Link>
+        </Flex>
       </Box>
     </Box>
   );
