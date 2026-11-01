@@ -70,6 +70,12 @@ export async function POST(request: Request) {
       return Response.json({ error: 'Ugyldig e-post' }, { status: 400 });
     }
 
+    // Only @trams.no accounts can be approved. Deny others silently:
+    // report success but don't notify admins.
+    if (!email.endsWith('@trams.no')) {
+      return Response.json({ success: true });
+    }
+
     const result = await resend.emails.send({
       from: 'TrAMS <web@trams.no>',
       to: [NOTIFY_EMAIL],
