@@ -101,7 +101,7 @@ export default function LoginPage() {
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 required
-                                placeholder="admin@trams.no"
+                                placeholder="din@epost.no"
                             />
                         </Field.Root>
 
@@ -112,7 +112,7 @@ export default function LoginPage() {
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 required
-                                placeholder="••••••••"
+                                placeholder="••••••"
                             />
                         </Field.Root>
 
