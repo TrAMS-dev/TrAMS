@@ -21,7 +21,7 @@
     "@fullcalendar/react": "^6.1.19",
     "@portabletext/react": "^3.0.10",
     "@sanity/client": "^7.23.0",
-    "@sanity/export": "4.0.0",
+    "@sanity/export": "7.1.0",
     "@sanity/image-url": "^1.1.0",
     "@sanity/schema": "6.3.0",
     "@sanity/vision": "^6.3.0",
