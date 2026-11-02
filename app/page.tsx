@@ -2,7 +2,6 @@ import Link from 'next/link';
 import { Box, Flex, Image, Text, Button, Stack, Link as ChakraLink } from '@chakra-ui/react';
 import Navbar from '@/components/Navbar';
 import { HeartPulse, Calendar, Users } from 'lucide-react';
-import { createClient } from '@/utils/supabase/server';
 import { client } from '@/sanity/lib/client';
 import { HOME_PAGE_QUERY } from '@/sanity/lib/queries';
 
@@ -20,8 +19,8 @@ export const metadata: Metadata = {
   },
 }
 export default async function Home() {
-  const homePageData = await client.fetch<{ videoUrl: string }>(HOME_PAGE_QUERY);
-  const videoUrl = homePageData?.videoUrl 
+  const homePageData = await client.fetch(HOME_PAGE_QUERY);
+  const videoUrl = homePageData?.videoUrl ?? undefined;
   return (
     <Box as="section" position="relative" minH="100dvh" w="100%" overflow="hidden" bg="gray.900">
       {/* Background Video */}
@@ -103,9 +102,9 @@ export default async function Home() {
               mb={{ base: 2, lg: "clamp(0rem, 3vh, 2rem)" }}
               opacity={0.9}
               textShadow="0 0 10px rgba(0,0,0,0.5)"
+              whiteSpace="pre-line"
             >
-              Vi er Trondheim Akuttmedisinske Studentforening. <br />
-              Lær livreddende førstehjelp av medisinstudenter.
+              {homePageData?.tagline}
             </Text>
             </Flex>
 

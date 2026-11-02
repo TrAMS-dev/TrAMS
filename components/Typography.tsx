@@ -1,4 +1,4 @@
-import { Heading, Text, Box, HeadingProps, TextProps } from '@chakra-ui/react';
+import { Heading, Text, Box, BoxProps, HeadingProps, TextProps } from '@chakra-ui/react';
 
 interface HeroHeadingProps extends HeadingProps {
   children: React.ReactNode;
@@ -191,7 +191,7 @@ export function CenteredText({
   );
 }
 
-import type { PortableTextComponents } from 'next-sanity';
+import { PortableText, type PortableTextComponents, type PortableTextProps } from 'next-sanity';
 
 /**
  * Custom components for rendering Sanity PortableText content
@@ -258,18 +258,48 @@ export const portableTextComponents: PortableTextComponents = {
         {children}
       </Text>
     ),
-    link: ({ children, value }) => (
-      <a
-        href={value?.href}
-        target="_blank"
-        rel="noopener noreferrer"
-        style={{
-          color: '#2563eb',
-          textDecoration: 'underline',
-        }}
-      >
-        {children}
-      </a>
-    ),
+    link: ({ children, value }) => {
+      const href: string | undefined = value?.href;
+      const isExternal = !!href && /^https?:\/\//.test(href);
+      return (
+        <a
+          href={href}
+          target={isExternal ? '_blank' : undefined}
+          rel={isExternal ? 'noopener noreferrer' : undefined}
+          style={{
+            // Overridable per section with the --rich-text-link-color CSS variable
+            color: 'var(--rich-text-link-color, #2563eb)',
+            textDecoration: 'underline',
+          }}
+        >
+          {children}
+        </a>
+      );
+    },
   },
 };
+
+interface RichTextProps extends Omit<BoxProps, 'children'> {
+  value: PortableTextProps['value'] | null | undefined;
+  /** Center the text in a narrow column, like CenteredText */
+  centered?: boolean;
+  /** Link color, defaults to the primary site color */
+  linkColor?: string;
+}
+
+/**
+ * Renders Sanity rich text with the site's typography.
+ * The last paragraph's bottom margin is removed so spacing is controlled by the wrapper.
+ */
+export function RichText({ value, centered = false, linkColor = 'var(--color-primary)', ...props }: RichTextProps) {
+  if (!value || (Array.isArray(value) && value.length === 0)) return null;
+  return (
+    <Box
+      {...(centered ? { textAlign: 'center', maxW: '800px', mx: 'auto', mb: 8 } : {})}
+      css={{ '--rich-text-link-color': linkColor, '& > :last-child': { marginBottom: 0 } }}
+      {...props}
+    >
+      <PortableText value={value} components={portableTextComponents} />
+    </Box>
+  );
+}

@@ -1,20 +1,20 @@
 import { defineField, defineType } from 'sanity'
 
-export const firstAidInfoType = defineType({
-    name: 'firstAidInfo',
-    title: 'Info om førstehjelpskurs',
+export const instruktorPageType = defineType({
+    name: 'instruktorPage',
+    title: 'Instruktørside',
     type: 'document',
     fields: [
         defineField({
-            name: 'col1',
-            title: 'Kolonne 1',
+            name: 'becomeInstructorText',
+            title: 'Bli instruktør – tekst',
             type: 'array',
             of: [{ type: 'block' }],
             validation: (rule) => rule.required(),
         }),
         defineField({
-            name: 'col2',
-            title: 'Kolonne 2',
+            name: 'skillInstructorText',
+            title: 'Ferdighetsinstruktør – tekst',
             type: 'array',
             of: [{ type: 'block' }],
             validation: (rule) => rule.required(),
@@ -23,7 +23,7 @@ export const firstAidInfoType = defineType({
     preview: {
         prepare() {
             return {
-                title: 'Info om førstehjelpskurs',
+                title: 'Instruktørside',
             }
         },
     },
