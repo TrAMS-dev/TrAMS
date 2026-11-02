@@ -28,19 +28,22 @@ export async function POST(req: NextRequest) {
     // Revalidate based on document type
     switch (body._type) {
       case 'boardMember':
+      case 'boardRole':
         revalidatePath('/om-oss')
-        revalidatePath('/styret')
-        if (body.slug?.current) {
-          revalidatePath(`/styret/${body.slug.current}`)
-        }
+        revalidatePath('/om-oss/styret/[role]', 'page')
+        revalidatePath('/om-oss/styret/tidligere-styrer', 'layout')
         break
 
-      case 'carouselSlide':
+      case 'homePage':
         revalidatePath('/')
         break
 
+      case 'aboutPage':
+        revalidatePath('/om-oss')
+        break
+
       case 'mediaItem':
-        revalidatePath('/trams-i-media')
+        revalidatePath('/om-oss/trams-i-media')
         break
 
       case 'courseOffering':
@@ -58,11 +61,8 @@ export async function POST(req: NextRequest) {
         revalidatePath('/om-oss/vedtekter')
         break
 
-      case 'firstAidInfo':
-        revalidatePath('/instruktorer')
-        break
-
       case 'instruktorLink':
+      case 'instruktorPage':
         revalidatePath('/instruktorer')
         break
 
@@ -88,6 +88,12 @@ export async function POST(req: NextRequest) {
 
       case 'forMedisinstudenterPage':
         revalidatePath('/for-medisinstudenter')
+        revalidatePath('/arrangementer/[slug]', 'page')
+        break
+
+      case 'siteSettings':
+        // Footer is on every page
+        revalidatePath('/', 'layout')
         break
 
       default:

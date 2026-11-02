@@ -3,12 +3,8 @@ import { Box, Flex, Grid, VStack, Link, Text } from '@chakra-ui/react';
 import { Facebook, Instagram, Github } from 'lucide-react';
 import { ReactNode } from 'react';
 import FeedbackDialog from '@/components/FeedbackDialog';
-
-const SOCIAL_LINKS = [
-  { href: 'https://www.instagram.com/trondheimams/', label: 'Instagram', icon: Instagram },
-  { href: 'https://www.facebook.com/trondheimams/', label: 'Facebook', icon: Facebook },
-  { href: 'https://github.com/trondheimams', label: 'GitHub', icon: Github },
-];
+import { client } from '@/sanity/lib/client';
+import { SITE_SETTINGS_QUERY } from '@/sanity/lib/queries';
 
 function FooterColumn({ title, children }: { title: string; children: ReactNode }) {
   return (
@@ -21,7 +17,18 @@ function FooterColumn({ title, children }: { title: string; children: ReactNode 
   );
 }
 
-export default function Footer() {
+export default async function Footer() {
+  const settings = await client.fetch(SITE_SETTINGS_QUERY).catch((error) => {
+    console.error('Error fetching site settings:', error);
+    return null;
+  });
+
+  const socialLinks = [
+    { href: settings?.instagramUrl, label: 'Instagram', icon: Instagram },
+    { href: settings?.facebookUrl, label: 'Facebook', icon: Facebook },
+    { href: settings?.githubUrl, label: 'GitHub', icon: Github },
+  ].filter((link): link is typeof link & { href: string } => !!link.href);
+
   return (
     <Box
       as="footer"
@@ -57,23 +64,23 @@ export default function Footer() {
 
           <FooterColumn title="Kontakt">
             <VStack align="start" gap={2}>
-              <Text>
-                Fred Kavli-bygget, 1. et ved varemottak
-                <br />
-                St. Olavs Hospital, 7491 Trondheim
-              </Text>
-              <Text>
-                <strong>Org.nr:</strong> 994089358
-              </Text>
-              <Link href="mailto:ekstern@trams.no" color="black" _hover={{ color: 'var(--color-primary)' }}>
-                ekstern@trams.no
-              </Link>
+              {settings?.address && <Text whiteSpace="pre-line">{settings.address}</Text>}
+              {settings?.orgNumber && (
+                <Text>
+                  <strong>Org.nr:</strong> {settings.orgNumber}
+                </Text>
+              )}
+              {settings?.contactEmail && (
+                <Link href={`mailto:${settings.contactEmail}`} color="black" _hover={{ color: 'var(--color-primary)' }}>
+                  {settings.contactEmail}
+                </Link>
+              )}
             </VStack>
           </FooterColumn>
 
           <FooterColumn title="Sosiale medier">
             <Flex gap={4}>
-              {SOCIAL_LINKS.map(({ href, label, icon: Icon }) => (
+              {socialLinks.map(({ href, label, icon: Icon }) => (
                 <Link
                   key={label}
                   href={href}
@@ -106,7 +113,7 @@ export default function Footer() {
           borderColor="blackAlpha.200"
           fontSize="0.8rem"
         >
-          <Text>&copy; 2026 Trondheim Akuttmedisinske Studentforening</Text>
+          <Text>&copy; {new Date().getFullYear()} Trondheim Akuttmedisinske Studentforening</Text>
           <Link
             href="/admin"
             color="black"

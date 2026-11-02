@@ -1,17 +1,17 @@
 import { client } from "@/sanity/lib/client";
 import { BOARD_MEMBERS_QUERY } from "@/sanity/lib/queries";
 import { BoardMember } from "@/types/sanity.types";
-import { Flex, Box, Image, Link, Stack, Link as ChakraLink, Button } from "@chakra-ui/react";
+import { Flex, Box, Image, Link, Stack, Button } from "@chakra-ui/react";
 import BoardMemberSection from "@/components/BoardMemberSection";
 import { PartnersSection } from "@/components/CooperationPartners";
-import { COOPERATION_PARTNERS_QUERY } from "@/sanity/lib/queries";
+import { ABOUT_PAGE_QUERY, COOPERATION_PARTNERS_QUERY } from "@/sanity/lib/queries";
 import { CooperationPartners } from "@/types/sanity.types";
 import HeroImage from "@/components/HeroImage";
 import PreloadHeroImage from "@/components/PreloadHeroImage";
 import { PageContainer } from "@/components/PageContainer";
 import { ContentCard } from "@/components/ContentCard";
 import { PrimaryLinkButton } from "@/components/PrimaryLinkButton";
-import { SectionHeading, BodyText } from "@/components/Typography";
+import { SectionHeading, RichText } from "@/components/Typography";
 
 import type { Metadata } from "next";
 
@@ -44,6 +44,8 @@ export default async function OmOss() {
         console.error('Error fetching cooperation partners:', error);
     }
 
+    const aboutPage = await client.fetch(ABOUT_PAGE_QUERY);
+
     return (
         <>
             <PreloadHeroImage imageUrl="/assets/images/gruppebilde.jpg" />
@@ -61,28 +63,16 @@ export default async function OmOss() {
                         </SectionHeading>
                         <Flex flexWrap="wrap" gap={4} align="flex-start">
                             <Box flex="1 1 300px">
-                                <BodyText>
-                                    <Box as="span" float="right" ml={4}>
-                                        <Image
-                                            src="/assets/Logo.png"
-                                            alt="TrAMS logo"
-                                            width={100}
-                                            height={100}
-                                            className="max-w-[100px]"
-                                        />
-                                    </Box>
-                                    Trondheim akuttmedisinske studentforening (TrAMS), stiftet 7. mai 2009, er en ideell organisasjon av og
-                                    for medisinstudenter i Trondheim, basert på frivillighet.
-                                </BodyText>
-                                <BodyText>
-                                    Vi legger vekt på faglig kompetanse innen akuttmedisin for både kommende leger og lekfolk. Vårt mål er
-                                    å skape trygghet rundt håndtering av akuttmedisinske situasjoner ved å fremme interesse, engasjement
-                                    og styrke kunnskapen gjennom kvalitetssikrede kurs og ferdighetstrening.
-                                </BodyText>
-                                <BodyText>
-                                    Foreningen deltar aktivt i det norske og skandinaviske studentmiljøet innen akuttmedisin gjennom NAMS
-                                    - Norsk Akuttmedisinsk Studentforum.
-                                </BodyText>
+                                <Box float="right" ml={4} mb={2}>
+                                    <Image
+                                        src="/assets/Logo.png"
+                                        alt="TrAMS logo"
+                                        width={100}
+                                        height={100}
+                                        className="max-w-[100px]"
+                                    />
+                                </Box>
+                                <RichText value={aboutPage?.aboutText} mb={4} />
                                 <PrimaryLinkButton href="/om-oss/vedtekter">Vedtekter</PrimaryLinkButton>
                             </Box>
                         </Flex>
@@ -100,29 +90,8 @@ export default async function OmOss() {
                         bg="var(--color-primary)"
                         color="white"
                     >
-                        <SectionHeading mt={0} underlineColor="white">Bli med på laget som samarbeidspartner</SectionHeading>
-                        <BodyText>
-                            Vi er alltid på jakt etter støtte eller nye samarbeidspartnere. Kjenner du noen som er interessert i å bli
-                            bedre kjent med oss?
-                            <br />
-                            <br />
-                            I Trondheim har foreningen en solid plassering i studentmiljøet. Vi samarbeider tett med Fakultet for
-                            medisin og helsevitenskap ved NTNU om å gjennomføre kurs for nye studenter i basal akuttmedisin. I tillegg
-                            samarbeider vi med bl.a. anestesiavdelingen ved St. Olavs hospital om å tilby det som på studiet kalles
-                            frivillig uketjeneste, en lærerik hospiteringsordning. Leger ved luftambulansen i Trondheim har også stilt
-                            opp for å holde foredrag o.l. for studenter ved flere anledninger. Vi har gjennomført arrangementer der vi
-                            har koordinert øvelser sammen med Redningstjenesten 330 skvadron, Redningsselskapet, Trøndelag brann- og
-                            redningstjeneste, Trøndelag politidistrikt. Sist, men ikke minst, har Sør-Trøndelag ambulansetjeneste vært
-                            en kjempemessig støttespiller for oss.
-                            <br />
-                            <br />
-                            Vi ønsker å takke alle som bidrar til å hjelpe oss i arbeidet for å fremme interesse og kunnskap rundt
-                            akuttmedisin! Ønsker du å støtte arbeidet vårt? Ta kontakt med{' '}
-                            <ChakraLink href="mailto:sponsoransvarlig@trams.no" color="var(--color-secondary)" textDecoration="underline">
-                                sponsoransvarlig@trams.no
-                            </ChakraLink>
-                            .
-                        </BodyText>
+                        <SectionHeading mt={0} underlineColor="white">{aboutPage?.partnerCtaTitle}</SectionHeading>
+                        <RichText value={aboutPage?.partnerCtaText} linkColor="var(--color-secondary)" mb={4} />
                         <Link href="/om-oss/trams-i-media" alignItems="center">
                             <Button
                                 bg="var(--color-secondary)"

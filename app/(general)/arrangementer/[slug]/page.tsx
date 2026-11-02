@@ -6,9 +6,7 @@ import EventArrangementDetailClient from './EventData'
 const FALLBACK_MEMBERSHIP_SIGNUP_URL = 'https://forms.gle/GDLsAZTeVvTKmCqw9'
 
 export default async function ArrangementSlugPage() {
-    const pageData = await client.fetch<{ membershipSignupUrl?: string | null }>(
-        FOR_MEDISINSTUDENTER_PAGE_QUERY
-    )
+    const pageData = await client.fetch(FOR_MEDISINSTUDENTER_PAGE_QUERY)
     const membershipSignupHref =
         pageData?.membershipSignupUrl?.trim() || FALLBACK_MEMBERSHIP_SIGNUP_URL
 
