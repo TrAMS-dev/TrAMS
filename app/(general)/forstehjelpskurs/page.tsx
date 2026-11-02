@@ -1,9 +1,8 @@
-import { Box, Flex, Text, Link, VStack, SimpleGrid, Button, Spinner, Center } from '@chakra-ui/react';
+import { Box, Flex, Text, VStack, SimpleGrid, Center } from '@chakra-ui/react';
 import Image from 'next/image';
-import { SectionHeading, SubsectionHeading, BodyText, CenteredText } from '@/components/Typography';
+import { SectionHeading, SubsectionHeading, BodyText, CenteredText, RichText } from '@/components/Typography';
 import { client } from '@/sanity/lib/client';
 import { FIRST_AID_COURSE_PAGE_QUERY } from '@/sanity/lib/queries';
-import { FIRST_AID_COURSE_PAGE_QUERY_RESULT } from '@/types/sanity.types';
 import { urlFor } from '@/sanity/lib/image';
 import { SanityImageSource } from "@sanity/image-url/lib/types/types";
 import HeroImage from '@/components/HeroImage';
@@ -29,7 +28,7 @@ export const metadata: Metadata = {
 };
 
 export default async function Forstehjelpskurs() {
-  const pageData = await client.fetch<FIRST_AID_COURSE_PAGE_QUERY_RESULT>(FIRST_AID_COURSE_PAGE_QUERY);
+  const pageData = await client.fetch(FIRST_AID_COURSE_PAGE_QUERY);
 
   if (!pageData) {
     return (
@@ -89,36 +88,17 @@ export default async function Forstehjelpskurs() {
         <SimpleGrid columns={{ base: 1, md: 2 }} gap={8} mt={16}>
           {/* OTHER COURSES */}
           <InfoCard title="Andre kurs">
-            <BodyText>
-              Vi tilbyr også andre kurs som er tilpasset studenter eller kunder med helsefaglig bakgrunn.
-            </BodyText>
-            <BodyText>
-              Lurer du på om vi kan tilby et passende kurs for din gruppe? Ta kontakt med{' '}
-              <Link href="mailto:eksternsjef@trams.no" color="var(--color-primary)" textDecoration="underline">
-                eksternsjef@trams.no
-              </Link>{' '}
-              for å motta tilbud.
-            </BodyText>
-            <BodyText mb={0} color="gray.500">
-              Vi tilbyr dessverre ikke utlån av dukker og førstehjelpsutstyr til egne kurs.
-            </BodyText>
+            <RichText value={pageData.otherCoursesText} />
           </InfoCard>
 
           {/* EVALUATION */}
           <InfoCard title="Evaluering">
-            <BodyText>
-              Vi ønsker stadig å bli bedre, og for å nå målene våre tar vi gjerne i mot tilbakemeldinger på hvordan
-              du har opplevd kurset vårt!
-            </BodyText>
-            <BodyText>
-              Du kan enkelt gi tilbakemelding ved å klikke deg inn på skjemaet. Øvrige spørsmål kan rettes til{' '}
-              <Link href="mailto:eksternsjef@trams.no" color="var(--color-primary)" textDecoration="underline">
-                eksternsjef@trams.no
-              </Link>.
-            </BodyText>
-            <PrimaryLinkButton href="https://docs.google.com/forms/d/e/1FAIpQLSd11lYE-qow-milodSmnsL_OlqLE20vV8ZNGyLkg-F-cdJVtA/viewform?usp=sharing" external>
-              Gå til evalueringsskjema
-            </PrimaryLinkButton>
+            <RichText value={pageData.evaluationText} />
+            {pageData.evaluationFormUrl && (
+              <PrimaryLinkButton href={pageData.evaluationFormUrl} external>
+                Gå til evalueringsskjema
+              </PrimaryLinkButton>
+            )}
           </InfoCard>
         </SimpleGrid>
       </PageContainer>

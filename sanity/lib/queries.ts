@@ -27,44 +27,6 @@ export const BOARD_MEMBERS_QUERY = defineQuery(`*[_type == "boardMember"] | orde
   slug,
   role,
   email,
-  age,
-  hometown,
-  profileImage,
-  PersonalImage,
-  bio,
-  activeFrom,
-  activeTo
-}`)
-
-// Query to get CURRENT board members (activeTo >= now), ordered by display order
-export const CURRENT_BOARD_MEMBERS_QUERY = defineQuery(`*[_type == "boardMember" && activeTo >= now()] | order(
-  select(
-    role == 'boardLeader' => 1,
-    role == 'subjectLeader' => 2,
-    role == 'internalLeader' => 3,
-    role == 'externalLeader' => 4,
-    role == 'internalCoordinator' => 5,
-    role == 'externalCoordinator' => 6,
-    role == 'committeeLeader' => 7,
-    role == 'instructorLeader' => 8,
-    role == 'financialLeader' => 9,
-    role == 'marketingLeader' => 10,
-    role == 'extraLeader' => 11,
-    role == 'sponsorLeader' => 12,
-    role == 'equipmentLeader' => 13,
-    role == 'secretary' => 14,
-    role == 'mentorLeader' => 15,
-    99
-  ) asc,
-  _createdAt asc
-) {
-  _id,
-  name,
-  slug,
-  role,
-  email,
-  age,
-  hometown,
   profileImage,
   PersonalImage,
   bio,
@@ -79,55 +41,22 @@ export const BOARD_MEMBER_QUERY_BY_SLUG = defineQuery(`*[_type == "boardMember" 
   slug,
   role,
   email,
-  age,
-  hometown,
   profileImage,
   PersonalImage,
   bio,
-  order,
   activeFrom,
   activeTo
 }`)
 
-export const BOARD_MEMBER_QUERY_BY_ROLE = defineQuery(`*[_type == "boardMember" && role == $role][0] {
-  _id,
-  name,
-  slug,
-  role,
-  email,
-  age,
-  hometown,
-  profileImage,
-  PersonalImage,
-  bio,
-  order,
-  activeFrom,
-  activeTo
-}`)
-
-// Query to get all carousel slides, ordered by display order
-export const CAROUSEL_SLIDES_QUERY = defineQuery(`*[_type == "carouselSlide"] | order(order asc) {
-  _id,
-  backgroundImage,
-  title,
-  description,
-  buttonText,
-  buttonLink,
-  order
-}`)
-
-// Query to get all media items, ordered by display order
-export const MEDIA_ITEMS_QUERY = defineQuery(`*[_type == "mediaItem"] | order(order asc) {
+// Query to get all media items, newest first
+export const MEDIA_ITEMS_QUERY = defineQuery(`*[_type == "mediaItem"] | order(year desc, publishedAt desc) {
   _id,
   title,
-  slug,
   description,
   thumbnail,
   videoUrl,
   externalLink,
-  linkText,
   year,
-  order,
   publishedAt
 }`)
 
@@ -173,12 +102,6 @@ export const VEDTEKTER_QUERY = defineQuery(`*[_type == "vedtekter"][0] {
   _id,
   content,
   lastUpdated
-}`)
-
-export const FIRST_AID_INFO_QUERY = defineQuery(`*[_type == "firstAidInfo"][0] {
-  _id,
-  col1,
-  col2
 }`)
 
 // Query to get all instruktør links, ordered by rank (or createdAt if rank is missing)
@@ -239,7 +162,10 @@ export const FIRST_AID_COURSE_PAGE_QUERY = defineQuery(`*[_type == "firstAidCour
       isReversed
     },
     footerNote
-  }
+  },
+  otherCoursesText,
+  evaluationText,
+  evaluationFormUrl
 }`)
 
 export const BOOK_KURS_PAGE_QUERY = defineQuery(`*[_type == "bookKursPage"][0] {
@@ -249,10 +175,52 @@ export const BOOK_KURS_PAGE_QUERY = defineQuery(`*[_type == "bookKursPage"][0] {
 
 export const HOME_PAGE_QUERY = defineQuery(`*[_type == "homePage"][0] {
   _id,
-  videoUrl
+  videoUrl,
+  tagline
 }`)
 
 export const FOR_MEDISINSTUDENTER_PAGE_QUERY = defineQuery(`*[_type == "forMedisinstudenterPage"][0] {
   _id,
-  membershipSignupUrl
+  membershipSignupUrl,
+  membershipText,
+  offersText,
+  committeesText
+}`)
+
+export const INSTRUKTOR_PAGE_QUERY = defineQuery(`*[_type == "instruktorPage"][0] {
+  _id,
+  becomeInstructorText,
+  skillInstructorText
+}`)
+
+export const ABOUT_PAGE_QUERY = defineQuery(`*[_type == "aboutPage"][0] {
+  _id,
+  aboutText,
+  partnerCtaTitle,
+  partnerCtaText
+}`)
+
+export const SITE_SETTINGS_QUERY = defineQuery(`*[_type == "siteSettings"][0] {
+  _id,
+  address,
+  orgNumber,
+  contactEmail,
+  instagramUrl,
+  facebookUrl,
+  githubUrl
+}`)
+
+// Board role description plus the member who holds the role now (latest activeTo).
+// $slug is the role in lower case, as used in the URL (e.g. "boardleader").
+export const BOARD_ROLE_PAGE_QUERY = defineQuery(`*[_type == "boardRole" && lower(role) == $slug][0] {
+  _id,
+  role,
+  title,
+  description,
+  "member": *[_type == "boardMember" && role == ^.role] | order(activeTo desc)[0]
+}`)
+
+export const BOARD_ROLE_SLUGS_QUERY = defineQuery(`*[_type == "boardRole" && defined(role)] {
+  "slug": lower(role),
+  _updatedAt
 }`)

@@ -15,13 +15,170 @@
 export declare const internalGroqTypeReferenceTo: unique symbol;
 
 // Source: sanity/extract.json
-export type MembershipSignupUrl = {
+export type SiteSettings = {
   _id: string;
-  _type: "membershipSignupUrl";
+  _type: "siteSettings";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  address: string;
+  orgNumber?: string;
+  contactEmail: string;
+  instagramUrl?: string;
+  facebookUrl?: string;
+  githubUrl?: string;
+};
+
+export type AboutPage = {
+  _id: string;
+  _type: "aboutPage";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  aboutText: Array<{
+    children?: Array<{
+      marks?: Array<string>;
+      text?: string;
+      _type: "span";
+      _key: string;
+    }>;
+    style?: "normal" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "blockquote";
+    listItem?: "bullet" | "number";
+    markDefs?: Array<{
+      href?: string;
+      _type: "link";
+      _key: string;
+    }>;
+    level?: number;
+    _type: "block";
+    _key: string;
+  }>;
+  partnerCtaTitle: string;
+  partnerCtaText: Array<{
+    children?: Array<{
+      marks?: Array<string>;
+      text?: string;
+      _type: "span";
+      _key: string;
+    }>;
+    style?: "normal" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "blockquote";
+    listItem?: "bullet" | "number";
+    markDefs?: Array<{
+      href?: string;
+      _type: "link";
+      _key: string;
+    }>;
+    level?: number;
+    _type: "block";
+    _key: string;
+  }>;
+};
+
+export type InstruktorPage = {
+  _id: string;
+  _type: "instruktorPage";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  becomeInstructorText: Array<{
+    children?: Array<{
+      marks?: Array<string>;
+      text?: string;
+      _type: "span";
+      _key: string;
+    }>;
+    style?: "normal" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "blockquote";
+    listItem?: "bullet" | "number";
+    markDefs?: Array<{
+      href?: string;
+      _type: "link";
+      _key: string;
+    }>;
+    level?: number;
+    _type: "block";
+    _key: string;
+  }>;
+  skillInstructorText: Array<{
+    children?: Array<{
+      marks?: Array<string>;
+      text?: string;
+      _type: "span";
+      _key: string;
+    }>;
+    style?: "normal" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "blockquote";
+    listItem?: "bullet" | "number";
+    markDefs?: Array<{
+      href?: string;
+      _type: "link";
+      _key: string;
+    }>;
+    level?: number;
+    _type: "block";
+    _key: string;
+  }>;
+};
+
+export type ForMedisinstudenterPage = {
+  _id: string;
+  _type: "forMedisinstudenterPage";
   _createdAt: string;
   _updatedAt: string;
   _rev: string;
   membershipSignupUrl: string;
+  membershipText: Array<{
+    children?: Array<{
+      marks?: Array<string>;
+      text?: string;
+      _type: "span";
+      _key: string;
+    }>;
+    style?: "normal" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "blockquote";
+    listItem?: "bullet" | "number";
+    markDefs?: Array<{
+      href?: string;
+      _type: "link";
+      _key: string;
+    }>;
+    level?: number;
+    _type: "block";
+    _key: string;
+  }>;
+  offersText: Array<{
+    children?: Array<{
+      marks?: Array<string>;
+      text?: string;
+      _type: "span";
+      _key: string;
+    }>;
+    style?: "normal" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "blockquote";
+    listItem?: "bullet" | "number";
+    markDefs?: Array<{
+      href?: string;
+      _type: "link";
+      _key: string;
+    }>;
+    level?: number;
+    _type: "block";
+    _key: string;
+  }>;
+  committeesText: Array<{
+    children?: Array<{
+      marks?: Array<string>;
+      text?: string;
+      _type: "span";
+      _key: string;
+    }>;
+    style?: "normal" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "blockquote";
+    listItem?: "bullet" | "number";
+    markDefs?: Array<{
+      href?: string;
+      _type: "link";
+      _key: string;
+    }>;
+    level?: number;
+    _type: "block";
+    _key: string;
+  }>;
 };
 
 export type HomePage = {
@@ -31,6 +188,7 @@ export type HomePage = {
   _updatedAt: string;
   _rev: string;
   videoUrl: string;
+  tagline: string;
 };
 
 export type BookKursPage = {
@@ -96,6 +254,43 @@ export type FirstAidCoursePage = {
     _type: "course";
     _key: string;
   }>;
+  otherCoursesText: Array<{
+    children?: Array<{
+      marks?: Array<string>;
+      text?: string;
+      _type: "span";
+      _key: string;
+    }>;
+    style?: "normal" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "blockquote";
+    listItem?: "bullet" | "number";
+    markDefs?: Array<{
+      href?: string;
+      _type: "link";
+      _key: string;
+    }>;
+    level?: number;
+    _type: "block";
+    _key: string;
+  }>;
+  evaluationText: Array<{
+    children?: Array<{
+      marks?: Array<string>;
+      text?: string;
+      _type: "span";
+      _key: string;
+    }>;
+    style?: "normal" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "blockquote";
+    listItem?: "bullet" | "number";
+    markDefs?: Array<{
+      href?: string;
+      _type: "link";
+      _key: string;
+    }>;
+    level?: number;
+    _type: "block";
+    _key: string;
+  }>;
+  evaluationFormUrl?: string;
 };
 
 export type SanityImageCrop = {
@@ -219,50 +414,6 @@ export type AkuttCalling = {
     _key: string;
   }>;
   link?: string;
-};
-
-export type FirstAidInfo = {
-  _id: string;
-  _type: "firstAidInfo";
-  _createdAt: string;
-  _updatedAt: string;
-  _rev: string;
-  col1: Array<{
-    children?: Array<{
-      marks?: Array<string>;
-      text?: string;
-      _type: "span";
-      _key: string;
-    }>;
-    style?: "normal" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "blockquote";
-    listItem?: "bullet" | "number";
-    markDefs?: Array<{
-      href?: string;
-      _type: "link";
-      _key: string;
-    }>;
-    level?: number;
-    _type: "block";
-    _key: string;
-  }>;
-  col2: Array<{
-    children?: Array<{
-      marks?: Array<string>;
-      text?: string;
-      _type: "span";
-      _key: string;
-    }>;
-    style?: "normal" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "blockquote";
-    listItem?: "bullet" | "number";
-    markDefs?: Array<{
-      href?: string;
-      _type: "link";
-      _key: string;
-    }>;
-    level?: number;
-    _type: "block";
-    _key: string;
-  }>;
 };
 
 export type InstruktorLink = {
@@ -438,23 +589,47 @@ export type MediaItem = {
   publishedAt?: string;
 };
 
-export type CarouselSlide = {
+export type BoardRole = {
   _id: string;
-  _type: "carouselSlide";
+  _type: "boardRole";
   _createdAt: string;
   _updatedAt: string;
   _rev: string;
-  backgroundImage: {
-    asset?: SanityImageAssetReference;
-    media?: unknown;
-    hotspot?: SanityImageHotspot;
-    crop?: SanityImageCrop;
-    _type: "image";
-  };
+  role:
+    | "boardLeader"
+    | "subjectLeader"
+    | "internalLeader"
+    | "externalLeader"
+    | "internalCoordinator"
+    | "externalCoordinator"
+    | "committeeLeader"
+    | "instructorLeader"
+    | "financialLeader"
+    | "extraLeader"
+    | "marketingLeader"
+    | "sponsorLeader"
+    | "equipmentLeader"
+    | "secretary"
+    | "mentorLeader";
   title: string;
-  description: string;
-  buttonText: string;
-  buttonLink: string;
+  description: Array<{
+    children?: Array<{
+      marks?: Array<string>;
+      text?: string;
+      _type: "span";
+      _key: string;
+    }>;
+    style?: "normal" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "blockquote";
+    listItem?: "bullet" | "number";
+    markDefs?: Array<{
+      href?: string;
+      _type: "link";
+      _key: string;
+    }>;
+    level?: number;
+    _type: "block";
+    _key: string;
+  }>;
 };
 
 export type BoardMember = {
@@ -616,7 +791,10 @@ export type Geopoint = {
 };
 
 export type AllSanitySchemaTypes =
-  | MembershipSignupUrl
+  | SiteSettings
+  | AboutPage
+  | InstruktorPage
+  | ForMedisinstudenterPage
   | HomePage
   | BookKursPage
   | SanityImageAssetReference
@@ -626,14 +804,13 @@ export type AllSanitySchemaTypes =
   | CooperationPartners
   | MarkorPage
   | AkuttCalling
-  | FirstAidInfo
   | InstruktorLink
   | Vedtekter
   | Committee
   | Slug
   | CourseOffering
   | MediaItem
-  | CarouselSlide
+  | BoardRole
   | BoardMember
   | SanityImagePaletteSwatch
   | SanityImagePalette
@@ -646,7 +823,7 @@ export type AllSanitySchemaTypes =
 
 // Source: sanity/lib/queries.ts
 // Variable: BOARD_MEMBERS_QUERY
-// Query: *[_type == "boardMember"] | order(  select(    role == 'boardLeader' => 1,    role == 'subjectLeader' => 2,    role == 'internalLeader' => 3,    role == 'externalLeader' => 4,    role == 'internalCoordinator' => 5,    role == 'externalCoordinator' => 6,    role == 'committeeLeader' => 7,    role == 'instructorLeader' => 8,    role == 'financialLeader' => 9,    role == 'marketingLeader' => 10,    role == 'extraLeader' => 11,    role == 'sponsorLeader' => 12,    role == 'equipmentLeader' => 13,    role == 'secretary' => 14,    role == 'mentorLeader' => 15,    99  ) asc,  _createdAt asc) {  _id,  name,  slug,  role,  email,  age,  hometown,  profileImage,  PersonalImage,  bio,  activeFrom,  activeTo}
+// Query: *[_type == "boardMember"] | order(  select(    role == 'boardLeader' => 1,    role == 'subjectLeader' => 2,    role == 'internalLeader' => 3,    role == 'externalLeader' => 4,    role == 'internalCoordinator' => 5,    role == 'externalCoordinator' => 6,    role == 'committeeLeader' => 7,    role == 'instructorLeader' => 8,    role == 'financialLeader' => 9,    role == 'marketingLeader' => 10,    role == 'extraLeader' => 11,    role == 'sponsorLeader' => 12,    role == 'equipmentLeader' => 13,    role == 'secretary' => 14,    role == 'mentorLeader' => 15,    99  ) asc,  _createdAt asc) {  _id,  name,  slug,  role,  email,  profileImage,  PersonalImage,  bio,  activeFrom,  activeTo}
 export type BOARD_MEMBERS_QUERY_RESULT = Array<{
   _id: string;
   name: string;
@@ -668,70 +845,6 @@ export type BOARD_MEMBERS_QUERY_RESULT = Array<{
     | "sponsorLeader"
     | "subjectLeader";
   email: string | null;
-  age: null;
-  hometown: null;
-  profileImage: {
-    asset?: SanityImageAssetReference;
-    media?: unknown;
-    hotspot?: SanityImageHotspot;
-    crop?: SanityImageCrop;
-    _type: "image";
-  };
-  PersonalImage: {
-    asset?: SanityImageAssetReference;
-    media?: unknown;
-    hotspot?: SanityImageHotspot;
-    crop?: SanityImageCrop;
-    _type: "image";
-  } | null;
-  bio: Array<{
-    children?: Array<{
-      marks?: Array<string>;
-      text?: string;
-      _type: "span";
-      _key: string;
-    }>;
-    style?: "blockquote" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "normal";
-    listItem?: "bullet" | "number";
-    markDefs?: Array<{
-      href?: string;
-      _type: "link";
-      _key: string;
-    }>;
-    level?: number;
-    _type: "block";
-    _key: string;
-  }>;
-  activeFrom: string;
-  activeTo: string;
-}>;
-
-// Source: sanity/lib/queries.ts
-// Variable: CURRENT_BOARD_MEMBERS_QUERY
-// Query: *[_type == "boardMember" && activeTo >= now()] | order(  select(    role == 'boardLeader' => 1,    role == 'subjectLeader' => 2,    role == 'internalLeader' => 3,    role == 'externalLeader' => 4,    role == 'internalCoordinator' => 5,    role == 'externalCoordinator' => 6,    role == 'committeeLeader' => 7,    role == 'instructorLeader' => 8,    role == 'financialLeader' => 9,    role == 'marketingLeader' => 10,    role == 'extraLeader' => 11,    role == 'sponsorLeader' => 12,    role == 'equipmentLeader' => 13,    role == 'secretary' => 14,    role == 'mentorLeader' => 15,    99  ) asc,  _createdAt asc) {  _id,  name,  slug,  role,  email,  age,  hometown,  profileImage,  PersonalImage,  bio,  activeFrom,  activeTo}
-export type CURRENT_BOARD_MEMBERS_QUERY_RESULT = Array<{
-  _id: string;
-  name: string;
-  slug: Slug;
-  role:
-    | "boardLeader"
-    | "committeeLeader"
-    | "equipmentLeader"
-    | "externalCoordinator"
-    | "externalLeader"
-    | "extraLeader"
-    | "financialLeader"
-    | "instructorLeader"
-    | "internalCoordinator"
-    | "internalLeader"
-    | "marketingLeader"
-    | "mentorLeader"
-    | "secretary"
-    | "sponsorLeader"
-    | "subjectLeader";
-  email: string | null;
-  age: null;
-  hometown: null;
   profileImage: {
     asset?: SanityImageAssetReference;
     media?: unknown;
@@ -770,7 +883,7 @@ export type CURRENT_BOARD_MEMBERS_QUERY_RESULT = Array<{
 
 // Source: sanity/lib/queries.ts
 // Variable: BOARD_MEMBER_QUERY_BY_SLUG
-// Query: *[_type == "boardMember" && slug.current == $slug][0] {  _id,  name,  slug,  role,  email,  age,  hometown,  profileImage,  PersonalImage,  bio,  order,  activeFrom,  activeTo}
+// Query: *[_type == "boardMember" && slug.current == $slug][0] {  _id,  name,  slug,  role,  email,  profileImage,  PersonalImage,  bio,  activeFrom,  activeTo}
 export type BOARD_MEMBER_QUERY_BY_SLUG_RESULT = {
   _id: string;
   name: string;
@@ -792,8 +905,6 @@ export type BOARD_MEMBER_QUERY_BY_SLUG_RESULT = {
     | "sponsorLeader"
     | "subjectLeader";
   email: string | null;
-  age: null;
-  hometown: null;
   profileImage: {
     asset?: SanityImageAssetReference;
     media?: unknown;
@@ -826,100 +937,16 @@ export type BOARD_MEMBER_QUERY_BY_SLUG_RESULT = {
     _type: "block";
     _key: string;
   }>;
-  order: null;
   activeFrom: string;
   activeTo: string;
 } | null;
-
-// Source: sanity/lib/queries.ts
-// Variable: BOARD_MEMBER_QUERY_BY_ROLE
-// Query: *[_type == "boardMember" && role == $role][0] {  _id,  name,  slug,  role,  email,  age,  hometown,  profileImage,  PersonalImage,  bio,  order,  activeFrom,  activeTo}
-export type BOARD_MEMBER_QUERY_BY_ROLE_RESULT = {
-  _id: string;
-  name: string;
-  slug: Slug;
-  role:
-    | "boardLeader"
-    | "committeeLeader"
-    | "equipmentLeader"
-    | "externalCoordinator"
-    | "externalLeader"
-    | "extraLeader"
-    | "financialLeader"
-    | "instructorLeader"
-    | "internalCoordinator"
-    | "internalLeader"
-    | "marketingLeader"
-    | "mentorLeader"
-    | "secretary"
-    | "sponsorLeader"
-    | "subjectLeader";
-  email: string | null;
-  age: null;
-  hometown: null;
-  profileImage: {
-    asset?: SanityImageAssetReference;
-    media?: unknown;
-    hotspot?: SanityImageHotspot;
-    crop?: SanityImageCrop;
-    _type: "image";
-  };
-  PersonalImage: {
-    asset?: SanityImageAssetReference;
-    media?: unknown;
-    hotspot?: SanityImageHotspot;
-    crop?: SanityImageCrop;
-    _type: "image";
-  } | null;
-  bio: Array<{
-    children?: Array<{
-      marks?: Array<string>;
-      text?: string;
-      _type: "span";
-      _key: string;
-    }>;
-    style?: "blockquote" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "normal";
-    listItem?: "bullet" | "number";
-    markDefs?: Array<{
-      href?: string;
-      _type: "link";
-      _key: string;
-    }>;
-    level?: number;
-    _type: "block";
-    _key: string;
-  }>;
-  order: null;
-  activeFrom: string;
-  activeTo: string;
-} | null;
-
-// Source: sanity/lib/queries.ts
-// Variable: CAROUSEL_SLIDES_QUERY
-// Query: *[_type == "carouselSlide"] | order(order asc) {  _id,  backgroundImage,  title,  description,  buttonText,  buttonLink,  order}
-export type CAROUSEL_SLIDES_QUERY_RESULT = Array<{
-  _id: string;
-  backgroundImage: {
-    asset?: SanityImageAssetReference;
-    media?: unknown;
-    hotspot?: SanityImageHotspot;
-    crop?: SanityImageCrop;
-    _type: "image";
-  };
-  title: string;
-  description: string;
-  buttonText: string;
-  buttonLink: string;
-  order: null;
-}>;
 
 // Source: sanity/lib/queries.ts
 // Variable: MEDIA_ITEMS_QUERY
-// Query: *[_type == "mediaItem"] | order(order asc) {  _id,  title,  slug,  description,  thumbnail,  videoUrl,  externalLink,  linkText,  year,  order,  publishedAt}
+// Query: *[_type == "mediaItem"] | order(year desc, publishedAt desc) {  _id,  title,  description,  thumbnail,  videoUrl,  externalLink,  year,  publishedAt}
 export type MEDIA_ITEMS_QUERY_RESULT = Array<{
   _id: string;
   title: string;
-  slug: null;
   description: Array<{
     children?: Array<{
       marks?: Array<string>;
@@ -947,9 +974,7 @@ export type MEDIA_ITEMS_QUERY_RESULT = Array<{
   } | null;
   videoUrl: string | null;
   externalLink: string | null;
-  linkText: null;
   year: number;
-  order: null;
   publishedAt: string | null;
 }>;
 
@@ -1086,49 +1111,6 @@ export type VEDTEKTER_QUERY_RESULT = {
 } | null;
 
 // Source: sanity/lib/queries.ts
-// Variable: FIRST_AID_INFO_QUERY
-// Query: *[_type == "firstAidInfo"][0] {  _id,  col1,  col2}
-export type FIRST_AID_INFO_QUERY_RESULT = {
-  _id: string;
-  col1: Array<{
-    children?: Array<{
-      marks?: Array<string>;
-      text?: string;
-      _type: "span";
-      _key: string;
-    }>;
-    style?: "blockquote" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "normal";
-    listItem?: "bullet" | "number";
-    markDefs?: Array<{
-      href?: string;
-      _type: "link";
-      _key: string;
-    }>;
-    level?: number;
-    _type: "block";
-    _key: string;
-  }>;
-  col2: Array<{
-    children?: Array<{
-      marks?: Array<string>;
-      text?: string;
-      _type: "span";
-      _key: string;
-    }>;
-    style?: "blockquote" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "normal";
-    listItem?: "bullet" | "number";
-    markDefs?: Array<{
-      href?: string;
-      _type: "link";
-      _key: string;
-    }>;
-    level?: number;
-    _type: "block";
-    _key: string;
-  }>;
-} | null;
-
-// Source: sanity/lib/queries.ts
 // Variable: INSTRUKT_LINKS_QUERY
 // Query: *[_type == "instruktorLink"] | order(rank asc, _createdAt asc) {  _id,  title,  description,  link,  linkText,  rank}
 export type INSTRUKT_LINKS_QUERY_RESULT = Array<{
@@ -1244,7 +1226,7 @@ export type COOPERATION_PARTNERS_QUERY_RESULT = {
 
 // Source: sanity/lib/queries.ts
 // Variable: FIRST_AID_COURSE_PAGE_QUERY
-// Query: *[_type == "firstAidCoursePage"][0] {  _id,  introText,  courses[] {    title,    description,    modules[] {      number,      title,      description,      imageSrc,      imageAlt,      isReversed    },    footerNote  }}
+// Query: *[_type == "firstAidCoursePage"][0] {  _id,  introText,  courses[] {    title,    description,    modules[] {      number,      title,      description,      imageSrc,      imageAlt,      isReversed    },    footerNote  },  otherCoursesText,  evaluationText,  evaluationFormUrl}
 export type FIRST_AID_COURSE_PAGE_QUERY_RESULT = {
   _id: string;
   introText: string;
@@ -1267,6 +1249,43 @@ export type FIRST_AID_COURSE_PAGE_QUERY_RESULT = {
     }>;
     footerNote: string | null;
   }> | null;
+  otherCoursesText: Array<{
+    children?: Array<{
+      marks?: Array<string>;
+      text?: string;
+      _type: "span";
+      _key: string;
+    }>;
+    style?: "blockquote" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "normal";
+    listItem?: "bullet" | "number";
+    markDefs?: Array<{
+      href?: string;
+      _type: "link";
+      _key: string;
+    }>;
+    level?: number;
+    _type: "block";
+    _key: string;
+  }>;
+  evaluationText: Array<{
+    children?: Array<{
+      marks?: Array<string>;
+      text?: string;
+      _type: "span";
+      _key: string;
+    }>;
+    style?: "blockquote" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "normal";
+    listItem?: "bullet" | "number";
+    markDefs?: Array<{
+      href?: string;
+      _type: "link";
+      _key: string;
+    }>;
+    level?: number;
+    _type: "block";
+    _key: string;
+  }>;
+  evaluationFormUrl: string | null;
 } | null;
 
 // Source: sanity/lib/queries.ts
@@ -1296,39 +1315,323 @@ export type BOOK_KURS_PAGE_QUERY_RESULT = {
 
 // Source: sanity/lib/queries.ts
 // Variable: HOME_PAGE_QUERY
-// Query: *[_type == "homePage"][0] {  _id,  videoUrl}
+// Query: *[_type == "homePage"][0] {  _id,  videoUrl,  tagline}
 export type HOME_PAGE_QUERY_RESULT = {
   _id: string;
   videoUrl: string;
+  tagline: string;
 } | null;
 
 // Source: sanity/lib/queries.ts
 // Variable: FOR_MEDISINSTUDENTER_PAGE_QUERY
-// Query: *[_type == "forMedisinstudenterPage"][0] {  _id,  membershipSignupUrl}
-export type FOR_MEDISINSTUDENTER_PAGE_QUERY_RESULT = null;
+// Query: *[_type == "forMedisinstudenterPage"][0] {  _id,  membershipSignupUrl,  membershipText,  offersText,  committeesText}
+export type FOR_MEDISINSTUDENTER_PAGE_QUERY_RESULT = {
+  _id: string;
+  membershipSignupUrl: string;
+  membershipText: Array<{
+    children?: Array<{
+      marks?: Array<string>;
+      text?: string;
+      _type: "span";
+      _key: string;
+    }>;
+    style?: "blockquote" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "normal";
+    listItem?: "bullet" | "number";
+    markDefs?: Array<{
+      href?: string;
+      _type: "link";
+      _key: string;
+    }>;
+    level?: number;
+    _type: "block";
+    _key: string;
+  }>;
+  offersText: Array<{
+    children?: Array<{
+      marks?: Array<string>;
+      text?: string;
+      _type: "span";
+      _key: string;
+    }>;
+    style?: "blockquote" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "normal";
+    listItem?: "bullet" | "number";
+    markDefs?: Array<{
+      href?: string;
+      _type: "link";
+      _key: string;
+    }>;
+    level?: number;
+    _type: "block";
+    _key: string;
+  }>;
+  committeesText: Array<{
+    children?: Array<{
+      marks?: Array<string>;
+      text?: string;
+      _type: "span";
+      _key: string;
+    }>;
+    style?: "blockquote" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "normal";
+    listItem?: "bullet" | "number";
+    markDefs?: Array<{
+      href?: string;
+      _type: "link";
+      _key: string;
+    }>;
+    level?: number;
+    _type: "block";
+    _key: string;
+  }>;
+} | null;
+
+// Source: sanity/lib/queries.ts
+// Variable: INSTRUKTOR_PAGE_QUERY
+// Query: *[_type == "instruktorPage"][0] {  _id,  becomeInstructorText,  skillInstructorText}
+export type INSTRUKTOR_PAGE_QUERY_RESULT = {
+  _id: string;
+  becomeInstructorText: Array<{
+    children?: Array<{
+      marks?: Array<string>;
+      text?: string;
+      _type: "span";
+      _key: string;
+    }>;
+    style?: "blockquote" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "normal";
+    listItem?: "bullet" | "number";
+    markDefs?: Array<{
+      href?: string;
+      _type: "link";
+      _key: string;
+    }>;
+    level?: number;
+    _type: "block";
+    _key: string;
+  }>;
+  skillInstructorText: Array<{
+    children?: Array<{
+      marks?: Array<string>;
+      text?: string;
+      _type: "span";
+      _key: string;
+    }>;
+    style?: "blockquote" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "normal";
+    listItem?: "bullet" | "number";
+    markDefs?: Array<{
+      href?: string;
+      _type: "link";
+      _key: string;
+    }>;
+    level?: number;
+    _type: "block";
+    _key: string;
+  }>;
+} | null;
+
+// Source: sanity/lib/queries.ts
+// Variable: ABOUT_PAGE_QUERY
+// Query: *[_type == "aboutPage"][0] {  _id,  aboutText,  partnerCtaTitle,  partnerCtaText}
+export type ABOUT_PAGE_QUERY_RESULT = {
+  _id: string;
+  aboutText: Array<{
+    children?: Array<{
+      marks?: Array<string>;
+      text?: string;
+      _type: "span";
+      _key: string;
+    }>;
+    style?: "blockquote" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "normal";
+    listItem?: "bullet" | "number";
+    markDefs?: Array<{
+      href?: string;
+      _type: "link";
+      _key: string;
+    }>;
+    level?: number;
+    _type: "block";
+    _key: string;
+  }>;
+  partnerCtaTitle: string;
+  partnerCtaText: Array<{
+    children?: Array<{
+      marks?: Array<string>;
+      text?: string;
+      _type: "span";
+      _key: string;
+    }>;
+    style?: "blockquote" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "normal";
+    listItem?: "bullet" | "number";
+    markDefs?: Array<{
+      href?: string;
+      _type: "link";
+      _key: string;
+    }>;
+    level?: number;
+    _type: "block";
+    _key: string;
+  }>;
+} | null;
+
+// Source: sanity/lib/queries.ts
+// Variable: SITE_SETTINGS_QUERY
+// Query: *[_type == "siteSettings"][0] {  _id,  address,  orgNumber,  contactEmail,  instagramUrl,  facebookUrl,  githubUrl}
+export type SITE_SETTINGS_QUERY_RESULT = {
+  _id: string;
+  address: string;
+  orgNumber: string | null;
+  contactEmail: string;
+  instagramUrl: string | null;
+  facebookUrl: string | null;
+  githubUrl: string | null;
+} | null;
+
+// Source: sanity/lib/queries.ts
+// Variable: BOARD_ROLE_PAGE_QUERY
+// Query: *[_type == "boardRole" && lower(role) == $slug][0] {  _id,  role,  title,  description,  "member": *[_type == "boardMember" && role == ^.role] | order(activeTo desc)[0]}
+export type BOARD_ROLE_PAGE_QUERY_RESULT = {
+  _id: string;
+  role:
+    | "boardLeader"
+    | "committeeLeader"
+    | "equipmentLeader"
+    | "externalCoordinator"
+    | "externalLeader"
+    | "extraLeader"
+    | "financialLeader"
+    | "instructorLeader"
+    | "internalCoordinator"
+    | "internalLeader"
+    | "marketingLeader"
+    | "mentorLeader"
+    | "secretary"
+    | "sponsorLeader"
+    | "subjectLeader";
+  title: string;
+  description: Array<{
+    children?: Array<{
+      marks?: Array<string>;
+      text?: string;
+      _type: "span";
+      _key: string;
+    }>;
+    style?: "blockquote" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "normal";
+    listItem?: "bullet" | "number";
+    markDefs?: Array<{
+      href?: string;
+      _type: "link";
+      _key: string;
+    }>;
+    level?: number;
+    _type: "block";
+    _key: string;
+  }>;
+  member: {
+    _id: string;
+    _type: "boardMember";
+    _createdAt: string;
+    _updatedAt: string;
+    _rev: string;
+    name: string;
+    slug: Slug;
+    role:
+      | "boardLeader"
+      | "committeeLeader"
+      | "equipmentLeader"
+      | "externalCoordinator"
+      | "externalLeader"
+      | "extraLeader"
+      | "financialLeader"
+      | "instructorLeader"
+      | "internalCoordinator"
+      | "internalLeader"
+      | "marketingLeader"
+      | "mentorLeader"
+      | "secretary"
+      | "sponsorLeader"
+      | "subjectLeader";
+    email?: string;
+    activeFrom: string;
+    activeTo: string;
+    profileImage: {
+      asset?: SanityImageAssetReference;
+      media?: unknown;
+      hotspot?: SanityImageHotspot;
+      crop?: SanityImageCrop;
+      _type: "image";
+    };
+    PersonalImage?: {
+      asset?: SanityImageAssetReference;
+      media?: unknown;
+      hotspot?: SanityImageHotspot;
+      crop?: SanityImageCrop;
+      _type: "image";
+    };
+    bio: Array<{
+      children?: Array<{
+        marks?: Array<string>;
+        text?: string;
+        _type: "span";
+        _key: string;
+      }>;
+      style?: "blockquote" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "normal";
+      listItem?: "bullet" | "number";
+      markDefs?: Array<{
+        href?: string;
+        _type: "link";
+        _key: string;
+      }>;
+      level?: number;
+      _type: "block";
+      _key: string;
+    }>;
+  } | null;
+} | null;
+
+// Source: sanity/lib/queries.ts
+// Variable: BOARD_ROLE_SLUGS_QUERY
+// Query: *[_type == "boardRole" && defined(role)] {  "slug": lower(role),  _updatedAt}
+export type BOARD_ROLE_SLUGS_QUERY_RESULT = Array<{
+  slug:
+    | "boardleader"
+    | "committeeleader"
+    | "equipmentleader"
+    | "externalcoordinator"
+    | "externalleader"
+    | "extraleader"
+    | "financialleader"
+    | "instructorleader"
+    | "internalcoordinator"
+    | "internalleader"
+    | "marketingleader"
+    | "mentorleader"
+    | "secretary"
+    | "sponsorleader"
+    | "subjectleader";
+  _updatedAt: string;
+}>;
 
 // Query TypeMap
 import "@sanity/client";
 declare module "@sanity/client" {
   interface SanityQueries {
-    "*[_type == \"boardMember\"] | order(\n  select(\n    role == 'boardLeader' => 1,\n    role == 'subjectLeader' => 2,\n    role == 'internalLeader' => 3,\n    role == 'externalLeader' => 4,\n    role == 'internalCoordinator' => 5,\n    role == 'externalCoordinator' => 6,\n    role == 'committeeLeader' => 7,\n    role == 'instructorLeader' => 8,\n    role == 'financialLeader' => 9,\n    role == 'marketingLeader' => 10,\n    role == 'extraLeader' => 11,\n    role == 'sponsorLeader' => 12,\n    role == 'equipmentLeader' => 13,\n    role == 'secretary' => 14,\n    role == 'mentorLeader' => 15,\n    99\n  ) asc,\n  _createdAt asc\n) {\n  _id,\n  name,\n  slug,\n  role,\n  email,\n  age,\n  hometown,\n  profileImage,\n  PersonalImage,\n  bio,\n  activeFrom,\n  activeTo\n}": BOARD_MEMBERS_QUERY_RESULT;
-    "*[_type == \"boardMember\" && activeTo >= now()] | order(\n  select(\n    role == 'boardLeader' => 1,\n    role == 'subjectLeader' => 2,\n    role == 'internalLeader' => 3,\n    role == 'externalLeader' => 4,\n    role == 'internalCoordinator' => 5,\n    role == 'externalCoordinator' => 6,\n    role == 'committeeLeader' => 7,\n    role == 'instructorLeader' => 8,\n    role == 'financialLeader' => 9,\n    role == 'marketingLeader' => 10,\n    role == 'extraLeader' => 11,\n    role == 'sponsorLeader' => 12,\n    role == 'equipmentLeader' => 13,\n    role == 'secretary' => 14,\n    role == 'mentorLeader' => 15,\n    99\n  ) asc,\n  _createdAt asc\n) {\n  _id,\n  name,\n  slug,\n  role,\n  email,\n  age,\n  hometown,\n  profileImage,\n  PersonalImage,\n  bio,\n  activeFrom,\n  activeTo\n}": CURRENT_BOARD_MEMBERS_QUERY_RESULT;
-    '*[_type == "boardMember" && slug.current == $slug][0] {\n  _id,\n  name,\n  slug,\n  role,\n  email,\n  age,\n  hometown,\n  profileImage,\n  PersonalImage,\n  bio,\n  order,\n  activeFrom,\n  activeTo\n}': BOARD_MEMBER_QUERY_BY_SLUG_RESULT;
-    '*[_type == "boardMember" && role == $role][0] {\n  _id,\n  name,\n  slug,\n  role,\n  email,\n  age,\n  hometown,\n  profileImage,\n  PersonalImage,\n  bio,\n  order,\n  activeFrom,\n  activeTo\n}': BOARD_MEMBER_QUERY_BY_ROLE_RESULT;
-    '*[_type == "carouselSlide"] | order(order asc) {\n  _id,\n  backgroundImage,\n  title,\n  description,\n  buttonText,\n  buttonLink,\n  order\n}': CAROUSEL_SLIDES_QUERY_RESULT;
-    '*[_type == "mediaItem"] | order(order asc) {\n  _id,\n  title,\n  slug,\n  description,\n  thumbnail,\n  videoUrl,\n  externalLink,\n  linkText,\n  year,\n  order,\n  publishedAt\n}': MEDIA_ITEMS_QUERY_RESULT;
+    "*[_type == \"boardMember\"] | order(\n  select(\n    role == 'boardLeader' => 1,\n    role == 'subjectLeader' => 2,\n    role == 'internalLeader' => 3,\n    role == 'externalLeader' => 4,\n    role == 'internalCoordinator' => 5,\n    role == 'externalCoordinator' => 6,\n    role == 'committeeLeader' => 7,\n    role == 'instructorLeader' => 8,\n    role == 'financialLeader' => 9,\n    role == 'marketingLeader' => 10,\n    role == 'extraLeader' => 11,\n    role == 'sponsorLeader' => 12,\n    role == 'equipmentLeader' => 13,\n    role == 'secretary' => 14,\n    role == 'mentorLeader' => 15,\n    99\n  ) asc,\n  _createdAt asc\n) {\n  _id,\n  name,\n  slug,\n  role,\n  email,\n  profileImage,\n  PersonalImage,\n  bio,\n  activeFrom,\n  activeTo\n}": BOARD_MEMBERS_QUERY_RESULT;
+    '*[_type == "boardMember" && slug.current == $slug][0] {\n  _id,\n  name,\n  slug,\n  role,\n  email,\n  profileImage,\n  PersonalImage,\n  bio,\n  activeFrom,\n  activeTo\n}': BOARD_MEMBER_QUERY_BY_SLUG_RESULT;
+    '*[_type == "mediaItem"] | order(year desc, publishedAt desc) {\n  _id,\n  title,\n  description,\n  thumbnail,\n  videoUrl,\n  externalLink,\n  year,\n  publishedAt\n}': MEDIA_ITEMS_QUERY_RESULT;
     '*[_type == "courseOffering"] | order(order asc) {\n  _id,\n  title,\n  description,\n  image,\n  link,\n  linkText,\n  order,\n  category\n}': COURSE_OFFERINGS_QUERY_RESULT;
     '*[_type == "committee"] | order(order asc) {\n  _id,\n  name,\n  slug,\n  email,\n  logo,\n  shortDescription,\n  order\n}': COMMITTEES_QUERY_RESULT;
     '*[_type == "committee" && slug.current == $slug][0] {\n  _id,\n  name,\n  slug,\n  email,\n  logo,\n  description,\n  headerImage,\n  committeeImage,\n  order\n}': COMMITTEE_QUERY_RESULT;
     '*[_type == "vedtekter"][0] {\n  _id,\n  content,\n  lastUpdated\n}': VEDTEKTER_QUERY_RESULT;
-    '*[_type == "firstAidInfo"][0] {\n  _id,\n  col1,\n  col2\n}': FIRST_AID_INFO_QUERY_RESULT;
     '*[_type == "instruktorLink"] | order(rank asc, _createdAt asc) {\n  _id,\n  title,\n  description,\n  link,\n  linkText,\n  rank\n}': INSTRUKT_LINKS_QUERY_RESULT;
     '*[_type == "akuttCalling"][0] {\n  _id,\n  title,\n  content,\n  gallery,\n  link\n}': AKUTTKALLING_QUERY_RESULT;
     '*[_type == "markorPage"][0] {\n  _id,\n  title,\n  content,\n  gallery,\n  link\n}\n': MARKOR_PAGE_QUERY_RESULT;
     '*[_type == "cooperationPartners"][0] {\n  _id,\n  partners[] {\n    _key,\n    name,\n    logo,\n    url,\n    size\n  },\n  sisterOrganizations[] {\n    _key,\n    name,\n    logo,\n    url\n  }\n}': COOPERATION_PARTNERS_QUERY_RESULT;
-    '*[_type == "firstAidCoursePage"][0] {\n  _id,\n  introText,\n  courses[] {\n    title,\n    description,\n    modules[] {\n      number,\n      title,\n      description,\n      imageSrc,\n      imageAlt,\n      isReversed\n    },\n    footerNote\n  }\n}': FIRST_AID_COURSE_PAGE_QUERY_RESULT;
+    '*[_type == "firstAidCoursePage"][0] {\n  _id,\n  introText,\n  courses[] {\n    title,\n    description,\n    modules[] {\n      number,\n      title,\n      description,\n      imageSrc,\n      imageAlt,\n      isReversed\n    },\n    footerNote\n  },\n  otherCoursesText,\n  evaluationText,\n  evaluationFormUrl\n}': FIRST_AID_COURSE_PAGE_QUERY_RESULT;
     '*[_type == "bookKursPage"][0] {\n  _id,\n  step1Content\n}': BOOK_KURS_PAGE_QUERY_RESULT;
-    '*[_type == "homePage"][0] {\n  _id,\n  videoUrl\n}': HOME_PAGE_QUERY_RESULT;
-    '*[_type == "forMedisinstudenterPage"][0] {\n  _id,\n  membershipSignupUrl\n}': FOR_MEDISINSTUDENTER_PAGE_QUERY_RESULT;
+    '*[_type == "homePage"][0] {\n  _id,\n  videoUrl,\n  tagline\n}': HOME_PAGE_QUERY_RESULT;
+    '*[_type == "forMedisinstudenterPage"][0] {\n  _id,\n  membershipSignupUrl,\n  membershipText,\n  offersText,\n  committeesText\n}': FOR_MEDISINSTUDENTER_PAGE_QUERY_RESULT;
+    '*[_type == "instruktorPage"][0] {\n  _id,\n  becomeInstructorText,\n  skillInstructorText\n}': INSTRUKTOR_PAGE_QUERY_RESULT;
+    '*[_type == "aboutPage"][0] {\n  _id,\n  aboutText,\n  partnerCtaTitle,\n  partnerCtaText\n}': ABOUT_PAGE_QUERY_RESULT;
+    '*[_type == "siteSettings"][0] {\n  _id,\n  address,\n  orgNumber,\n  contactEmail,\n  instagramUrl,\n  facebookUrl,\n  githubUrl\n}': SITE_SETTINGS_QUERY_RESULT;
+    '*[_type == "boardRole" && lower(role) == $slug][0] {\n  _id,\n  role,\n  title,\n  description,\n  "member": *[_type == "boardMember" && role == ^.role] | order(activeTo desc)[0]\n}': BOARD_ROLE_PAGE_QUERY_RESULT;
+    '*[_type == "boardRole" && defined(role)] {\n  "slug": lower(role),\n  _updatedAt\n}': BOARD_ROLE_SLUGS_QUERY_RESULT;
   }
 }
