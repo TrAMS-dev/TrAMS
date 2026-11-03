@@ -10,6 +10,7 @@ import {
     type EventFormPayload,
     type EventFormValues,
 } from '@/components/admin/EventForm'
+import EventQrCodeButton from '@/components/admin/EventQrCodeButton'
 import { toaster } from '@/components/ui/toaster'
 import { utcIsoToDatetimeLocalValue } from '@/lib/datetimeLocal'
 import { useAuth } from '@/hooks/useAuth'
@@ -159,6 +160,7 @@ export default function AdminEditEventPage() {
     return (
         <EventForm
             heading="Rediger arrangement"
+            headerAction={<EventQrCodeButton slug={slug} />}
             submitLabel="Lagre endringer"
             initialValues={initialValues}
             initialDateUnspecified={dateUnspecified}

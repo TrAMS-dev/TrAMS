@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import {
     Box,
+    Flex,
     Heading,
     Stack,
     Input,
@@ -86,6 +87,8 @@ export const emptyEventFormValues: EventFormValues = {
 
 interface EventFormProps {
     heading: string
+    /** Optional element shown next to the heading, e.g. extra actions */
+    headerAction?: React.ReactNode
     submitLabel: string
     initialValues?: EventFormValues
     initialDateUnspecified?: boolean
@@ -95,6 +98,7 @@ interface EventFormProps {
 
 export function EventForm({
     heading,
+    headerAction,
     submitLabel,
     initialValues = emptyEventFormValues,
     initialDateUnspecified = false,
@@ -331,9 +335,10 @@ export function EventForm({
 
     return (
         <Box maxW="800px" mx="auto" bg="white" p={8} rounded="lg" shadow="sm">
-            <Heading size="lg" mb={6}>
-                {heading}
-            </Heading>
+            <Flex justify="space-between" align="center" gap={4} mb={6} wrap="wrap">
+                <Heading size="lg">{heading}</Heading>
+                {headerAction}
+            </Flex>
 
             <form onSubmit={handleSubmit}>
                 <Stack gap={6}>
