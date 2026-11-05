@@ -205,6 +205,7 @@ export default function AdminParticipantsPage() {
             const payload = (await res.json().catch(() => ({}))) as {
                 error?: string
                 participant?: { id: number; attended: boolean | null }
+                followupSentAt?: string | null
             }
 
             if (!res.ok) {
@@ -212,13 +213,26 @@ export default function AdminParticipantsPage() {
             }
 
             if (payload.participant) {
+                const followupSentAt = payload.followupSentAt ?? null
                 setParticipants((prev) =>
                     prev.map((p) =>
                         p.id === participantId
-                            ? { ...p, attended: payload.participant!.attended }
+                            ? {
+                                  ...p,
+                                  attended: payload.participant!.attended,
+                                  followup_sent_at: followupSentAt ?? p.followup_sent_at,
+                              }
                             : p
                     )
                 )
+                if (followupSentAt) {
+                    toaster.create({
+                        title: 'E-post sendt',
+                        description: 'Deltakeren har fått e-posten som sendes etter arrangementet.',
+                        type: 'success',
+                        duration: 4000,
+                    })
+                }
             }
         } catch (e) {
             console.error('Error updating attendance:', e)

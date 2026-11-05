@@ -103,13 +103,15 @@ export default function EventFollowupPanel({
 
             {!eventIsPast ? (
                 <Text fontSize="sm" color="gray.700">
-                    Når arrangementet er ferdig, kan du sende lenke til tilbakemeldingsskjema og
-                    personlig kursbevis på e-post til alle som er registrert som «Møtt».
+                    Alle som registreres som «Møtt» får automatisk e-post med kursbevis, og lenke
+                    til tilbakemeldingsskjemaet hvis arrangementet har et, når arrangementet er
+                    ferdig.
                 </Text>
             ) : (
                 <Stack gap={3}>
                     <Text fontSize="sm" color="gray.700">
-                        Send e-post til deltakerne som er registrert som «Møtt». Kursbeviset er en
+                        Deltakere som registreres som «Møtt» får e-posten automatisk. Her kan du
+                        sende den manuelt, velge innhold eller sende på nytt. Kursbeviset er en
                         personlig side med navn, kurs og dato som de kan skrive ut eller lagre som
                         PDF. {attendedCount} har møtt, {attendedCount - notSentCount} har allerede
                         fått e-posten.

@@ -138,6 +138,7 @@ To apply migrations manually, run `npx supabase db push --db-url "<connection st
 
 - All emails are sent through Resend from `web@trams.no`. See [EMAILS.md](EMAILS.md) for the full list.
 - A Vercel Cron job (`vercel.json`) calls `/api/cron/event-reminders` every day at 07:00 UTC and emails confirmed participants two days before their event.
+- Another calls `/api/cron/event-followups` every day at 18:00 UTC and sends the post-event email (feedback form and certificate) to participants marked «Møtt» who haven't had it yet.
 - A GitHub Actions workflow (`.github/workflows/supabase-keepalive.yml`) pings Supabase daily to stop the project from being paused.
 
 ## 📜 Scripts

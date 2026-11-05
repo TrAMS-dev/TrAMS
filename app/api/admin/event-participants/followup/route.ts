@@ -1,11 +1,8 @@
 import { createClient } from '@/utils/supabase/server'
-import { sendEventFollowupEmails } from '@/lib/eventSignupEmail'
-import { certificateUrl, isCertificateSigningConfigured } from '@/lib/certificate'
+import { isCertificateSigningConfigured } from '@/lib/certificate'
 import { isEventPast } from '@/lib/eventDate'
-import { parseFeedbackQuestions } from '@/lib/eventFeedback'
+import { FOLLOWUP_EVENT_COLUMNS, hasFeedbackForm, sendFollowup } from '@/lib/eventFollowup'
 import { NextResponse } from 'next/server'
-
-const SITE_ORIGIN = (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.trams.no').replace(/\/$/, '')
 
 /**
  * Sender e-post etter arrangementet til deltakere registrert som «Møtt», med lenke til
@@ -63,9 +60,7 @@ export async function POST(request: Request) {
 
     const { data: event, error: eventError } = await supabase
         .from('Events')
-        .select(
-            'id, title, slug, start_datetime, end_datetime, date_unspecified, planned_month, location, contact_email, feedback_questions'
-        )
+        .select(FOLLOWUP_EVENT_COLUMNS)
         .eq('id', eventId)
         .single()
     if (eventError || !event) {
@@ -83,7 +78,7 @@ export async function POST(request: Request) {
         if (!event.slug) {
             return NextResponse.json({ error: 'Arrangementet mangler lenke' }, { status: 400 })
         }
-        if (parseFeedbackQuestions(event.feedback_questions).length === 0) {
+        if (!hasFeedbackForm(event)) {
             return NextResponse.json(
                 {
                     error: 'Arrangementet har ikke tilbakemeldingsskjema. Legg det til under «Rediger».',
@@ -118,39 +113,12 @@ export async function POST(request: Request) {
         return NextResponse.json({ sent: 0, participantIds: [], sentAt: null })
     }
 
-    const feedbackUrl = sendFeedback
-        ? `${SITE_ORIGIN}/arrangementer/${encodeURIComponent(event.slug!)}?tilbakemelding`
-        : null
-
-    const sentAt = new Date().toISOString()
-    const markSent = async (ids: number[]) => {
-        const { error } = await supabase
-            .from('EventParticipants')
-            .update({ followup_sent_at: sentAt })
-            .in('id', ids)
-        if (error) console.error('Followup: could not mark as sent', error)
-    }
-
-    let sentIds: number[]
+    let result: { sentIds: number[]; sentAt: string }
     try {
-        sentIds = await sendEventFollowupEmails(
-            {
-                eventId,
-                eventTitle: event.title || 'Arrangement',
-                eventSlug: event.slug,
-                startDatetime: event.start_datetime,
-                location: event.location,
-                contactEmail: event.contact_email,
-                feedbackUrl,
-            },
-            participants.map((p) => ({
-                participantId: p.id,
-                name: (p.name ?? '').trim(),
-                email: p.email ?? '',
-                certificateUrl: sendCertificate ? certificateUrl(p.id) : null,
-            })),
-            markSent
-        )
+        result = await sendFollowup(supabase, event, participants, {
+            sendFeedback,
+            sendCertificate,
+        })
     } catch (e) {
         console.error('Followup: send failed', e)
         return NextResponse.json(
@@ -159,5 +127,9 @@ export async function POST(request: Request) {
         )
     }
 
-    return NextResponse.json({ sent: sentIds.length, participantIds: sentIds, sentAt })
+    return NextResponse.json({
+        sent: result.sentIds.length,
+        participantIds: result.sentIds,
+        sentAt: result.sentAt,
+    })
 }
