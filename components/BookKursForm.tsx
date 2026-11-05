@@ -18,6 +18,7 @@ import {
     Spinner,
     Center,
 } from '@chakra-ui/react';
+import { cardStyles } from '@/components/ContentCard';
 import { PortableText, PortableTextBlock } from 'next-sanity';
 import { client } from '@/sanity/lib/client';
 import { BOOK_KURS_PAGE_QUERY } from '@/sanity/lib/queries';
@@ -51,6 +52,7 @@ export default function BookKursForm() {
         antallDeltakere: '',
         kursType: '',
         kursTypeAnnet: '',
+        kursby: 'trondheim' as 'trondheim' | 'levanger',
         sted: 'eget',
         adresse: '',
         annet: '',
@@ -236,7 +238,7 @@ export default function BookKursForm() {
 
     if (submissionStatus === 'success') {
         return (
-            <Box maxWidth="600px" mx="auto" p={6} borderRadius="lg" bg="white" boxShadow="md">
+            <Box {...cardStyles} p={{ base: 6, md: 8 }}>
                 <Alert.Root status="success" variant="subtle" flexDirection="column" alignItems="center" justifyContent="center" textAlign="center" height="200px">
                     <Alert.Indicator fontSize="3xl" />
                     <Alert.Title fontSize="xl" mt={4} mb={2}>Bestilling mottatt!</Alert.Title>
@@ -249,7 +251,7 @@ export default function BookKursForm() {
     }
 
     return (
-        <Box as="form" onSubmit={handleSubmit} maxWidth="600px" mx="auto" p={6} borderRadius="lg" bg="white" boxShadow="md">
+        <Box as="form" onSubmit={handleSubmit} {...cardStyles} p={{ base: 6, md: 8 }}>
 
             <Box mb={8}>
                 <HStack justify="space-between" mb={2}>
@@ -428,6 +430,36 @@ export default function BookKursForm() {
                         <SubsectionHeading fontSize="1.2rem" mb={4}>Tid og Sted</SubsectionHeading>
                         <Stack gap={4}>
                             <Field.Root>
+                                <Field.Label mb={2}>Hvilken by ønsker dere kurset i?<Text as="span" color="red.500">*</Text></Field.Label>
+                                <RadioGroup.Root
+                                    name="kursby"
+                                    value={formData.kursby}
+                                    onValueChange={(details) => {
+                                        const kursby = (details.value as 'trondheim' | 'levanger') || 'trondheim';
+                                        setFormData(prev => ({
+                                            ...prev,
+                                            kursby,
+                                            // Øya Helsehus er kun tilgjengelig i Trondheim
+                                            sted: kursby === 'levanger' && prev.sted === 'helsehus' ? 'eget' : prev.sted,
+                                        }));
+                                    }}
+                                >
+                                    <Stack direction="row" gap={4}>
+                                        <RadioGroup.Item value="trondheim">
+                                            <RadioGroup.ItemHiddenInput />
+                                            <RadioGroup.ItemIndicator />
+                                            <RadioGroup.ItemText>Trondheim</RadioGroup.ItemText>
+                                        </RadioGroup.Item>
+                                        <RadioGroup.Item value="levanger">
+                                            <RadioGroup.ItemHiddenInput />
+                                            <RadioGroup.ItemIndicator />
+                                            <RadioGroup.ItemText>Levanger</RadioGroup.ItemText>
+                                        </RadioGroup.Item>
+                                    </Stack>
+                                </RadioGroup.Root>
+                            </Field.Root>
+
+                            <Field.Root>
                                 <Field.Label mb={2}>Hvordan vil du oppgi tidspunkt?<Text as="span" color="red.500">*</Text></Field.Label>
                                 <RadioGroup.Root
                                     name="datoType"
@@ -512,11 +544,13 @@ export default function BookKursForm() {
                                             <RadioGroup.ItemIndicator />
                                             <RadioGroup.ItemText>Eget lokale</RadioGroup.ItemText>
                                         </RadioGroup.Item>
-                                        <RadioGroup.Item value="helsehus">
-                                            <RadioGroup.ItemHiddenInput />
-                                            <RadioGroup.ItemIndicator />
-                                            <RadioGroup.ItemText>Øya Helsehus (vi stiller med loklaler)</RadioGroup.ItemText>
-                                        </RadioGroup.Item>
+                                        {formData.kursby === 'trondheim' && (
+                                            <RadioGroup.Item value="helsehus">
+                                                <RadioGroup.ItemHiddenInput />
+                                                <RadioGroup.ItemIndicator />
+                                                <RadioGroup.ItemText>Øya Helsehus (vi stiller med loklaler)</RadioGroup.ItemText>
+                                            </RadioGroup.Item>
+                                        )}
                                     </Stack>
                                 </RadioGroup.Root>
                                 {formData.sted === 'eget' && (

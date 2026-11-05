@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Box, Flex, Link, Container, Text } from '@chakra-ui/react';
+import { cardStyles } from '@/components/ContentCard';
 import Image from 'next/image';
 import { SubsectionHeading } from '@/components/Typography';
 import { COMMITTEES_QUERY } from '@/sanity/lib/queries';
@@ -40,10 +41,8 @@ export default function CommiteeCards() {
                         flex="1 1 250px"
                         maxW="250px"
                         textAlign="center"
-                        bg="#fff"
-                        borderRadius="8px"
-                        p={4}
-                        boxShadow="0 0 10px rgba(0,0,0,0.1)"
+                        {...cardStyles}
+                        p={6}
                         display="flex"
                         flexDirection="column"
                         alignItems="center"

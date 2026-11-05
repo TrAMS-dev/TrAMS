@@ -8,20 +8,31 @@ on:
 jobs:
   ping:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: production
+            url_secret: SUPABASE_URL
+            key_secret: SUPABASE_ANON_KEY
+          - name: staging
+            url_secret: STAGING_SUPABASE_URL
+            key_secret: STAGING_SUPABASE_ANON_KEY
+    name: ping (${{ matrix.name }})
 
     steps:
       - name: Set up Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '22'
 
       - name: Install Supabase client
         run: npm install @supabase/supabase-js
 
       - name: Ping Supabase
         env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          SUPABASE_URL: ${{ secrets[matrix.url_secret] }}
+          SUPABASE_ANON_KEY: ${{ secrets[matrix.key_secret] }}
         run: |
           node -e "
           const { createClient } = require('@supabase/supabase-js');
@@ -37,10 +48,10 @@ jobs:
           );
 
           supabase
-            .from('CourseSubmissions') // <-- change to a real table
+            .from('CourseSubmissions')
             .select('id')
             .limit(1)
-            .then(({ data, error }) => {
+            .then(({ error }) => {
               if (error) {
                 console.error('Ping failed:', error);
                 process.exit(1);

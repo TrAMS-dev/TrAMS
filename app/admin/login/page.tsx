@@ -17,15 +17,17 @@ export default function LoginPage() {
 
     // Handle redirect after authentication state changes
     useEffect(() => {
-        if (!isLoading && isAuthenticated) {
-            if (isApproved) {
-                router.push('/admin')
-            } else {
-                // Show error but don't redirect - user is logged in but not approved
-                setError('Kontoen din er ikke godkjent av administrator ennå.')
-            }
+        if (!isLoading && isAuthenticated && isApproved) {
+            router.push('/admin')
         }
     }, [isAuthenticated, isApproved, isLoading, router])
+
+    // Logged in but not approved: show an error instead of redirecting
+    const notApprovedError =
+        !isLoading && isAuthenticated && !isApproved
+            ? 'Kontoen din er ikke godkjent av administrator ennå.'
+            : null
+    const shownError = error ?? notApprovedError
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -86,10 +88,10 @@ export default function LoginPage() {
 
                 <form onSubmit={handleLogin}>
                     <Stack gap={4}>
-                        {error && (
+                        {shownError && (
                             <Alert.Root status="error">
                                 <Alert.Indicator />
-                                <Alert.Title>{error}</Alert.Title>
+                                <Alert.Title>{shownError}</Alert.Title>
                             </Alert.Root>
                         )}
                         <Field.Root>
@@ -99,7 +101,7 @@ export default function LoginPage() {
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 required
-                                placeholder="admin@trams.no"
+                                placeholder="din@epost.no"
                             />
                         </Field.Root>
 
@@ -110,7 +112,7 @@ export default function LoginPage() {
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 required
-                                placeholder="••••••••"
+                                placeholder="••••••"
                             />
                         </Field.Root>
 

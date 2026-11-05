@@ -3,22 +3,25 @@
 import { useState } from 'react'
 import {
     Box,
+    Flex,
     Heading,
     Stack,
     Input,
     Textarea,
+    Text,
     Button,
     Field,
     Checkbox,
     NativeSelect,
     HStack,
-    Text,
 } from '@chakra-ui/react'
 import { useRouter } from 'next/navigation'
 import { ImageUploader } from '@/components/admin/ImageUploader'
 import { PlannedMonthSelector } from '@/components/admin/PlannedMonthSelector'
 import { toaster } from '@/components/ui/toaster'
 import { datetimeLocalToUtcIso } from '@/lib/datetimeLocal'
+import { activeYears, kullToKlasse } from '@/utils/functions/activeYears'
+import { type KullPool, formatPoolKlasser, validateKullPools } from '@/lib/kullPools'
 import {
     FEEDBACK_QUESTION_TYPES,
     FEEDBACK_TYPE_LABELS,
@@ -43,6 +46,11 @@ export interface EventFormValues {
     planned_month: string
     has_food: boolean
     custom_question: string
+    require_phone: boolean
+    /** Empty means every kull may sign up (all boxes checked). */
+    allowed_kull: number[]
+    /** Reserved spots per kull; spots is the raw input value. */
+    kull_pools: { kull: number[]; spots: string }[]
     feedback_open: boolean
     feedback_questions: FeedbackQuestion[]
 }
@@ -61,8 +69,12 @@ export interface EventFormPayload {
     author: string | null
     planned_month: string | null
     date_unspecified: boolean
+    signup_undecided: boolean
     has_food: boolean
     custom_question: string | null
+    require_phone: boolean
+    allowed_kull: number[] | null
+    kull_pools: KullPool[]
     feedback_open: boolean
     feedback_questions: FeedbackQuestion[]
 }
@@ -82,35 +94,112 @@ export const emptyEventFormValues: EventFormValues = {
     planned_month: '',
     has_food: false,
     custom_question: '',
+    require_phone: false,
+    allowed_kull: [],
+    kull_pools: [],
     feedback_open: false,
     feedback_questions: [],
 }
 
 interface EventFormProps {
     heading: string
+    /** Optional element shown next to the heading, e.g. extra actions */
+    headerAction?: React.ReactNode
     submitLabel: string
     initialValues?: EventFormValues
     initialDateUnspecified?: boolean
+    initialSignupUndecided?: boolean
     onSubmit: (payload: EventFormPayload) => Promise<void>
 }
 
 export function EventForm({
     heading,
+    headerAction,
     submitLabel,
     initialValues = emptyEventFormValues,
     initialDateUnspecified = false,
+    initialSignupUndecided = false,
     onSubmit,
 }: EventFormProps) {
     const router = useRouter()
     const [dateUnspecified, setDateUnspecified] = useState(initialDateUnspecified)
+    // Signup can't happen without a date, so an unspecified date implies undecided signup
+    const [signupUndecided, setSignupUndecided] = useState(
+        initialSignupUndecided || initialDateUnspecified
+    )
     const [hasFood, setHasFood] = useState(initialValues.has_food)
+    const [formData, setFormData] = useState<EventFormValues>(() => ({
+        ...initialValues,
+        allowed_kull:
+            initialValues.allowed_kull.length > 0 ? initialValues.allowed_kull : activeYears(),
+    }))
+    const [isSubmitting, setIsSubmitting] = useState(false)
+
+    // Keep previously saved kull visible even after they drop out of activeYears()
+    const kullOptions = Array.from(
+        new Set([...activeYears(), ...initialValues.allowed_kull])
+    ).sort((a, b) => b - a)
+
+    const toggleAllowedKull = (kull: number, checked: boolean) => {
+        setFormData((prev) => ({
+            ...prev,
+            allowed_kull: checked
+                ? [...prev.allowed_kull, kull]
+                : prev.allowed_kull.filter((k) => k !== kull),
+            // A kull that can't sign up can't have reserved spots
+            kull_pools: checked
+                ? prev.kull_pools
+                : prev.kull_pools.map((p) => ({ ...p, kull: p.kull.filter((k) => k !== kull) })),
+        }))
+    }
+
+    const poolKullOptions = kullOptions.filter((k) => formData.allowed_kull.includes(k))
+
+    const addKullPool = () => {
+        setFormData((prev) => ({
+            ...prev,
+            kull_pools: [...prev.kull_pools, { kull: [], spots: '' }],
+        }))
+    }
+
+    const updateKullPool = (index: number, change: Partial<{ kull: number[]; spots: string }>) => {
+        setFormData((prev) => ({
+            ...prev,
+            kull_pools: prev.kull_pools.map((p, i) => (i === index ? { ...p, ...change } : p)),
+        }))
+    }
+
+    const togglePoolKull = (index: number, kull: number, checked: boolean) => {
+        const pool = formData.kull_pools[index]
+        updateKullPool(index, {
+            kull: checked ? [...pool.kull, kull] : pool.kull.filter((k) => k !== kull),
+        })
+    }
+
+    const removeKullPool = (index: number) => {
+        setFormData((prev) => ({
+            ...prev,
+            kull_pools: prev.kull_pools.filter((_, i) => i !== index),
+        }))
+    }
+
+    const reservedSpots = formData.kull_pools.reduce(
+        (sum, p) => sum + (Number.parseInt(p.spots, 10) || 0),
+        0
+    )
+    const maxAttendeesInput = Number.parseInt(formData.max_attendees, 10)
+
+    // datetime-local values share one format, so string comparison orders them correctly
+    const endBeforeStart =
+        !dateUnspecified &&
+        formData.start_datetime !== '' &&
+        formData.end_datetime !== '' &&
+        formData.end_datetime < formData.start_datetime
+
     const [feedbackOpen, setFeedbackOpen] = useState(initialValues.feedback_open)
     const [feedbackQuestions, setFeedbackQuestions] = useState<FeedbackQuestion[]>(
         initialValues.feedback_questions
     )
-    const [formData, setFormData] = useState<EventFormValues>(initialValues)
-    const [isSubmitting, setIsSubmitting] = useState(false)
-
     const addFeedbackQuestion = () => {
         setFeedbackQuestions((prev) =>
             prev.length >= MAX_FEEDBACK_QUESTIONS
@@ -150,6 +239,16 @@ export function EventForm({
                 title: 'Velg planlagt måned',
                 description:
                     'Når dato ikke er spesifisert, må du oppgi hvilken måned arrangementet planlegges i.',
+                type: 'error',
+                duration: 5000,
+            })
+            return
+        }
+
+        if (!signupUndecided && formData.allowed_kull.length === 0) {
+            toaster.create({
+                title: 'Velg minst ett kull',
+                description: 'Minst ett kull må kunne melde seg på arrangementet.',
                 type: 'error',
                 duration: 5000,
             })
@@ -204,6 +303,15 @@ export function EventForm({
                 setIsSubmitting(false)
                 return
             }
+            if (new Date(endUtc) < new Date(startUtc)) {
+                toaster.create({
+                    title: 'Sluttidspunkt kan ikke være før starttidspunkt',
+                    type: 'error',
+                    duration: 5000,
+                })
+                setIsSubmitting(false)
+                return
+            }
         }
 
         const regOpensUtc = formData.reg_opens.trim()
@@ -231,6 +339,31 @@ export function EventForm({
             return
         }
 
+        const hideSignup = signupUndecided
+
+        const allowedKull =
+            signupUndecided || activeYears().every((k) => formData.allowed_kull.includes(k))
+                ? null
+                : [...formData.allowed_kull].sort((a, b) => a - b)
+
+        const kullPools: KullPool[] = hideSignup
+            ? []
+            : formData.kull_pools.map((p) => ({
+                  kull: [...p.kull].sort((a, b) => a - b),
+                  spots: Number(p.spots.trim() === '' ? Number.NaN : p.spots),
+              }))
+        const poolError = validateKullPools(kullPools, max_attendees, allowedKull)
+        if (poolError) {
+            toaster.create({
+                title: 'Ugyldige reserverte plasser',
+                description: poolError,
+                type: 'error',
+                duration: 5000,
+            })
+            setIsSubmitting(false)
+            return
+        }
+
         const payload: EventFormPayload = {
             title: formData.title,
             description: formData.description,
@@ -239,14 +372,19 @@ export function EventForm({
             location: dateUnspecified ? null : formData.location.trim() || null,
             contact_email: formData.contact_email.trim() || null,
             image: formData.image || null,
-            max_attendees: dateUnspecified ? null : max_attendees,
-            reg_opens: dateUnspecified ? null : regOpensUtc,
-            reg_deadline: dateUnspecified ? null : regDeadlineUtc,
+            max_attendees: hideSignup ? null : max_attendees,
+            reg_opens: hideSignup ? null : regOpensUtc,
+            reg_deadline: hideSignup ? null : regDeadlineUtc,
             author: formData.author || null,
             planned_month: dateUnspecified ? formData.planned_month.trim() : null,
             date_unspecified: dateUnspecified,
+            signup_undecided: signupUndecided,
             has_food: hasFood,
-            custom_question: formData.custom_question.trim() || null,
+            custom_question: signupUndecided ? null : formData.custom_question.trim() || null,
+            require_phone: !signupUndecided && formData.require_phone,
+            // All active kull checked means no restriction
+            allowed_kull: allowedKull,
+            kull_pools: kullPools,
             feedback_open: feedbackOpen,
             feedback_questions: cleanedFeedbackQuestions,
         }
@@ -260,9 +398,10 @@ export function EventForm({
 
     return (
         <Box maxW="800px" mx="auto" bg="white" p={8} rounded="lg" shadow="sm">
-            <Heading size="lg" mb={6}>
-                {heading}
-            </Heading>
+            <Flex justify="space-between" align="center" gap={4} mb={6} wrap="wrap">
+                <Heading size="lg">{heading}</Heading>
+                {headerAction}
+            </Flex>
 
             <form onSubmit={handleSubmit}>
                 <Stack gap={6}>
@@ -304,7 +443,11 @@ export function EventForm({
 
                     <Checkbox.Root
                         checked={dateUnspecified}
-                        onCheckedChange={(details) => setDateUnspecified(!!details.checked)}
+                        onCheckedChange={(details) => {
+                            const checked = !!details.checked
+                            setDateUnspecified(checked)
+                            if (checked) setSignupUndecided(true)
+                        }}
                     >
                         <Checkbox.HiddenInput />
                         <Checkbox.Control />
@@ -336,15 +479,19 @@ export function EventForm({
                                     />
                                 </Field.Root>
 
-                                <Field.Root>
+                                <Field.Root invalid={endBeforeStart}>
                                     <Field.Label>Sluttidspunkt *</Field.Label>
                                     <Input
                                         name="end_datetime"
                                         type="datetime-local"
                                         value={formData.end_datetime}
                                         onChange={handleChange}
+                                        min={formData.start_datetime || undefined}
                                         required
                                     />
+                                    <Field.ErrorText>
+                                        Sluttidspunkt kan ikke være før starttidspunkt
+                                    </Field.ErrorText>
                                 </Field.Root>
                             </Box>
 
@@ -376,21 +523,45 @@ export function EventForm({
                         </Field.HelperText>
                     </Field.Root>
 
-                    <Field.Root>
-                        <Field.Label>
-                            Spørsmål til påmelding (ja/nei-spørsmål, valgfritt)
-                        </Field.Label>
-                        <Input
-                            name="custom_question"
-                            value={formData.custom_question}
-                            onChange={handleChange}
-                            placeholder="F.eks. Har du deltatt på kurset tidligere?"
-                        />
-                        <Field.HelperText>
-                            Dersom du fyller ut dette, vil deltakerne få et avhukingsspørsmål under
-                            påmelding.
-                        </Field.HelperText>
-                    </Field.Root>
+                    {!signupUndecided && (
+                        <Field.Root>
+                            <Field.Label>
+                                Spørsmål til påmelding (ja/nei-spørsmål, valgfritt)
+                            </Field.Label>
+                            <Input
+                                name="custom_question"
+                                value={formData.custom_question}
+                                onChange={handleChange}
+                                placeholder="F.eks. Har du deltatt på kurset tidligere?"
+                            />
+                            <Field.HelperText>
+                                Dersom du fyller ut dette, vil deltakerne få et avhukingsspørsmål under
+                                påmelding.
+                            </Field.HelperText>
+                        </Field.Root>
+                    )}
+
+                    {!signupUndecided && (
+                        <Field.Root>
+                            <Checkbox.Root
+                                checked={formData.require_phone}
+                                onCheckedChange={(details) =>
+                                    setFormData((prev) => ({
+                                        ...prev,
+                                        require_phone: !!details.checked,
+                                    }))
+                                }
+                            >
+                                <Checkbox.HiddenInput />
+                                <Checkbox.Control />
+                                <Checkbox.Label>Krev telefonnummer ved påmelding</Checkbox.Label>
+                            </Checkbox.Root>
+                            <Field.HelperText>
+                                Dersom du huker av denne må deltakerne oppgi telefonnummer når de
+                                melder seg på.
+                            </Field.HelperText>
+                        </Field.Root>
+                    )}
 
                     <Box
                         borderWidth="1px"
@@ -546,7 +717,50 @@ export function EventForm({
                         />
                     </Field.Root>
 
-                    {!dateUnspecified && (
+                    <Field.Root>
+                        <Checkbox.Root
+                            checked={signupUndecided}
+                            disabled={dateUnspecified}
+                            onCheckedChange={(details) => setSignupUndecided(!!details.checked)}
+                        >
+                            <Checkbox.HiddenInput />
+                            <Checkbox.Control />
+                            <Checkbox.Label>Påmelding ikke synlig for deltakere</Checkbox.Label>
+                        </Checkbox.Root>
+                        <Field.HelperText>
+                            {dateUnspecified
+                                ? 'Settes automatisk når arrangementsdato ikke er spesifisert'
+                                : 'Skjuler all informasjon om påmelding på arrangementssiden'}
+                        </Field.HelperText>
+                    </Field.Root>
+
+                    {!signupUndecided && (
+                        <Box>
+                            <Text fontSize="sm" fontWeight="medium" mb={2}>
+                                Hvilke kull kan melde seg på?
+                            </Text>
+                            <Box display="flex" flexWrap="wrap" gap={4}>
+                                {kullOptions.map((kull) => (
+                                    <Checkbox.Root
+                                        key={kull}
+                                        checked={formData.allowed_kull.includes(kull)}
+                                        onCheckedChange={(details) =>
+                                            toggleAllowedKull(kull, !!details.checked)
+                                        }
+                                    >
+                                        <Checkbox.HiddenInput />
+                                        <Checkbox.Control />
+                                        <Checkbox.Label>{kullToKlasse(kull)}. klasse</Checkbox.Label>
+                                    </Checkbox.Root>
+                                ))}
+                            </Box>
+                            <Text fontSize="xs" color="fg.muted" mt={2}>
+                                Fjern avhukingen for kull som ikke skal kunne melde seg på.
+                            </Text>
+                        </Box>
+                    )}
+
+                    {!signupUndecided && (
                         <>
                             <Field.Root>
                                 <Field.Label>Påmelding åpner</Field.Label>
@@ -589,6 +803,105 @@ export function EventForm({
                                     />
                                 </Field.Root>
                             </Box>
+
+                            <Box>
+                                <Text fontSize="sm" fontWeight="medium" mb={1}>
+                                    Reserverte plasser
+                                </Text>
+                                <Text fontSize="xs" color="fg.muted" mb={3}>
+                                    Reserver et antall av plassene for én eller flere klasser.
+                                    Resten av plassene er åpne for alle. Deltakere havner i den
+                                    mest spesifikke puljen de passer i, deretter i bredere puljer,
+                                    og til slutt på de åpne plassene. Puljer kan ligge inni
+                                    hverandre (f.eks. 3.–6. og 6. klasse), men ikke delvis
+                                    overlappe.
+                                </Text>
+                                <Stack gap={2}>
+                                    {formData.kull_pools.map((pool, index) => (
+                                        <Box
+                                            key={index}
+                                            p={3}
+                                            borderWidth="1px"
+                                            borderColor="gray.200"
+                                            rounded="md"
+                                        >
+                                            <Box
+                                                display="flex"
+                                                flexWrap="wrap"
+                                                gap={3}
+                                                mb={3}
+                                                role="group"
+                                                aria-label={`Klasser i pulje ${index + 1}`}
+                                            >
+                                                {poolKullOptions.map((kull) => (
+                                                    <Checkbox.Root
+                                                        key={kull}
+                                                        size="sm"
+                                                        checked={pool.kull.includes(kull)}
+                                                        onCheckedChange={(details) =>
+                                                            togglePoolKull(
+                                                                index,
+                                                                kull,
+                                                                !!details.checked
+                                                            )
+                                                        }
+                                                    >
+                                                        <Checkbox.HiddenInput />
+                                                        <Checkbox.Control />
+                                                        <Checkbox.Label>
+                                                            {kullToKlasse(kull)}. klasse
+                                                        </Checkbox.Label>
+                                                    </Checkbox.Root>
+                                                ))}
+                                            </Box>
+                                            <Box display="flex" gap={2} alignItems="center">
+                                                <Input
+                                                    aria-label="Antall plasser"
+                                                    type="number"
+                                                    min="1"
+                                                    w="8rem"
+                                                    value={pool.spots}
+                                                    onChange={(e) =>
+                                                        updateKullPool(index, {
+                                                            spots: e.target.value,
+                                                        })
+                                                    }
+                                                    placeholder="Plasser"
+                                                />
+                                                <Text fontSize="sm" color="fg.muted" flex="1">
+                                                    {pool.kull.length > 0
+                                                        ? `plasser for ${formatPoolKlasser(pool.kull)}`
+                                                        : 'Velg klasser'}
+                                                </Text>
+                                                <Button
+                                                    type="button"
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={() => removeKullPool(index)}
+                                                >
+                                                    Fjern
+                                                </Button>
+                                            </Box>
+                                        </Box>
+                                    ))}
+                                </Stack>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    mt={formData.kull_pools.length > 0 ? 3 : 0}
+                                    onClick={addKullPool}
+                                >
+                                    Legg til reserverte plasser
+                                </Button>
+                                {formData.kull_pools.length > 0 && (
+                                    <Text fontSize="xs" color="fg.muted" mt={2}>
+                                        {Number.isFinite(maxAttendeesInput)
+                                            ? `${reservedSpots} reservert, ${Math.max(0, maxAttendeesInput - reservedSpots)} åpne for alle.`
+                                            : 'Sett maks antall deltakere for å bruke reserverte plasser.'}
+                                    </Text>
+                                )}
+                            </Box>
                         </>
                     )}
 
@@ -611,6 +924,7 @@ export function EventForm({
                         <Button
                             type="submit"
                             loading={isSubmitting}
+                            disabled={endBeforeStart}
                             bg="var(--color-primary)"
                             color="white"
                         >

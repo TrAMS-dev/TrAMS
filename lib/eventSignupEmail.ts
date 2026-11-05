@@ -1,4 +1,5 @@
 import { Resend } from 'resend'
+import { APP_TIME_ZONE } from '@/lib/datetimeLocal'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
@@ -32,6 +33,7 @@ function formatNbDate(iso: string | null): string | null {
     const d = new Date(iso)
     if (Number.isNaN(d.getTime())) return null
     return d.toLocaleString('nb-NO', {
+        timeZone: APP_TIME_ZONE,
         weekday: 'long',
         year: 'numeric',
         month: 'long',
@@ -87,47 +89,21 @@ const SUBJECT_CONFIRMED = (title: string) => `Plass på kurs: ${title}`
 
 const SUBJECT_WAITLIST = (title: string) => `Venteliste: ${title}`
 
-const SUBJECT_WAITLIST_SPOTS_OPENED = (title: string, spotsOpened: number) =>
-    spotsOpened === 1
-        ? `Ledig plass – venteliste: ${title}`
-        : `Ledige plasser – venteliste: ${title}`
+const SUBJECT_WAITLIST_PROMOTED = (title: string) => `Du har fått plass: ${title}`
 
-function waitlistSpotsOpenedGuideHtml(
-    ctx: EventSignupEmailContext,
-    spotsOpened: number
-): string {
+function waitlistPromotedEmailHtml(ctx: EventSignupEmailContext): string {
     const title = ctx.eventTitle.trim()
     const when = formatNbDate(ctx.startDatetime)
     const where = ctx.location ? escapeHtml(ctx.location.trim()) : null
     const link = eventPageUrl(ctx.eventSlug)
     const detail = courseWhenWhereFragment(title, when, where, 'på')
     const name = (ctx.recipientName || '').trim()
-    const greeting = name
-        ? `Hei ${escapeHtml(name)}!`
-        : 'Hei!'
+    const greeting = name ? `Hei ${escapeHtml(name)}!` : 'Hei!'
 
-    const spotsPhrase =
-        spotsOpened === 1
-            ? 'Det har åpnet seg <strong>minst én bekreftet plass</strong>'
-            : `Det har åpnet seg <strong>${spotsOpened} bekreftede plasser</strong>`
-
-    const batchNote =
-        spotsOpened === 1
-            ? '<p style="color:#555;line-height:1.6;">Du står først blant dem på ventelisten som nå får beskjed om å kunne bekrefte plass.</p>'
-            : `<p style="color:#555;line-height:1.6;">Du er blant de <strong>${spotsOpened} første</strong> på ventelisten som får denne e-posten, fordi flere plasser ble ledige samtidig. Alle får samme veiledning.</p>`
-
-    const steps = `<ol style="color:#555;line-height:1.7;padding-left:1.25rem;margin:0 0 1rem 0;">
-<li>Gå til arrangementsiden (lenke under).</li>
-<li>Klikk <strong>«Meld deg på»</strong>.</li>
-<li>Fyll ut skjemaet – bruk <strong>samme e-postadresse</strong> som da du meldte deg på ventelisten.</li>
-<li>Send inn. Da flyttes du til bekreftet plass når det er <strong>din tur</strong> og det fortsatt er ledig kapasitet.</li>
-</ol>`
-
-    const body = `<p style="color:#555;line-height:1.6;margin-top:0;">${greeting} ${spotsPhrase} ${detail}.</p>
-${batchNote}
-<p style="color:#555;line-height:1.6;">Slik bekrefter du plassen:</p>
-${steps}
-${linkParagraph(link)}`
+    const body = `<p style="color:#555;line-height:1.6;margin-top:0;">${greeting} Du sto på venteliste, men det har blitt ledig plass og du er nå <strong>flyttet opp til bekreftet plass</strong> ${detail}.</p>
+${linkParagraph(link)}
+<p style="color:#555;line-height:1.6;">Vi gleder oss til å se deg på kurs!</p>
+<p style="color:#555;line-height:1.6;">Dersom du ikke kan komme på kurset ønsker vi at du gir beskjed på denne mailen så fort som mulig for å kunne gi plass til de som eventuelt står på venteliste under deg.</p>`
 
     return emailShell(body)
 }
@@ -210,32 +186,30 @@ export async function sendEventSignupEmail(
     }
 }
 
-/** Veilednings-e-post til venteliste, sendt manuelt av admin fra deltakeroversikten. */
-export async function sendWaitlistSpotsOpenedGuideEmail(
-    spotsOpened: number,
-    ctx: EventSignupEmailContext
-): Promise<void> {
-    if (spotsOpened < 1) return
+function replyToFor(contactEmail: string | null): string | undefined {
+    const raw = contactEmail?.trim().toLowerCase()
+    return raw && raw.length <= 320 && EMAIL_RE.test(raw) ? contactEmail!.trim() : undefined
+}
 
+/** Sender én hendelses-e-post fra web@trams.no. Logger og hopper over ved ugyldig mottaker eller manglende nøkkel. */
+async function sendSingleEventEmail(
+    label: string,
+    ctx: EventSignupEmailContext,
+    subject: string,
+    html: string
+): Promise<void> {
     const to = ctx.recipientEmail.trim().toLowerCase()
     if (!to || to.length > 320 || !EMAIL_RE.test(to)) {
-        console.error('sendWaitlistSpotsOpenedGuideEmail: invalid recipient')
+        console.error(`${label}: invalid recipient`)
         return
     }
 
     if (!process.env.RESEND_API_KEY) {
-        console.warn('sendWaitlistSpotsOpenedGuideEmail: RESEND_API_KEY missing, skipping')
+        console.warn(`${label}: RESEND_API_KEY missing, skipping`)
         return
     }
 
-    const subject = SUBJECT_WAITLIST_SPOTS_OPENED(ctx.eventTitle.trim(), spotsOpened)
-    const html = waitlistSpotsOpenedGuideHtml(ctx, spotsOpened)
-
-    const replyToRaw = ctx.contactEmail?.trim().toLowerCase()
-    const replyTo =
-        replyToRaw && replyToRaw.length <= 320 && EMAIL_RE.test(replyToRaw)
-            ? ctx.contactEmail!.trim()
-            : undefined
+    const replyTo = replyToFor(ctx.contactEmail)
 
     const result = await resend.emails.send({
         from: 'TrAMS <web@trams.no>',
@@ -246,6 +220,193 @@ export async function sendWaitlistSpotsOpenedGuideEmail(
     })
 
     if (result.error) {
-        console.error('sendWaitlistSpotsOpenedGuideEmail: Resend error', result.error)
+        console.error(`${label}: Resend error`, result.error)
     }
+}
+
+/** E-post til en deltaker som er flyttet opp fra venteliste til bekreftet plass av en admin. */
+export async function sendWaitlistPromotedEmail(
+    ctx: EventSignupEmailContext
+): Promise<void> {
+    await sendSingleEventEmail(
+        'sendWaitlistPromotedEmail',
+        ctx,
+        SUBJECT_WAITLIST_PROMOTED(ctx.eventTitle.trim()),
+        waitlistPromotedEmailHtml(ctx)
+    )
+}
+
+const SUBJECT_MOVED_TO_WAITLIST = (title: string) => `Flyttet til venteliste: ${title}`
+
+const SUBJECT_REMOVED = (title: string) => `Fjernet fra påmelding: ${title}`
+
+function greetingFor(recipientName: string): string {
+    const name = (recipientName || '').trim()
+    return name ? `Hei ${escapeHtml(name)}!` : 'Hei!'
+}
+
+function questionsParagraph(contactEmail: string | null): string {
+    const contact = replyToFor(contactEmail)
+    const how = contact
+        ? `send en e-post til <a href="mailto:${escapeHtml(contact)}" style="color:#c41e3a;">${escapeHtml(contact)}</a> (eller svar på denne e-posten)`
+        : 'svar på denne e-posten'
+    return `<p style="color:#555;line-height:1.6;">Har du spørsmål, ${how}.</p>`
+}
+
+function movedToWaitlistEmailHtml(ctx: EventSignupEmailContext): string {
+    const title = ctx.eventTitle.trim()
+    const when = formatNbDate(ctx.startDatetime)
+    const where = ctx.location ? escapeHtml(ctx.location.trim()) : null
+    const link = eventPageUrl(ctx.eventSlug)
+    const detail = courseWhenWhereFragment(title, when, where, 'på')
+
+    const queuePositionText = ctx.waitlistQueuePosition
+        ? `<p style="color:#555;line-height:1.6;">Du har plass nummer <strong>${ctx.waitlistQueuePosition}</strong> på ventelisten.</p>`
+        : ''
+
+    const body = `<p style="color:#555;line-height:1.6;margin-top:0;">${greetingFor(ctx.recipientName)} Du er dessverre <strong>flyttet fra bekreftet plass til venteliste</strong> ${detail}.</p>
+${queuePositionText}
+<p style="color:#555;line-height:1.6;">Dersom det blir ledig plass, får du e-post om at du har fått plass.</p>
+${linkParagraph(link)}
+${questionsParagraph(ctx.contactEmail)}`
+
+    return emailShell(body)
+}
+
+function removedEmailHtml(ctx: EventSignupEmailContext, wasWaitlisted: boolean): string {
+    const title = ctx.eventTitle.trim()
+    const when = formatNbDate(ctx.startDatetime)
+    const where = ctx.location ? escapeHtml(ctx.location.trim()) : null
+    const link = eventPageUrl(ctx.eventSlug)
+    const detail = courseWhenWhereFragment(title, when, where, 'til')
+    const what = wasWaitlisted ? 'fjernet fra ventelisten' : 'fjernet fra påmeldingen'
+
+    const body = `<p style="color:#555;line-height:1.6;margin-top:0;">${greetingFor(ctx.recipientName)} Du er <strong>${what}</strong> ${detail}, og har ikke lenger plass på arrangementet.</p>
+${linkParagraph(link)}
+${questionsParagraph(ctx.contactEmail)}`
+
+    return emailShell(body)
+}
+
+/** E-post til en deltaker som er flyttet fra bekreftet plass til venteliste av en admin. */
+export async function sendMovedToWaitlistEmail(
+    ctx: EventSignupEmailContext
+): Promise<void> {
+    await sendSingleEventEmail(
+        'sendMovedToWaitlistEmail',
+        ctx,
+        SUBJECT_MOVED_TO_WAITLIST(ctx.eventTitle.trim()),
+        movedToWaitlistEmailHtml(ctx)
+    )
+}
+
+/** E-post til en deltaker som er fjernet fra et arrangement (bekreftet plass eller venteliste) av en admin. */
+export async function sendParticipantRemovedEmail(
+    ctx: EventSignupEmailContext,
+    wasWaitlisted: boolean
+): Promise<void> {
+    await sendSingleEventEmail(
+        'sendParticipantRemovedEmail',
+        ctx,
+        SUBJECT_REMOVED(ctx.eventTitle.trim()),
+        removedEmailHtml(ctx, wasWaitlisted)
+    )
+}
+
+const SUBJECT_REMINDER = (title: string) => `Påminnelse: ${title}`
+
+/** Resend tillater maks 100 e-poster per batch-kall. */
+const RESEND_BATCH_LIMIT = 100
+
+export interface EventReminderRecipient {
+    name: string
+    email: string
+}
+
+export interface EventReminderContext {
+    eventId: number
+    eventTitle: string
+    eventSlug: string | null
+    startDatetime: string | null
+    location: string | null
+    contactEmail: string | null
+}
+
+function reminderEmailHtml(
+    ctx: EventReminderContext,
+    recipientName: string,
+    contactEmail: string | null
+): string {
+    const title = ctx.eventTitle.trim()
+    const when = formatNbDate(ctx.startDatetime)
+    const where = ctx.location ? escapeHtml(ctx.location.trim()) : null
+    const link = eventPageUrl(ctx.eventSlug)
+    const detail = courseWhenWhereFragment(title, when, where, 'på')
+    const name = recipientName.trim()
+    const greeting = name ? `Hei ${escapeHtml(name)}!` : 'Hei!'
+
+    const contact = contactEmail
+        ? `sende en e-post til <a href="mailto:${escapeHtml(contactEmail)}" style="color:#c41e3a;">${escapeHtml(contactEmail)}</a> (eller svare på denne e-posten)`
+        : 'sende oss en e-post ved å svare på denne e-posten'
+
+    const body = `<p style="color:#555;line-height:1.6;margin-top:0;">${greeting} Dette er en påminnelse om at du har <strong>bekreftet plass</strong> ${detail}.</p>
+${linkParagraph(link)}
+<p style="color:#555;line-height:1.6;">Vi gleder oss til å se deg!</p>
+<p style="color:#555;line-height:1.6;"><strong>Dersom du ikke har mulighet til å møte</strong>, må du ${contact} <strong>senest 24 timer før arrangementet starter</strong>, slik at plassen kan gå til noen andre.</p>`
+
+    return emailShell(body)
+}
+
+/**
+ * Sender påminnelse til alle bekreftede deltakere på et arrangement.
+ * Returnerer antall e-poster Resend tok imot. Kaster ved feil fra Resend.
+ */
+export async function sendEventReminderEmails(
+    ctx: EventReminderContext,
+    recipients: EventReminderRecipient[]
+): Promise<number> {
+    if (!process.env.RESEND_API_KEY) {
+        console.warn('sendEventReminderEmails: RESEND_API_KEY missing, skipping')
+        return 0
+    }
+
+    const seen = new Set<string>()
+    const valid: EventReminderRecipient[] = []
+    for (const r of recipients) {
+        const to = r.email.trim().toLowerCase()
+        if (!to || to.length > 320 || !EMAIL_RE.test(to) || seen.has(to)) continue
+        seen.add(to)
+        valid.push({ name: r.name, email: to })
+    }
+
+    const replyToRaw = ctx.contactEmail?.trim().toLowerCase()
+    const replyTo =
+        replyToRaw && replyToRaw.length <= 320 && EMAIL_RE.test(replyToRaw)
+            ? ctx.contactEmail!.trim()
+            : undefined
+
+    const subject = SUBJECT_REMINDER(ctx.eventTitle.trim())
+    let sent = 0
+
+    for (let i = 0; i < valid.length; i += RESEND_BATCH_LIMIT) {
+        const chunk = valid.slice(i, i + RESEND_BATCH_LIMIT)
+        const result = await resend.batch.send(
+            chunk.map((r) => ({
+                from: 'TrAMS <web@trams.no>',
+                to: [r.email],
+                subject,
+                html: reminderEmailHtml(ctx, r.name, replyTo ?? null),
+                ...(replyTo ? { replyTo } : {}),
+            })),
+            // Hindrer dobbel utsending hvis samme batch blir sendt på nytt
+            { idempotencyKey: `event-reminder-${ctx.eventId}-${i / RESEND_BATCH_LIMIT}` }
+        )
+
+        if (result.error) {
+            throw new Error(`Resend batch error: ${result.error.message}`)
+        }
+        sent += chunk.length
+    }
+
+    return sent
 }

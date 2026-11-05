@@ -41,9 +41,7 @@ export default function Gallery({ images }: GalleryProps) {
             mx="auto"
             h={{ base: "300px", md: "500px" }}
             overflow="hidden"
-            borderRadius="md"
-            boxShadow="md"
-            my={8}
+            borderRadius="lg"
             role="region"
             aria-label="Image Carousel"
         >

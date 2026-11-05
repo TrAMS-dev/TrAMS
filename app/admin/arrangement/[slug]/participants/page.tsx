@@ -19,6 +19,11 @@ import { useParams, useRouter } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
 import type { Tables } from '@/types/supabase'
 import { toaster } from '@/components/ui/toaster'
+import { useAuth } from '@/hooks/useAuth'
+import ExportParticipantsDialog from '@/components/admin/ExportParticipantsDialog'
+import ParticipantCommentsDialog, {
+    type ParticipantComment,
+} from '@/components/admin/ParticipantCommentsDialog'
 
 function isConfirmedParticipant(p: Tables<'EventParticipants'>) {
     return p.status !== 'waitlist'
@@ -34,26 +39,40 @@ function parseAttended(value: string): boolean | null {
     return value === 'true'
 }
 
-function memberConfirmLabel(p: Tables<'EventParticipants'>) {
-    if (p.confirmed_trams_member === true) return 'TrAMS-medlem'
-    if (p.confirmed_trams_member === false) return 'Ikke medlem'
-    return 'Ukjent'
-}
-
 export default function AdminParticipantsPage() {
     const params = useParams()
     const router = useRouter()
     const slug = params.slug as string
+    const { user, isAuthenticated, isApproved, isLoading: authLoading } = useAuth()
     const [participants, setParticipants] = useState<Tables<'EventParticipants'>[]>([])
     const [eventId, setEventId] = useState<number | null>(null)
     const [eventTitle, setEventTitle] = useState('')
     const [eventMaxAttendees, setEventMaxAttendees] = useState<number | null>(null)
     const [eventCustomQuestion, setEventCustomQuestion] = useState<string | null>(null)
+    const [eventRequiresPhone, setEventRequiresPhone] = useState(false)
     const [loading, setLoading] = useState(true)
     const [savingId, setSavingId] = useState<number | null>(null)
     const [deletingId, setDeletingId] = useState<number | null>(null)
-    const [notifySpotsInput, setNotifySpotsInput] = useState('1')
-    const [notifySending, setNotifySending] = useState(false)
+    const [promoteCountInput, setPromoteCountInput] = useState('1')
+    const [promoting, setPromoting] = useState(false)
+    const [promotingId, setPromotingId] = useState<number | null>(null)
+    const [demotingId, setDemotingId] = useState<number | null>(null)
+    const [exportDialogOpen, setExportDialogOpen] = useState(false)
+    const [comments, setComments] = useState<ParticipantComment[]>([])
+    const [commentsParticipantId, setCommentsParticipantId] = useState<number | null>(null)
+
+    // Keep the column if phones were collected before the requirement was turned off
+    const showPhone = eventRequiresPhone || participants.some((p) => p.phone)
+
+    const commentsByParticipant = useMemo(() => {
+        const map = new Map<number, ParticipantComment[]>()
+        for (const c of comments) {
+            const list = map.get(c.participantId)
+            if (list) list.push(c)
+            else map.set(c.participantId, [c])
+        }
+        return map
+    }, [comments])
 
     const attendanceSummary = useMemo(() => {
         const confirmed = participants.filter(isConfirmedParticipant)
@@ -79,13 +98,21 @@ export default function AdminParticipantsPage() {
     }, [participants])
 
     useEffect(() => {
+        if (!authLoading && (!isAuthenticated || !isApproved)) {
+            router.push('/admin/login')
+        }
+    }, [authLoading, isAuthenticated, isApproved, router])
+
+    useEffect(() => {
+        if (authLoading || !isAuthenticated || !isApproved) return
+
         const fetchData = async () => {
             const supabase = createClient()
 
             // Get event id first
             const { data: event, error: eventError } = await supabase
                 .from('Events')
-                .select('id, title, max_attendees, custom_question')
+                .select('id, title, max_attendees, custom_question, require_phone')
                 .eq('slug', slug)
                 .single()
 
@@ -98,6 +125,7 @@ export default function AdminParticipantsPage() {
             setEventTitle(event.title || 'Arrangement')
             setEventMaxAttendees(event.max_attendees ?? null)
             setEventCustomQuestion(event.custom_question ?? null)
+            setEventRequiresPhone(Boolean(event.require_phone))
 
             // Get participants
             const { data, error } = await supabase
@@ -110,12 +138,27 @@ export default function AdminParticipantsPage() {
                 console.error('Error fetching participants:', error)
             } else {
                 setParticipants(data || [])
+
+                const participantIds = (data || []).map((p) => p.id)
+                if (participantIds.length > 0) {
+                    const { data: commentData, error: commentError } = await supabase
+                        .from('ParticipantComments')
+                        .select('*')
+                        .in('participantId', participantIds)
+                        .order('created_at', { ascending: true })
+
+                    if (commentError) {
+                        console.error('Error fetching comments:', commentError)
+                    } else {
+                        setComments(commentData || [])
+                    }
+                }
             }
             setLoading(false)
         }
 
         fetchData()
-    }, [slug])
+    }, [slug, authLoading, isAuthenticated, isApproved])
 
     const handleAttendanceChange = async (
         participantId: number,
@@ -174,7 +217,7 @@ export default function AdminParticipantsPage() {
 
     const handleRemoveParticipant = async (participantId: number, displayName: string) => {
         const ok = window.confirm(
-            `Fjerne «${displayName}» fra arrangementet? Dette kan ikke angres.`
+            `Fjerne «${displayName}» fra arrangementet? Vedkommende vil motta e-post om at de er fjernet. Dette kan ikke angres.`
         )
         if (!ok) return
 
@@ -213,14 +256,14 @@ export default function AdminParticipantsPage() {
         }
     }
 
-    const handleNotifyWaitlist = async () => {
+    const handlePromoteWaitlist = async () => {
         if (eventId == null || waitlistCount === 0) return
 
-        const parsed = Number.parseInt(notifySpotsInput.trim(), 10)
+        const parsed = Number.parseInt(promoteCountInput.trim(), 10)
         if (!Number.isFinite(parsed) || parsed < 1) {
             toaster.create({
                 title: 'Ugyldig antall',
-                description: 'Oppgi hvor mange ledige plasser e-posten skal handle om (heltall minst 1).',
+                description: 'Oppgi hvor mange som skal flyttes opp fra ventelisten (heltall minst 1).',
                 type: 'error',
                 duration: 5000,
             })
@@ -229,97 +272,176 @@ export default function AdminParticipantsPage() {
 
         const firstN = Math.min(parsed, waitlistCount)
         const ok = window.confirm(
-            `Send veilednings-e-post til de første ${firstN} på ventelisten? Teksten i e-posten sier at det er ${parsed === 1 ? 'åpnet minst én plass' : `åpnet ${parsed} plasser`} (juster tallet ved behov).`
+            `Flytt de første ${firstN} på ventelisten til bekreftet plass? De vil motta e-post om at de har fått plass.`
         )
         if (!ok) return
 
-        setNotifySending(true)
+        setPromoting(true)
         try {
-            const res = await fetch('/api/admin/event-participants/notify-waitlist', {
+            const res = await fetch('/api/admin/event-participants/promote-waitlist', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ eventId, spotsOpened: parsed }),
+                body: JSON.stringify({ eventId, count: parsed }),
             })
             const payload = (await res.json().catch(() => ({}))) as {
                 error?: string
-                notified?: number
+                promoted?: number
+                participantIds?: number[]
             }
 
             if (!res.ok) {
-                throw new Error(payload.error || 'Kunne ikke sende e-post')
+                throw new Error(payload.error || 'Kunne ikke flytte opp fra venteliste')
             }
 
-            const n = typeof payload.notified === 'number' ? payload.notified : 0
+            const n = typeof payload.promoted === 'number' ? payload.promoted : 0
+            const promotedIds = new Set(payload.participantIds ?? [])
+            if (n > 0) {
+                setParticipants((prev) =>
+                    prev.map((p) =>
+                        promotedIds.has(p.id) ? { ...p, status: 'confirmed' } : p
+                    )
+                )
+            }
             toaster.create({
-                title: n > 0 ? 'E-post sendt' : 'Ingen e-post sendt',
+                title: n > 0 ? 'Flyttet opp fra venteliste' : 'Ingen ble flyttet opp',
                 description:
                     n > 0
-                        ? `${n} mottaker(e) har fått veiledningen.`
+                        ? `${n} deltaker(e) har fått bekreftet plass og har mottatt e-post.`
                         : eventMaxAttendees == null
-                          ? 'Arrangementet har ikke maks antall deltakere – ventelisten varsles ikke på e-post.'
-                          : 'Ingen på ventelisten med gyldig e-post, eller noe gikk galt.',
+                          ? 'Ingen på ventelisten med gyldig e-post, eller noe gikk galt.'
+                          : 'Ingen ledige plasser, eller ingen på ventelisten med gyldig e-post.',
                 type: n > 0 ? 'success' : 'warning',
                 duration: 7000,
             })
         } catch (e) {
-            console.error('Notify waitlist error:', e)
+            console.error('Promote waitlist error:', e)
             toaster.create({
-                title: 'Kunne ikke sende e-post',
+                title: 'Kunne ikke flytte opp fra venteliste',
                 description:
                     e instanceof Error ? e.message : 'Prøv igjen eller kontakt administrator.',
                 type: 'error',
                 duration: 6000,
             })
         } finally {
-            setNotifySending(false)
+            setPromoting(false)
         }
     }
 
-    const handleExport = () => {
-        // Simple CSV export
-        const headers = [
-            'Navn',
-            'E-post',
-            'Kull',
-            'Allergier',
-            'Medlemskap (selvrapportert)',
-            ...(eventCustomQuestion ? [eventCustomQuestion] : []),
-            'Status',
-            'Oppmøte',
-            'Påmeldt',
-        ]
-        const oppmoteLabel = (p: Tables<'EventParticipants'>) => {
-            if (p.attended === true) return 'Møtt'
-            if (p.attended === false) return 'Ikke møtt'
-            return 'Ikke registrert'
-        }
-        const csvContent = [
-            headers.join(','),
-            ...participants.map(p => [
-                `"${p.name}"`,
-                `"${p.email}"`,
-                `"${p.kull}"`,
-                `"${p.allergies || ''}"`,
-                `"${memberConfirmLabel(p)}"`,
-                ...(eventCustomQuestion ? [`"${p.custom_question_response ? 'Ja' : 'Nei'}"`] : []),
-                `"${p.status === 'waitlist' ? 'Venteliste' : 'Påmeldt'}"`,
-                `"${oppmoteLabel(p)}"`,
-                `"${new Date(p.created_at).toLocaleString()}"`
-            ].join(','))
-        ].join('\n')
+    const handlePromoteParticipant = async (participantId: number, displayName: string) => {
+        const ok = window.confirm(
+            `Flytt «${displayName}» fra venteliste til bekreftet plass? Dette kan gjøres selv om arrangementet er fullt eller påmeldingen er stengt, og vedkommende vil motta e-post om at de har fått plass.`
+        )
+        if (!ok) return
 
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
-        const link = document.createElement('a')
-        const url = URL.createObjectURL(blob)
-        link.setAttribute('href', url)
-        link.setAttribute('download', `${slug}-deltakere.csv`)
-        link.style.visibility = 'hidden'
-        document.body.appendChild(link)
-        link.click()
-        document.body.removeChild(link)
+        setPromotingId(participantId)
+        try {
+            const res = await fetch('/api/admin/event-participants/promote', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ participantId }),
+            })
+            const payload = (await res.json().catch(() => ({}))) as {
+                error?: string
+                promoted?: number
+            }
+
+            if (!res.ok) {
+                throw new Error(payload.error || 'Kunne ikke flytte opp deltakeren')
+            }
+
+            const n = typeof payload.promoted === 'number' ? payload.promoted : 0
+            if (n > 0) {
+                setParticipants((prev) =>
+                    prev.map((p) => (p.id === participantId ? { ...p, status: 'confirmed' } : p))
+                )
+                toaster.create({
+                    title: 'Flyttet opp fra venteliste',
+                    description: `${displayName} har fått bekreftet plass og har mottatt e-post.`,
+                    type: 'success',
+                    duration: 5000,
+                })
+            } else {
+                toaster.create({
+                    title: 'Ingen endring',
+                    description: 'Deltakeren sto ikke lenger på venteliste.',
+                    type: 'warning',
+                    duration: 5000,
+                })
+            }
+        } catch (e) {
+            console.error('Promote participant error:', e)
+            toaster.create({
+                title: 'Kunne ikke flytte opp deltakeren',
+                description:
+                    e instanceof Error ? e.message : 'Prøv igjen eller kontakt administrator.',
+                type: 'error',
+                duration: 6000,
+            })
+        } finally {
+            setPromotingId(null)
+        }
     }
 
-    if (loading) return <Flex justify="center" align="center" h="50vh"><Spinner size="xl" /></Flex>
+    const handleMoveToWaitlist = async (participantId: number, displayName: string) => {
+        const ok = window.confirm(
+            `Flytt «${displayName}» fra bekreftet plass til venteliste? Vedkommende beholder påmeldingstidspunktet sitt i køen og vil motta e-post om at de er flyttet til venteliste.`
+        )
+        if (!ok) return
+
+        setDemotingId(participantId)
+        try {
+            const res = await fetch('/api/admin/event-participants/demote', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ participantId }),
+            })
+            const payload = (await res.json().catch(() => ({}))) as {
+                error?: string
+                moved?: number
+            }
+
+            if (!res.ok) {
+                throw new Error(payload.error || 'Kunne ikke flytte deltakeren til venteliste')
+            }
+
+            const n = typeof payload.moved === 'number' ? payload.moved : 0
+            if (n > 0) {
+                setParticipants((prev) =>
+                    prev.map((p) => (p.id === participantId ? { ...p, status: 'waitlist' } : p))
+                )
+                toaster.create({
+                    title: 'Flyttet til venteliste',
+                    description: `${displayName} står nå på venteliste og har mottatt e-post.`,
+                    type: 'success',
+                    duration: 5000,
+                })
+            } else {
+                toaster.create({
+                    title: 'Ingen endring',
+                    description: 'Deltakeren hadde ikke lenger bekreftet plass.',
+                    type: 'warning',
+                    duration: 5000,
+                })
+            }
+        } catch (e) {
+            console.error('Move to waitlist error:', e)
+            toaster.create({
+                title: 'Kunne ikke flytte deltakeren til venteliste',
+                description:
+                    e instanceof Error ? e.message : 'Prøv igjen eller kontakt administrator.',
+                type: 'error',
+                duration: 6000,
+            })
+        } finally {
+            setDemotingId(null)
+        }
+    }
+
+    const busy = promoting || promotingId !== null || deletingId !== null || demotingId !== null
+
+    if (authLoading || loading) return <Flex justify="center" align="center" h="50vh"><Spinner size="xl" /></Flex>
+
+    if (!isAuthenticated || !isApproved) return null
 
     return (
         <Box>
@@ -330,7 +452,11 @@ export default function AdminParticipantsPage() {
                     </Button>
                     <Heading size="lg">Deltakere: {eventTitle}</Heading>
                 </Box>
-                <Button onClick={handleExport} variant="outline" disabled={participants.length === 0}>
+                <Button
+                    onClick={() => setExportDialogOpen(true)}
+                    variant="outline"
+                    disabled={participants.length === 0}
+                >
                     Eksporter CSV
                 </Button>
             </Flex>
@@ -361,7 +487,7 @@ export default function AdminParticipantsPage() {
                 </Box>
             )}
 
-            {waitlistCount > 0 && eventMaxAttendees != null && eventId != null && (
+            {waitlistCount > 0 && eventId != null && (
                 <Box
                     mb={4}
                     p={4}
@@ -374,47 +500,43 @@ export default function AdminParticipantsPage() {
                         Venteliste ({waitlistCount})
                     </Text>
                     <Text fontSize="sm" color="gray.700" mb={3}>
-                        Send e-post med veiledning til de første på ventelisten når det har blitt
-                        ledige plasser (f.eks. etter avmelding eller økt kapasitet). Velg hvor mange
-                        plasser e-posten sendes til, i
-                        påmeldingsrekkefølge.
+                        Flytt de første på ventelisten (i påmeldingsrekkefølge) direkte til
+                        bekreftet plass, f.eks. etter avmelding eller økt kapasitet. Du kan
+                        oppgi flere enn det er ledige plasser for å bevisst overfylle
+                        arrangementet, og dette fungerer uavhengig av om påmeldingen er åpen.
+                        De som flyttes opp får automatisk e-post om at de har fått plass. Du kan
+                        også flytte opp enkeltpersoner direkte fra tabellen under.
                     </Text>
                     <HStack flexWrap="wrap" gap={3} align="flex-end">
                         <Field.Root maxW="200px">
-                            <Field.Label fontSize="sm">Antall ledige plasser</Field.Label>
+                            <Field.Label fontSize="sm">Antall som skal flyttes opp</Field.Label>
                             <Input
                                 type="number"
                                 min={1}
-                                value={notifySpotsInput}
-                                onChange={(e) => setNotifySpotsInput(e.target.value)}
+                                value={promoteCountInput}
+                                onChange={(e) => setPromoteCountInput(e.target.value)}
                             />
                         </Field.Root>
                         <Button
-                            loading={notifySending}
-                            disabled={notifySending || deletingId !== null}
+                            loading={promoting}
+                            disabled={busy}
                             colorPalette="orange"
-                            onClick={handleNotifyWaitlist}
+                            onClick={handlePromoteWaitlist}
                         >
-                            Send e-post til venteliste
+                            Flytt opp fra venteliste
                         </Button>
                     </HStack>
                 </Box>
             )}
 
-            {waitlistCount > 0 && eventMaxAttendees == null && (
-                <Text fontSize="sm" color="gray.600" mb={4}>
-                    Dette arrangementet har ikke maks antall deltakere, så ventelisten kan ikke
-                    varsles med denne e-postmalen.
-                </Text>
-            )}
-
-            <Box bg="white" shadow="sm" rounded="lg" overflow="hidden">
+            <Box bg="white" shadow="sm" rounded="lg" overflowX="auto">
                 <Table.Root striped>
                     <Table.Header>
                         <Table.Row>
                             <Table.ColumnHeader>Navn</Table.ColumnHeader>
                             <Table.ColumnHeader>E-post</Table.ColumnHeader>
                             <Table.ColumnHeader>Kull</Table.ColumnHeader>
+                            {showPhone && <Table.ColumnHeader>Telefon</Table.ColumnHeader>}
                             <Table.ColumnHeader>Allergier</Table.ColumnHeader>
                             <Table.ColumnHeader maxW="200px">
                                 Medlemskap (selvrapportert)
@@ -427,13 +549,14 @@ export default function AdminParticipantsPage() {
                             <Table.ColumnHeader>Status</Table.ColumnHeader>
                             <Table.ColumnHeader>Oppmøte</Table.ColumnHeader>
                             <Table.ColumnHeader>Påmeldt</Table.ColumnHeader>
+                            <Table.ColumnHeader>Kommentarer</Table.ColumnHeader>
                             <Table.ColumnHeader textAlign="right">Handling</Table.ColumnHeader>
                         </Table.Row>
                     </Table.Header>
                     <Table.Body>
                         {participants.length === 0 && (
                             <Table.Row>
-                                <Table.Cell colSpan={eventCustomQuestion ? 10 : 9} textAlign="center" py={8} color="gray.500">
+                                <Table.Cell colSpan={10 + (eventCustomQuestion ? 1 : 0) + (showPhone ? 1 : 0)} textAlign="center" py={8} color="gray.500">
                                     Ingen påmeldte enda.
                                 </Table.Cell>
                             </Table.Row>
@@ -443,6 +566,7 @@ export default function AdminParticipantsPage() {
                                 <Table.Cell fontWeight="medium">{p.name}</Table.Cell>
                                 <Table.Cell>{p.email}</Table.Cell>
                                 <Table.Cell>{p.kull}</Table.Cell>
+                                {showPhone && <Table.Cell>{p.phone || '-'}</Table.Cell>}
                                 <Table.Cell>{p.allergies || '-'}</Table.Cell>
                                 <Table.Cell>
                                     {p.confirmed_trams_member === true ? (
@@ -502,28 +626,114 @@ export default function AdminParticipantsPage() {
                                 <Table.Cell color="gray.500" fontSize="sm">
                                     {new Date(p.created_at).toLocaleString('nb-NO')}
                                 </Table.Cell>
+                                <Table.Cell maxW="240px">
+                                    {(() => {
+                                        const list = commentsByParticipant.get(p.id) ?? []
+                                        const latest = list[list.length - 1]
+                                        return (
+                                            <Box>
+                                                {latest && (
+                                                    <Text fontSize="sm" lineClamp={2} mb={1} title={latest.body}>
+                                                        <Text as="span" fontWeight="semibold">
+                                                            {latest.author_name || 'Ukjent'}:
+                                                        </Text>{' '}
+                                                        {latest.body}
+                                                    </Text>
+                                                )}
+                                                <Button
+                                                    size="xs"
+                                                    variant="outline"
+                                                    onClick={() => setCommentsParticipantId(p.id)}
+                                                >
+                                                    {list.length > 0
+                                                        ? `Se alle (${list.length})`
+                                                        : 'Legg til'}
+                                                </Button>
+                                            </Box>
+                                        )
+                                    })()}
+                                </Table.Cell>
                                 <Table.Cell textAlign="right">
-                                    <Button
-                                        size="sm"
-                                        variant="outline"
-                                        colorPalette="red"
-                                        loading={deletingId === p.id}
-                                        disabled={deletingId !== null}
-                                        onClick={() =>
-                                            handleRemoveParticipant(
-                                                p.id,
-                                                p.name?.trim() || p.email || 'Deltaker'
-                                            )
-                                        }
-                                    >
-                                        Fjern
-                                    </Button>
+                                    <HStack gap={2} justify="flex-end" flexWrap="nowrap">
+                                        {p.status === 'waitlist' ? (
+                                            <Button
+                                                size="sm"
+                                                variant="outline"
+                                                colorPalette="orange"
+                                                loading={promotingId === p.id}
+                                                disabled={busy}
+                                                onClick={() =>
+                                                    handlePromoteParticipant(
+                                                        p.id,
+                                                        p.name?.trim() || p.email || 'Deltaker'
+                                                    )
+                                                }
+                                            >
+                                                Flytt opp
+                                            </Button>
+                                        ) : (
+                                            <Button
+                                                size="sm"
+                                                variant="outline"
+                                                colorPalette="orange"
+                                                loading={demotingId === p.id}
+                                                disabled={busy}
+                                                onClick={() =>
+                                                    handleMoveToWaitlist(
+                                                        p.id,
+                                                        p.name?.trim() || p.email || 'Deltaker'
+                                                    )
+                                                }
+                                            >
+                                                Til venteliste
+                                            </Button>
+                                        )}
+                                        <Button
+                                            size="sm"
+                                            variant="outline"
+                                            colorPalette="red"
+                                            loading={deletingId === p.id}
+                                            disabled={busy}
+                                            onClick={() =>
+                                                handleRemoveParticipant(
+                                                    p.id,
+                                                    p.name?.trim() || p.email || 'Deltaker'
+                                                )
+                                            }
+                                        >
+                                            Fjern
+                                        </Button>
+                                    </HStack>
                                 </Table.Cell>
                             </Table.Row>
                         ))}
                     </Table.Body>
                 </Table.Root>
             </Box>
+
+            <ExportParticipantsDialog
+                open={exportDialogOpen}
+                onClose={() => setExportDialogOpen(false)}
+                participants={participants}
+                eventCustomQuestion={eventCustomQuestion}
+                includePhone={showPhone}
+                slug={slug}
+            />
+
+            <ParticipantCommentsDialog
+                participant={participants.find((p) => p.id === commentsParticipantId) ?? null}
+                comments={
+                    commentsParticipantId != null
+                        ? commentsByParticipant.get(commentsParticipantId) ?? []
+                        : []
+                }
+                currentUserId={user?.id ?? null}
+                onClose={() => setCommentsParticipantId(null)}
+                onAdded={(comment) => setComments((prev) => [...prev, comment])}
+                onDeleted={(commentId) =>
+                    setComments((prev) => prev.filter((c) => c.id !== commentId))
+                }
+            />
         </Box>
     )
 }

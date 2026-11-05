@@ -118,6 +118,25 @@ export const firstAidCoursePageType = defineType({
                 },
             ],
         }),
+        defineField({
+            name: 'otherCoursesText',
+            title: 'Andre kurs – tekst',
+            type: 'array',
+            of: [{ type: 'block' }],
+            validation: (rule) => rule.required(),
+        }),
+        defineField({
+            name: 'evaluationText',
+            title: 'Evaluering – tekst',
+            type: 'array',
+            of: [{ type: 'block' }],
+            validation: (rule) => rule.required(),
+        }),
+        defineField({
+            name: 'evaluationFormUrl',
+            title: 'Lenke til evalueringsskjema',
+            type: 'url',
+        }),
     ],
     preview: {
         prepare() {

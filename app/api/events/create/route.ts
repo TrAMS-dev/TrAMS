@@ -1,5 +1,6 @@
 import { createClient } from '@/utils/supabase/server'
 import { NextResponse } from 'next/server'
+import { parseKullPools, validateKullPools } from '@/lib/kullPools'
 import { parseFeedbackQuestions } from '@/lib/eventFeedback'
 import type { Json } from '@/types/supabase'
 
@@ -29,14 +30,20 @@ export async function POST(request: Request) {
             author,
             contact_email,
             date_unspecified,
+            signup_undecided,
             planned_month,
             has_food,
             custom_question,
+            require_phone,
+            allowed_kull,
+            kull_pools,
             feedback_open,
             feedback_questions,
         } = body
 
         const isDateUnspecified = Boolean(date_unspecified)
+        const isSignupUndecided = Boolean(signup_undecided)
+        const hideSignup = isDateUnspecified || isSignupUndecided
 
         if (!title) {
             return NextResponse.json(
@@ -57,6 +64,27 @@ export async function POST(request: Request) {
                 { error: 'Tittel, start, slutt og lokasjon er påkrevd' },
                 { status: 400 }
             )
+        } else if (new Date(end_datetime) < new Date(start_datetime)) {
+            return NextResponse.json(
+                { error: 'Sluttidspunkt kan ikke være før starttidspunkt' },
+                { status: 400 }
+            )
+        }
+
+        const allowedKull =
+            !isSignupUndecided && Array.isArray(allowed_kull)
+                ? allowed_kull.filter((k: unknown): k is number => Number.isInteger(k))
+                : []
+
+        const maxAttendees = hideSignup ? null : (max_attendees || null)
+        const kullPools = hideSignup ? [] : parseKullPools(kull_pools)
+        const poolError = validateKullPools(
+            kullPools,
+            maxAttendees,
+            allowedKull.length > 0 ? allowedKull : null
+        )
+        if (poolError) {
+            return NextResponse.json({ error: poolError }, { status: 400 })
         }
 
         const supabase = await createClient()
@@ -91,16 +119,20 @@ export async function POST(request: Request) {
                 end_datetime: isDateUnspecified ? null : end_datetime,
                 location: isDateUnspecified ? null : (location || null),
                 image: image || null,
-                max_attendees: isDateUnspecified ? null : (max_attendees || null),
-                reg_deadline: isDateUnspecified ? null : (reg_deadline || null),
-                reg_opens: isDateUnspecified ? null : (reg_opens || null),
+                max_attendees: maxAttendees,
+                reg_deadline: hideSignup ? null : (reg_deadline || null),
+                reg_opens: hideSignup ? null : (reg_opens || null),
                 author: author || null,
                 contact_email: contact_email?.trim() || null,
                 date_unspecified: isDateUnspecified,
+                signup_undecided: isSignupUndecided,
                 planned_month: isDateUnspecified ? planned_month : null,
                 slug,
                 has_food: Boolean(has_food),
-                custom_question: custom_question || null,
+                custom_question: isSignupUndecided ? null : (custom_question || null),
+                require_phone: !isSignupUndecided && require_phone === true,
+                allowed_kull: allowedKull.length > 0 ? allowedKull : null,
+                kull_pools: kullPools,
                 feedback_open: Boolean(feedback_open),
                 feedback_questions: parseFeedbackQuestions(
                     feedback_questions

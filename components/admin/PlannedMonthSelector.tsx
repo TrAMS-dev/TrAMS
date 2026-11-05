@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { Box, Field, NativeSelect } from '@chakra-ui/react'
 
 const MONTHS = [
@@ -44,16 +44,10 @@ interface PlannedMonthSelectorProps {
 }
 
 export function PlannedMonthSelector({ value, onChange }: PlannedMonthSelectorProps) {
-    const parsed = useMemo(() => parsePlannedMonth(value), [value])
-    const [month, setMonth] = useState(parsed.month)
-
-    useEffect(() => {
-        setMonth(parsed.month)
-    }, [parsed.month])
+    const { month } = useMemo(() => parsePlannedMonth(value), [value])
 
     const handleMonthChange = (nextMonth: string) => {
         const nextYear = calculateYearForMonth(nextMonth)
-        setMonth(nextMonth)
         onChange(nextYear && nextMonth ? `${nextYear}-${nextMonth}` : '')
     }
 

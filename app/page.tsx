@@ -2,7 +2,6 @@ import Link from 'next/link';
 import { Box, Flex, Image, Text, Button, Stack, Link as ChakraLink } from '@chakra-ui/react';
 import Navbar from '@/components/Navbar';
 import { HeartPulse, Calendar, Users } from 'lucide-react';
-import { createClient } from '@/utils/supabase/server';
 import { client } from '@/sanity/lib/client';
 import { HOME_PAGE_QUERY } from '@/sanity/lib/queries';
 
@@ -20,10 +19,10 @@ export const metadata: Metadata = {
   },
 }
 export default async function Home() {
-  const homePageData = await client.fetch<{ videoUrl: string }>(HOME_PAGE_QUERY);
-  const videoUrl = homePageData?.videoUrl 
+  const homePageData = await client.fetch(HOME_PAGE_QUERY);
+  const videoUrl = homePageData?.videoUrl ?? undefined;
   return (
-    <Box as="section" position="relative" h="100dvh" w="100%" overflow="hidden" bg="gray.900">
+    <Box as="section" position="relative" minH="100dvh" w="100%" overflow="hidden" bg="gray.900">
       {/* Background Video */}
       <video
         autoPlay
@@ -76,8 +75,7 @@ export default async function Home() {
       <Flex
         position="relative"
         zIndex={10}
-        h="calc(100dvh - 80px)"
-        minH="0"
+        minH="calc(100dvh - 80px)"
         align="center"
         justify="center"
         direction="column"
@@ -85,13 +83,13 @@ export default async function Home() {
         textAlign="center"
         px={{ base: 2, sm: 4 }}
       >
-        <Flex direction="column" justify="space-between" align="center" h="100%">
+        <Flex direction="column" justify="space-between" align="center" flex="1" w="full" gap={{ base: 6, lg: "clamp(1.5rem, 5vh, 3rem)" }} pb={{ base: 10, lg: "clamp(2.5rem, 8vh, 6rem)" }}>
 
-            <Flex direction="column" align="center" gap={6} pt={{ base: 10, lg: 40 }}>
+            <Flex direction="column" align="center" gap={{ base: 6, lg: "clamp(0.75rem, 3vh, 1.5rem)" }} pt={{ base: 10, lg: "clamp(1rem, 14vh, 10rem)" }}>
             <Image
               src="/assets/Logo_white.png"
               alt="TrAMS"
-              maxW={{ base: "80px", sm: "120px", lg: "240px" }}
+              maxW={{ base: "80px", sm: "120px", lg: "clamp(140px, 28vh, 240px)" }}
               w="60%"
               h="auto"
               mb={2}
@@ -101,19 +99,18 @@ export default async function Home() {
             <Text
               fontSize={{ base: "md", sm: "lg", lg: "xl" }}
               maxW="2xl"
-              mb={{ base: 2, lg: 8 }}
+              mb={{ base: 2, lg: "clamp(0rem, 3vh, 2rem)" }}
               opacity={0.9}
               textShadow="0 0 10px rgba(0,0,0,0.5)"
+              whiteSpace="pre-line"
             >
-              Vi er Trondheim Akuttmedisinske Studentforening. <br />
-              Lær livreddende førstehjelp av medisinstudenter.
+              {homePageData?.tagline}
             </Text>
             </Flex>
 
           <Stack
             direction={{ base: 'column', lg: 'row' }}
             gap={{ base: 2, sm: 3, lg: 6 }}
-            mt={{ base: 0, lg: 12 }}
             w="full"
             maxW="100%"
             justify="center"

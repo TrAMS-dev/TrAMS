@@ -10,6 +10,7 @@ interface BookingRequestBody {
     deltakermasse?: string;
     antallDeltakere?: string;
     datoer?: string;
+    kursby?: string;
     sted?: string;
     adresse?: string;
     annet?: string;
@@ -33,6 +34,7 @@ export async function POST(req: Request) {
         deltakermasse,
         antallDeltakere,
         datoer,
+        kursby,
         sted,
         adresse,
         annet,
@@ -67,7 +69,7 @@ export async function POST(req: Request) {
     const sheets = google.sheets({ version: "v4", auth });
 
     // Append to "Sheet1"
-    // Columns: Timestamp | Navn | Tif | Epost | Kurs | Deltakere | Antall | Datoer | Sted | Annet | Bevis
+    // Columns: Timestamp | Navn | Tif | Epost | Kurs | Deltakere | Antall | Datoer | By | Sted | Annet | Bevis
     try {
         await sheets.spreadsheets.values.append({
             spreadsheetId: process.env.GOOGLE_SHEET_ID,
@@ -87,6 +89,7 @@ export async function POST(req: Request) {
                     deltakermasse ?? "",
                     antallDeltakere ?? "",
                     datoer ?? "",
+                    kursby ?? "",
                     sted ?? "",
                     adresse ?? "",
                     annet ?? "",

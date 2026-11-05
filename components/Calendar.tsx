@@ -1,24 +1,26 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useSyncExternalStore } from 'react';
 import { Box, Flex, Text, Button, ButtonGroup } from '@chakra-ui/react';
 import { Calendar, List, CalendarDays } from 'lucide-react';
 
-export default function ClientCalendar() {
-    const [dateInfo, setDateInfo] = useState<{ day: string; monthYear: string } | null>(null);
-    const [viewMode, setViewMode] = useState<'MONTH' | 'WEEK' | 'AGENDA'>('MONTH');
+const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Des'];
 
-    useEffect(() => {
-        const today = new Date();
-        const day = today.getDate().toString();
-        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Des'];
-        const month = monthNames[today.getMonth()];
-        const year = today.getFullYear();
-        setDateInfo({
-            day,
-            monthYear: `${month} ${year}`
-        });
-    }, []);
+const subscribeNoop = () => () => {};
+
+function getDateInfo() {
+    const today = new Date();
+    return {
+        day: today.getDate().toString(),
+        monthYear: `${monthNames[today.getMonth()]} ${today.getFullYear()}`,
+    };
+}
+
+export default function ClientCalendar() {
+    // false during SSR and hydration, true afterwards, so the date never causes a hydration mismatch
+    const isClient = useSyncExternalStore(subscribeNoop, () => true, () => false);
+    const dateInfo = isClient ? getDateInfo() : null;
+    const [viewMode, setViewMode] = useState<'MONTH' | 'WEEK' | 'AGENDA'>('MONTH');
 
     const getCalendarUrl = (mode: string) => {
         return `https://calendar.google.com/calendar/embed?src=c_e561ac20ed81465fce5b8050b5e77c2deae77ebd486c10c45c53092d146bd83d%40group.calendar.google.com&ctz=Europe%2FOslo&mode=${mode}&showTitle=0&showPrint=0&showTabs=0`;

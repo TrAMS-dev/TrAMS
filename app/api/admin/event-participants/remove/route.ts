@@ -1,9 +1,6 @@
 import { createClient } from '@/utils/supabase/server'
+import { sendParticipantRemovedEmail } from '@/lib/eventSignupEmail'
 import { NextResponse } from 'next/server'
-
-function isWaitlistStatus(status: string | null | undefined) {
-    return status === 'waitlist'
-}
 
 const MAX_BATCH_REMOVE = 40
 
@@ -103,6 +100,40 @@ export async function POST(request: Request) {
             { error: 'Ingen deltakere ble slettet. Vennligst sjekk RLS-rettigheter.' },
             { status: 403 }
         )
+    }
+
+    const { data: event, error: eventError } = await supabase
+        .from('Events')
+        .select('title, slug, start_datetime, location, reg_deadline, contact_email')
+        .eq('id', eventId)
+        .single()
+
+    if (eventError || !event) {
+        console.error('Remove participant: could not load event for email', eventError)
+    } else {
+        const deletedIds = new Set(deletedRows.map((r) => r.id))
+        for (const r of rows) {
+            if (!deletedIds.has(r.id)) continue
+            const em = r.email?.trim()
+            if (!em) continue
+            try {
+                await sendParticipantRemovedEmail(
+                    {
+                        recipientName: (r.name ?? '').trim(),
+                        recipientEmail: em,
+                        eventTitle: event.title || 'Arrangement',
+                        eventSlug: event.slug,
+                        startDatetime: event.start_datetime,
+                        location: event.location,
+                        regDeadline: event.reg_deadline,
+                        contactEmail: event.contact_email,
+                    },
+                    r.status === 'waitlist'
+                )
+            } catch (e) {
+                console.error('Participant removed email failed:', e)
+            }
+        }
     }
 
     return NextResponse.json({ success: true, removed: deletedRows.length })

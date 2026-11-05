@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Box, Container, Heading, Flex, Text } from '@chakra-ui/react';
+import { Box, Flex, Text } from '@chakra-ui/react';
+import { SectionHeading } from '@/components/Typography';
 import { BOARD_MEMBERS_QUERY } from '@/sanity/lib/queries';
 import { client } from '@/sanity/lib/client';
 import { BoardMember } from '@/types/sanity.types';
@@ -52,16 +53,16 @@ export default function EarilerMembersSection() {
     return (
         <>
             {loading && (
-                <Text>Laster...</Text>
+                <Text textAlign="center">Laster...</Text>
             )}
             {!loading && sortedPeriods.length === 0 ? (
                 <Text textAlign="center">Ingen tidligere styremedlemmer funnet.</Text>
             ) : (
                 sortedPeriods.map((period) => (
-                    <Box key={period} mb={16}>
-                        <Heading as="h2" fontSize="2rem" mb={8} borderBottom="2px solid var(--color-altBg)" pb={2}>
+                    <Box key={period} _notFirst={{ mt: 16 }}>
+                        <SectionHeading mt={0}>
                             Styret {period}
-                        </Heading>
+                        </SectionHeading>
                         <Flex flexWrap="wrap" gap={8} justify="center">
                             {groupedMembers[period].map((member) => (
                                 <BoardMemberCard key={member._id} member={member} href={`/om-oss/styret/tidligere-styrer/${member.slug?.current || ''}`} />

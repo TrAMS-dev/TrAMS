@@ -1,6 +1,6 @@
 import { MetadataRoute } from 'next'
 import { client } from '@/sanity/lib/client'
-import { BOARD_MEMBERS_QUERY, COMMITTEES_QUERY } from '@/sanity/lib/queries'
+import { BOARD_MEMBERS_QUERY, BOARD_ROLE_SLUGS_QUERY, COMMITTEES_QUERY } from '@/sanity/lib/queries'
 import { BoardMember, Committee } from '@/types/sanity.types'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -11,6 +11,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     // Fetch all committees for dynamic routes
     const committees = await client.fetch<Committee[]>(COMMITTEES_QUERY)
+
+    // Fetch all board role descriptions for /om-oss/styret/<role>
+    const boardRoles = await client.fetch(BOARD_ROLE_SLUGS_QUERY)
+
+    const boardRoleRoutes = boardRoles
+        .filter((role) => !!role.slug)
+        .map((role) => ({
+            url: `${baseUrl}/om-oss/styret/${role.slug}`,
+            lastModified: new Date(role._updatedAt),
+            changeFrequency: 'monthly' as const,
+            priority: 0.8,
+        }))
 
     // Dynamic routes for board members (under tidligere-styrer)
     const boardMemberRoutes = boardMembers.map((member) => ({
@@ -39,22 +51,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         '/om-oss',
         '/om-oss/trams-i-media',
         '/om-oss/vedtekter',
-        // Static board roles
-        '/om-oss/styret/boardleader',
-        '/om-oss/styret/committeeleader',
-        '/om-oss/styret/equipmentleader',
-        '/om-oss/styret/externalcoordinator',
-        '/om-oss/styret/externalleader',
-        '/om-oss/styret/extraleader',
-        '/om-oss/styret/financialleader',
-        '/om-oss/styret/instructorleader',
-        '/om-oss/styret/internalcoordinator',
-        '/om-oss/styret/internalleader',
-        '/om-oss/styret/marketingleader',
-        '/om-oss/styret/mentorleader',
-        '/om-oss/styret/secretary',
-        '/om-oss/styret/sponsorleader',
-        '/om-oss/styret/subjectleader',
         '/om-oss/styret/tidligere-styrer',
 
     ].map((route) => ({
@@ -64,5 +60,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         priority: route === '' ? 1 : 0.8,
     }))
 
-    return [...routes, ...boardMemberRoutes, ...committeeRoutes]
+    return [...routes, ...boardRoleRoutes, ...boardMemberRoutes, ...committeeRoutes]
 }

@@ -1,7 +1,8 @@
 
 import BookKursForm from '@/components/BookKursForm';
-import { SectionHeading } from '@/components/Typography';
-import { Box, Container } from '@chakra-ui/react';
+import HeroImage from '@/components/HeroImage';
+import PreloadHeroImage from '@/components/PreloadHeroImage';
+import { PageContainer } from '@/components/PageContainer';
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -17,18 +18,16 @@ export const metadata: Metadata = {
 
 export default function BookKursPage() {
     return (
-        <Box display="flex" flexDirection="column">
-            <Box
-                py={5}
-                textAlign="center"
-            >
-                <Container maxW="800px">
-                    <SectionHeading>Book Kurs med TrAMS</SectionHeading>
-                </Container>
-            </Box>
-            <Container maxW="1200px" mx="auto" px={4} flex={1} pb={12}>
+        <>
+            <PreloadHeroImage imageUrl="/assets/images/markor_2.jpg" />
+            <HeroImage
+                imageUrl="/assets/images/markor_2.jpg"
+                heading="Book kurs"
+                text="Bestill førstehjelpskurs med TrAMS for din bedrift eller organisasjon."
+            />
+            <PageContainer narrow>
                 <BookKursForm />
-            </Container>
-        </Box>
+            </PageContainer>
+        </>
     );
 }

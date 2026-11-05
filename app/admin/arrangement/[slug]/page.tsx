@@ -10,8 +10,11 @@ import {
     type EventFormPayload,
     type EventFormValues,
 } from '@/components/admin/EventForm'
+import EventQrCodeButton from '@/components/admin/EventQrCodeButton'
 import { toaster } from '@/components/ui/toaster'
 import { utcIsoToDatetimeLocalValue } from '@/lib/datetimeLocal'
+import { useAuth } from '@/hooks/useAuth'
+import { parseKullPools } from '@/lib/kullPools'
 import { parseFeedbackQuestions } from '@/lib/eventFeedback'
 import type { Json } from '@/types/supabase'
 
@@ -19,13 +22,23 @@ export default function AdminEditEventPage() {
     const router = useRouter()
     const params = useParams()
     const slug = params.slug as string
+    const { isAuthenticated, isApproved, isLoading: authLoading } = useAuth()
 
     const [initialValues, setInitialValues] = useState<EventFormValues | null>(null)
     const [dateUnspecified, setDateUnspecified] = useState(false)
+    const [signupUndecided, setSignupUndecided] = useState(false)
     const [eventId, setEventId] = useState<number | null>(null)
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
+        if (!authLoading && (!isAuthenticated || !isApproved)) {
+            router.push('/admin/login')
+        }
+    }, [authLoading, isAuthenticated, isApproved, router])
+
+    useEffect(() => {
+        if (authLoading || !isAuthenticated || !isApproved) return
+
         const fetchEvent = async () => {
             const supabase = createClient()
             const { data, error } = await supabase
@@ -46,6 +59,7 @@ export default function AdminEditEventPage() {
 
             setEventId(data.id)
             setDateUnspecified(Boolean(data.date_unspecified))
+            setSignupUndecided(Boolean(data.signup_undecided))
             setInitialValues({
                 ...emptyEventFormValues,
                 title: data.title || '',
@@ -62,6 +76,12 @@ export default function AdminEditEventPage() {
                 planned_month: data.planned_month || '',
                 has_food: Boolean(data.has_food),
                 custom_question: data.custom_question || '',
+                require_phone: Boolean(data.require_phone),
+                allowed_kull: data.allowed_kull ?? [],
+                kull_pools: parseKullPools(data.kull_pools).map((p) => ({
+                    kull: p.kull,
+                    spots: String(p.spots),
+                })),
                 feedback_open: Boolean(data.feedback_open),
                 feedback_questions: parseFeedbackQuestions(data.feedback_questions),
             })
@@ -69,7 +89,7 @@ export default function AdminEditEventPage() {
         }
 
         fetchEvent()
-    }, [slug, router])
+    }, [slug, router, authLoading, isAuthenticated, isApproved])
 
     const handleSubmit = async (payload: EventFormPayload) => {
         if (!eventId) return
@@ -91,9 +111,13 @@ export default function AdminEditEventPage() {
                     reg_deadline: payload.reg_deadline,
                     author: payload.author,
                     date_unspecified: payload.date_unspecified,
+                    signup_undecided: payload.signup_undecided,
                     planned_month: payload.planned_month,
                     has_food: payload.has_food,
                     custom_question: payload.custom_question,
+                    require_phone: payload.require_phone,
+                    allowed_kull: payload.allowed_kull,
+                    kull_pools: payload.kull_pools,
                     feedback_open: payload.feedback_open,
                     feedback_questions: payload.feedback_questions as unknown as Json,
                 })
@@ -127,7 +151,7 @@ export default function AdminEditEventPage() {
         }
     }
 
-    if (loading || !initialValues) {
+    if (authLoading || loading || !initialValues) {
         return (
             <Flex justify="center" align="center" h="50vh">
                 <Spinner size="xl" />
@@ -135,12 +159,18 @@ export default function AdminEditEventPage() {
         )
     }
 
+    if (!isAuthenticated || !isApproved) {
+        return null
+    }
+
     return (
         <EventForm
             heading="Rediger arrangement"
+            headerAction={<EventQrCodeButton slug={slug} />}
             submitLabel="Lagre endringer"
             initialValues={initialValues}
             initialDateUnspecified={dateUnspecified}
+            initialSignupUndecided={signupUndecided}
             onSubmit={handleSubmit}
         />
     )

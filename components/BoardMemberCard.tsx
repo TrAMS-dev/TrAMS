@@ -1,4 +1,5 @@
 import { Link as ChakraLink, Heading, Text } from '@chakra-ui/react';
+import { cardStyles, cardHoverStyles } from '@/components/ContentCard';
 import Image from 'next/image';
 import { urlFor } from '@/sanity/lib/image';
 import { translateRole } from '@/utils/sanity/translateRole';
@@ -17,8 +18,7 @@ export default function BoardMemberCard({ member, href }: BoardMemberCardProps) 
     return (
         <ChakraLink
             href={href}
-            bg="white"
-            borderRadius="8px"
+            {...cardStyles}
             p={4}
             w="240px"
             textAlign="center"
@@ -27,8 +27,7 @@ export default function BoardMemberCard({ member, href }: BoardMemberCardProps) 
             style={{ scrollSnapAlign: 'start' }}
             textDecoration="none"
             color="inherit"
-            boxShadow="0 0 10px rgba(0,0,0,0.1)"
-            _hover={{ transform: 'scale(1.05)', boxShadow: '0 0 15px rgba(0,0,0,0.2)' }}
+            _hover={cardHoverStyles}
             display="flex"
             flexDirection="column"
             alignItems="center"

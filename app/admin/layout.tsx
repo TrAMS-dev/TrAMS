@@ -1,8 +1,9 @@
 'use client'
 
-import { Box, Flex, Heading, Link, Button, Container, Spinner } from '@chakra-ui/react'
+import { Box, Flex, Heading, Link, Container, Spinner } from '@chakra-ui/react'
+import { Settings } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
-import { usePathname, useRouter } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 
 
 export default function AdminLayout({
@@ -10,15 +11,9 @@ export default function AdminLayout({
 }: {
     children: React.ReactNode
 }) {
-    const { isAdmin, userName, isAuthenticated, isLoading, logout } = useAuth()
+    const { isAdmin, userName, isAuthenticated, isLoading } = useAuth()
     const pathname = usePathname()
-    const router = useRouter()
     const isAuthPage = pathname?.startsWith('/admin/login') || pathname?.startsWith('/admin/register')
-
-    const handleLogout = async () => {
-        await logout()
-        router.push('/admin/login')
-    }
 
     return (
         <>
@@ -82,18 +77,21 @@ export default function AdminLayout({
                                                 </Link>
                                             </Flex>
                                         </Flex>
-                                        <Flex align="center" gap={4}>
-                                            <Box fontWeight="medium" fontSize="sm" color="gray.600">
-                                                Logget inn som: <Box as="span" color="gray.900">{userName}</Box>
+                                        <Flex align="center" gap={2}>
+                                            <Box fontWeight="medium" fontSize="sm" color="gray.900">
+                                                {userName}
                                             </Box>
-                                            <Button
-                                                size="sm"
-                                                variant="outline"
-                                                onClick={handleLogout}
-                                                colorPalette="gray"
+                                            <Link
+                                                href="/admin/innstillinger"
+                                                aria-label="Innstillinger"
+                                                title="Innstillinger"
+                                                p={2}
+                                                rounded="md"
+                                                color={pathname?.startsWith('/admin/innstillinger') ? 'var(--color-primary)' : 'gray.600'}
+                                                _hover={{ color: 'var(--color-primary)', bg: 'gray.100' }}
                                             >
-                                                Logg ut
-                                            </Button>
+                                                <Settings size={20} />
+                                            </Link>
                                         </Flex>
                                     </Flex>
                                 </Container>
