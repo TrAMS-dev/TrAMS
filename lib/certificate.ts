@@ -4,8 +4,8 @@ import { createHmac, timingSafeEqual } from 'crypto'
  * Signerte lenker til personlige kursbevis. Kun for server (bruker hemmelig nøkkel).
  *
  * Token er `<deltaker-id>.<signatur>`. Signaturen hindrer at noen kan gjette seg
- * fram til andres kursbevis ved å endre id-en. Vi lagrer ikke token i databasen
- * fordi EventParticipants kan leses av alle.
+ * fram til andres kursbevis ved å endre id-en, og gjør at token ikke trenger å
+ * lagres i databasen.
  */
 
 const SITE_ORIGIN = (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.trams.no').replace(/\/$/, '')
