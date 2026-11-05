@@ -846,10 +846,11 @@ export function EventForm({
                                 value={formData.certificate_description}
                                 onChange={handleChange}
                                 rows={3}
-                                placeholder="F.eks. Kurset omfatter en gjennomgang av prosedyren for perifer venekanylering, samt praktisk trening i mindre grupper med instruktører."
+                                placeholder="Hva kurset omfattet, f.eks. teori og praktisk trening i mindre grupper med instruktører."
                             />
                             <Field.HelperText>
-                                Valgfritt. Vises på kursbeviset de som møtte får på e-post.
+                                Valgfritt. Vises under datoen på kursbeviset de som møtte får på
+                                e-post. Står feltet tomt, utelates avsnittet.
                             </Field.HelperText>
                         </Field.Root>
                     </FormSection>
