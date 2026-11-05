@@ -12,8 +12,6 @@ import {
     Button,
     Field,
     Checkbox,
-    NativeSelect,
-    HStack,
 } from '@chakra-ui/react'
 import { useRouter } from 'next/navigation'
 import { ImageUploader } from '@/components/admin/ImageUploader'
@@ -26,16 +24,39 @@ import { type SignupQuestion, validateSignupQuestions } from '@/lib/signupQuesti
 import {
     type SignupQuestionDraft,
     SignupQuestionsEditor,
+    newSignupQuestionDraft,
     draftToQuestion,
 } from '@/components/admin/SignupQuestionsEditor'
+import type { FeedbackQuestion } from '@/lib/eventFeedback'
 import {
-    FEEDBACK_QUESTION_TYPES,
-    FEEDBACK_TYPE_LABELS,
-    MAX_FEEDBACK_QUESTIONS,
-    newFeedbackQuestionId,
-    type FeedbackQuestion,
-    type FeedbackQuestionType,
-} from '@/lib/eventFeedback'
+    FeedbackQuestionsEditor,
+    newFeedbackQuestion,
+} from '@/components/admin/FeedbackQuestionsEditor'
+
+/** One titled part of the form, separated from the previous one by a line. */
+function FormSection({
+    title,
+    description,
+    children,
+}: {
+    title: string
+    description?: string
+    children: React.ReactNode
+}) {
+    return (
+        <Box as="section" borderTopWidth="1px" borderColor="gray.200" pt={6}>
+            <Heading size="md" mb={description ? 1 : 4}>
+                {title}
+            </Heading>
+            {description && (
+                <Text fontSize="sm" color="fg.muted" mb={4}>
+                    {description}
+                </Text>
+            )}
+            <Stack gap={5}>{children}</Stack>
+        </Box>
+    )
+}
 
 export interface EventFormValues {
     title: string
@@ -134,6 +155,9 @@ export function EventForm({
         initialSignupUndecided || initialDateUnspecified
     )
     const [hasFood, setHasFood] = useState(initialValues.has_food)
+    const [hasExtraQuestions, setHasExtraQuestions] = useState(
+        initialValues.signup_questions.length > 0
+    )
     const [formData, setFormData] = useState<EventFormValues>(() => ({
         ...initialValues,
         allowed_kull:
@@ -202,35 +226,13 @@ export function EventForm({
         formData.end_datetime !== '' &&
         formData.end_datetime < formData.start_datetime
 
+    const [hasFeedbackForm, setHasFeedbackForm] = useState(
+        initialValues.feedback_open || initialValues.feedback_questions.length > 0
+    )
     const [feedbackOpen, setFeedbackOpen] = useState(initialValues.feedback_open)
     const [feedbackQuestions, setFeedbackQuestions] = useState<FeedbackQuestion[]>(
         initialValues.feedback_questions
     )
-    const addFeedbackQuestion = () => {
-        setFeedbackQuestions((prev) =>
-            prev.length >= MAX_FEEDBACK_QUESTIONS
-                ? prev
-                : [
-                      ...prev,
-                      {
-                          id: newFeedbackQuestionId(),
-                          label: '',
-                          type: 'rating',
-                          required: false,
-                      },
-                  ]
-        )
-    }
-
-    const updateFeedbackQuestion = (id: string, patch: Partial<FeedbackQuestion>) => {
-        setFeedbackQuestions((prev) =>
-            prev.map((q) => (q.id === id ? { ...q, ...patch } : q))
-        )
-    }
-
-    const removeFeedbackQuestion = (id: string) => {
-        setFeedbackQuestions((prev) => prev.filter((q) => q.id !== id))
-    }
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target
@@ -261,11 +263,14 @@ export function EventForm({
             return
         }
 
-        const cleanedFeedbackQuestions: FeedbackQuestion[] = feedbackQuestions
-            .map((q) => ({ ...q, label: q.label.trim() }))
-            .filter((q) => q.label !== '')
+        const cleanedFeedbackQuestions: FeedbackQuestion[] = hasFeedbackForm
+            ? feedbackQuestions
+                  .map((q) => ({ ...q, label: q.label.trim() }))
+                  .filter((q) => q.label !== '')
+            : []
+        const feedbackFormOpen = hasFeedbackForm && feedbackOpen
 
-        if (feedbackOpen && cleanedFeedbackQuestions.length === 0) {
+        if (feedbackFormOpen && cleanedFeedbackQuestions.length === 0) {
             toaster.create({
                 title: 'Legg til minst ett tilbakemeldingsspørsmål',
                 description:
@@ -370,7 +375,10 @@ export function EventForm({
             return
         }
 
-        const signupQuestions = hideSignup ? [] : formData.signup_questions.map(draftToQuestion)
+        const signupQuestions =
+            hideSignup || !hasExtraQuestions
+                ? []
+                : formData.signup_questions.map(draftToQuestion)
         const questionError = validateSignupQuestions(signupQuestions)
         if (questionError) {
             toaster.create({
@@ -404,7 +412,7 @@ export function EventForm({
             // All active kull checked means no restriction
             allowed_kull: allowedKull,
             kull_pools: kullPools,
-            feedback_open: feedbackOpen,
+            feedback_open: feedbackFormOpen,
             feedback_questions: cleanedFeedbackQuestions,
         }
 
@@ -415,6 +423,7 @@ export function EventForm({
         }
     }
 
+
     return (
         <Box maxW="800px" mx="auto" bg="white" p={8} rounded="lg" shadow="sm">
             <Flex justify="space-between" align="center" gap={4} mb={6} wrap="wrap">
@@ -423,374 +432,176 @@ export function EventForm({
             </Flex>
 
             <form onSubmit={handleSubmit}>
-                <Stack gap={6}>
-                    <Field.Root>
-                        <Field.Label>Tittel *</Field.Label>
-                        <Input
-                            name="title"
-                            value={formData.title}
-                            onChange={handleChange}
-                            placeholder="F.eks. Førstehjelpskurs for medisinstudenter"
-                            required
-                        />
-                    </Field.Root>
-
-                    <Field.Root>
-                        <Field.Label>Beskrivelse</Field.Label>
-                        <Textarea
-                            name="description"
-                            value={formData.description}
-                            onChange={handleChange}
-                            placeholder="Beskriv arrangementet..."
-                            rows={6}
-                        />
-                    </Field.Root>
-
-                    <Field.Root>
-                        <Checkbox.Root
-                            checked={hasFood}
-                            onCheckedChange={(details) => setHasFood(!!details.checked)}
-                        >
-                            <Checkbox.HiddenInput />
-                            <Checkbox.Control />
-                            <Checkbox.Label>Blir det servering av mat drikke?</Checkbox.Label>
-                        </Checkbox.Root>
-                        <Field.HelperText>
-                            Dersom du huker av denne vil deltagere bli spurt om eventuelle allergier
-                        </Field.HelperText>
-                    </Field.Root>
-
-                    <Checkbox.Root
-                        checked={dateUnspecified}
-                        onCheckedChange={(details) => {
-                            const checked = !!details.checked
-                            setDateUnspecified(checked)
-                            if (checked) setSignupUndecided(true)
-                        }}
-                    >
-                        <Checkbox.HiddenInput />
-                        <Checkbox.Control />
-                        <Checkbox.Label>Arrangementsdato ikke spesifisert enda</Checkbox.Label>
-                    </Checkbox.Root>
-
-                    {dateUnspecified ? (
-                        <PlannedMonthSelector
-                            value={formData.planned_month}
-                            onChange={(planned_month) =>
-                                setFormData((prev) => ({ ...prev, planned_month }))
-                            }
-                        />
-                    ) : (
-                        <>
-                            <Box
-                                display="grid"
-                                gridTemplateColumns={{ base: '1fr', md: '1fr 1fr' }}
-                                gap={4}
-                            >
-                                <Field.Root>
-                                    <Field.Label>Starttidspunkt *</Field.Label>
-                                    <Input
-                                        name="start_datetime"
-                                        type="datetime-local"
-                                        value={formData.start_datetime}
-                                        onChange={handleChange}
-                                        required
-                                    />
-                                </Field.Root>
-
-                                <Field.Root invalid={endBeforeStart}>
-                                    <Field.Label>Sluttidspunkt *</Field.Label>
-                                    <Input
-                                        name="end_datetime"
-                                        type="datetime-local"
-                                        value={formData.end_datetime}
-                                        onChange={handleChange}
-                                        min={formData.start_datetime || undefined}
-                                        required
-                                    />
-                                    <Field.ErrorText>
-                                        Sluttidspunkt kan ikke være før starttidspunkt
-                                    </Field.ErrorText>
-                                </Field.Root>
-                            </Box>
-
-                            <Field.Root>
-                                <Field.Label>Lokasjon *</Field.Label>
-                                <Input
-                                    name="location"
-                                    value={formData.location}
-                                    onChange={handleChange}
-                                    placeholder="F.eks. Auditorium 1, Medisinsk Teknisk Forskningssenter"
-                                    required
-                                />
-                            </Field.Root>
-                        </>
-                    )}
-
-                    <Field.Root>
-                        <Field.Label>Kontakt e-post</Field.Label>
-                        <Input
-                            name="contact_email"
-                            type="email"
-                            value={formData.contact_email}
-                            onChange={handleChange}
-                            placeholder="f.eks. arrangement@trams.no"
-                        />
-                        <Field.HelperText>
-                            Vises på arrangementssiden. Brukes også som svar-adresse på
-                            påmeldingsbekreftelser.
-                        </Field.HelperText>
-                    </Field.Root>
-
-                    {!signupUndecided && (
-                        <SignupQuestionsEditor
-                            value={formData.signup_questions}
-                            onChange={(signup_questions) =>
-                                setFormData((prev) => ({ ...prev, signup_questions }))
-                            }
-                        />
-                    )}
-
-                    {!signupUndecided && (
+                <Stack gap={8}>
+                    <FormSection title="Om arrangementet">
                         <Field.Root>
-                            <Checkbox.Root
-                                checked={formData.require_phone}
-                                onCheckedChange={(details) =>
-                                    setFormData((prev) => ({
-                                        ...prev,
-                                        require_phone: !!details.checked,
-                                    }))
-                                }
-                            >
-                                <Checkbox.HiddenInput />
-                                <Checkbox.Control />
-                                <Checkbox.Label>Krev telefonnummer ved påmelding</Checkbox.Label>
-                            </Checkbox.Root>
+                            <Field.Label>Tittel *</Field.Label>
+                            <Input
+                                name="title"
+                                value={formData.title}
+                                onChange={handleChange}
+                                placeholder="F.eks. Førstehjelpskurs for medisinstudenter"
+                                required
+                            />
+                        </Field.Root>
+
+                        <Field.Root>
+                            <Field.Label>Beskrivelse</Field.Label>
+                            <Textarea
+                                name="description"
+                                value={formData.description}
+                                onChange={handleChange}
+                                placeholder="Beskriv arrangementet..."
+                                rows={6}
+                            />
+                        </Field.Root>
+
+                        <Field.Root w="full">
+                            <Field.Label>Bilde</Field.Label>
                             <Field.HelperText>
-                                Dersom du huker av denne må deltakerne oppgi telefonnummer når de
-                                melder seg på.
+                                Last opp et bilde som representerer arrangementet. Du kan zoome og
+                                flytte for å tilpasse headerbildet.
+                            </Field.HelperText>
+                            <ImageUploader
+                                value={formData.image}
+                                onChange={(url) => setFormData((prev) => ({ ...prev, image: url }))}
+                            />
+                        </Field.Root>
+
+                        <Field.Root>
+                            <Field.Label>Kontakt e-post</Field.Label>
+                            <Input
+                                name="contact_email"
+                                type="email"
+                                value={formData.contact_email}
+                                onChange={handleChange}
+                                placeholder="f.eks. arrangement@trams.no"
+                            />
+                            <Field.HelperText>
+                                Vises på arrangementssiden. Brukes også som svar-adresse på
+                                påmeldingsbekreftelser.
                             </Field.HelperText>
                         </Field.Root>
-                    )}
+                    </FormSection>
 
-                    <Box
-                        borderWidth="1px"
-                        borderColor="gray.200"
-                        borderRadius="md"
-                        p={4}
-                    >
-                        <Stack gap={4}>
-                            <Box>
-                                <Heading size="sm">
-                                    Tilbakemeldingsskjema (etter arrangementet)
-                                </Heading>
-                                <Text fontSize="sm" color="gray.600" mt={1}>
-                                    Definer spørsmål deltakerne kan svare på fra arrangementssiden.
-                                    Svarene er anonyme og vises under «Tilbakemeldinger» i admin.
-                                </Text>
-                            </Box>
-
-                            <Checkbox.Root
-                                checked={feedbackOpen}
-                                onCheckedChange={(details) =>
-                                    setFeedbackOpen(!!details.checked)
-                                }
-                            >
-                                <Checkbox.HiddenInput />
-                                <Checkbox.Control />
-                                <Checkbox.Label>
-                                    Åpne tilbakemeldingsskjema for deltakere
-                                </Checkbox.Label>
-                            </Checkbox.Root>
-                            <Text fontSize="xs" color="gray.500" mt={-2}>
-                                Vises på arrangementssiden når dette er på og minst ett spørsmål er
-                                lagt til.
-                            </Text>
-
-                            {feedbackQuestions.length === 0 && (
-                                <Text fontSize="sm" color="gray.500">
-                                    Ingen spørsmål lagt til enda.
-                                </Text>
-                            )}
-
-                            <Stack gap={3}>
-                                {feedbackQuestions.map((question, index) => (
-                                    <Box
-                                        key={question.id}
-                                        borderWidth="1px"
-                                        borderColor="gray.200"
-                                        borderRadius="md"
-                                        p={3}
-                                        bg="gray.50"
-                                    >
-                                        <Stack gap={3}>
-                                            <Field.Root>
-                                                <Field.Label fontSize="sm">
-                                                    Spørsmål {index + 1}
-                                                </Field.Label>
-                                                <Input
-                                                    value={question.label}
-                                                    onChange={(e) =>
-                                                        updateFeedbackQuestion(question.id, {
-                                                            label: e.target.value,
-                                                        })
-                                                    }
-                                                    placeholder="F.eks. Hvordan opplevde du arrangementet?"
-                                                />
-                                            </Field.Root>
-
-                                            <HStack
-                                                gap={4}
-                                                flexWrap="wrap"
-                                                align="flex-end"
-                                            >
-                                                <Field.Root maxW="220px">
-                                                    <Field.Label fontSize="sm">Type</Field.Label>
-                                                    <NativeSelect.Root size="sm">
-                                                        <NativeSelect.Field
-                                                            value={question.type}
-                                                            onChange={(e) =>
-                                                                updateFeedbackQuestion(
-                                                                    question.id,
-                                                                    {
-                                                                        type: e.target
-                                                                            .value as FeedbackQuestionType,
-                                                                    }
-                                                                )
-                                                            }
-                                                        >
-                                                            {FEEDBACK_QUESTION_TYPES.map((t) => (
-                                                                <option key={t} value={t}>
-                                                                    {FEEDBACK_TYPE_LABELS[t]}
-                                                                </option>
-                                                            ))}
-                                                        </NativeSelect.Field>
-                                                        <NativeSelect.Indicator />
-                                                    </NativeSelect.Root>
-                                                </Field.Root>
-
-                                                <Checkbox.Root
-                                                    checked={question.required}
-                                                    onCheckedChange={(details) =>
-                                                        updateFeedbackQuestion(question.id, {
-                                                            required: !!details.checked,
-                                                        })
-                                                    }
-                                                >
-                                                    <Checkbox.HiddenInput />
-                                                    <Checkbox.Control />
-                                                    <Checkbox.Label>Påkrevd</Checkbox.Label>
-                                                </Checkbox.Root>
-
-                                                <Button
-                                                    type="button"
-                                                    size="sm"
-                                                    variant="outline"
-                                                    colorPalette="red"
-                                                    ml="auto"
-                                                    onClick={() =>
-                                                        removeFeedbackQuestion(question.id)
-                                                    }
-                                                >
-                                                    Fjern
-                                                </Button>
-                                            </HStack>
-                                        </Stack>
-                                    </Box>
-                                ))}
-                            </Stack>
-
-                            <Button
-                                type="button"
-                                size="sm"
-                                variant="outline"
-                                alignSelf="flex-start"
-                                onClick={addFeedbackQuestion}
-                                disabled={
-                                    feedbackQuestions.length >= MAX_FEEDBACK_QUESTIONS
-                                }
-                            >
-                                + Legg til spørsmål
-                            </Button>
-                        </Stack>
-                    </Box>
-
-                    <Field.Root w="full">
-                        <Field.Label>Bilde</Field.Label>
-                        <Field.HelperText>
-                            Last opp et bilde som representerer arrangementet. Du kan zoome og
-                            flytte for å tilpasse headerbildet.
-                        </Field.HelperText>
-                        <ImageUploader
-                            value={formData.image}
-                            onChange={(url) => setFormData((prev) => ({ ...prev, image: url }))}
-                        />
-                    </Field.Root>
-
-                    <Field.Root>
+                    <FormSection title="Tid og sted">
                         <Checkbox.Root
-                            checked={signupUndecided}
-                            disabled={dateUnspecified}
-                            onCheckedChange={(details) => setSignupUndecided(!!details.checked)}
+                            checked={dateUnspecified}
+                            onCheckedChange={(details) => {
+                                const checked = !!details.checked
+                                setDateUnspecified(checked)
+                                if (checked) setSignupUndecided(true)
+                            }}
                         >
                             <Checkbox.HiddenInput />
                             <Checkbox.Control />
-                            <Checkbox.Label>Påmelding ikke synlig for deltakere</Checkbox.Label>
+                            <Checkbox.Label>Arrangementsdato ikke spesifisert enda</Checkbox.Label>
                         </Checkbox.Root>
-                        <Field.HelperText>
-                            {dateUnspecified
-                                ? 'Settes automatisk når arrangementsdato ikke er spesifisert'
-                                : 'Skjuler all informasjon om påmelding på arrangementssiden'}
-                        </Field.HelperText>
-                    </Field.Root>
 
-                    {!signupUndecided && (
-                        <Box>
-                            <Text fontSize="sm" fontWeight="medium" mb={2}>
-                                Hvilke kull kan melde seg på?
-                            </Text>
-                            <Box display="flex" flexWrap="wrap" gap={4}>
-                                {kullOptions.map((kull) => (
-                                    <Checkbox.Root
-                                        key={kull}
-                                        checked={formData.allowed_kull.includes(kull)}
-                                        onCheckedChange={(details) =>
-                                            toggleAllowedKull(kull, !!details.checked)
-                                        }
-                                    >
-                                        <Checkbox.HiddenInput />
-                                        <Checkbox.Control />
-                                        <Checkbox.Label>{kullToKlasse(kull)}. klasse</Checkbox.Label>
-                                    </Checkbox.Root>
-                                ))}
-                            </Box>
-                            <Text fontSize="xs" color="fg.muted" mt={2}>
-                                Fjern avhukingen for kull som ikke skal kunne melde seg på.
-                            </Text>
-                        </Box>
-                    )}
+                        {dateUnspecified ? (
+                            <PlannedMonthSelector
+                                value={formData.planned_month}
+                                onChange={(planned_month) =>
+                                    setFormData((prev) => ({ ...prev, planned_month }))
+                                }
+                            />
+                        ) : (
+                            <>
+                                <Box
+                                    display="grid"
+                                    gridTemplateColumns={{ base: '1fr', md: '1fr 1fr' }}
+                                    gap={4}
+                                >
+                                    <Field.Root>
+                                        <Field.Label>Starttidspunkt *</Field.Label>
+                                        <Input
+                                            name="start_datetime"
+                                            type="datetime-local"
+                                            value={formData.start_datetime}
+                                            onChange={handleChange}
+                                            required
+                                        />
+                                    </Field.Root>
 
-                    {!signupUndecided && (
-                        <>
-                            <Field.Root>
-                                <Field.Label>Påmelding åpner</Field.Label>
-                                <Input
-                                    name="reg_opens"
-                                    type="datetime-local"
-                                    value={formData.reg_opens}
-                                    onChange={handleChange}
-                                />
-                                <Field.HelperText>
-                                    Valgfritt. Tomt betyr at påmelding er åpen med en gang.
-                                </Field.HelperText>
-                            </Field.Root>
+                                    <Field.Root invalid={endBeforeStart}>
+                                        <Field.Label>Sluttidspunkt *</Field.Label>
+                                        <Input
+                                            name="end_datetime"
+                                            type="datetime-local"
+                                            value={formData.end_datetime}
+                                            onChange={handleChange}
+                                            min={formData.start_datetime || undefined}
+                                            required
+                                        />
+                                        <Field.ErrorText>
+                                            Sluttidspunkt kan ikke være før starttidspunkt
+                                        </Field.ErrorText>
+                                    </Field.Root>
+                                </Box>
 
-                            <Box
-                                display="grid"
-                                gridTemplateColumns={{ base: '1fr', md: '1fr 1fr' }}
-                                gap={4}
-                            >
                                 <Field.Root>
+                                    <Field.Label>Lokasjon *</Field.Label>
+                                    <Input
+                                        name="location"
+                                        value={formData.location}
+                                        onChange={handleChange}
+                                        placeholder="F.eks. Auditorium 1, Medisinsk Teknisk Forskningssenter"
+                                        required
+                                    />
+                                </Field.Root>
+                            </>
+                        )}
+                    </FormSection>
+
+                    <FormSection title="Påmelding">
+                        <Field.Root>
+                            <Checkbox.Root
+                                checked={signupUndecided}
+                                disabled={dateUnspecified}
+                                onCheckedChange={(details) => setSignupUndecided(!!details.checked)}
+                            >
+                                <Checkbox.HiddenInput />
+                                <Checkbox.Control />
+                                <Checkbox.Label>Påmelding ikke synlig for deltakere</Checkbox.Label>
+                            </Checkbox.Root>
+                            <Field.HelperText>
+                                {dateUnspecified
+                                    ? 'Settes automatisk når arrangementsdato ikke er spesifisert'
+                                    : 'Skjuler all informasjon om påmelding på arrangementssiden'}
+                            </Field.HelperText>
+                        </Field.Root>
+
+                        {!signupUndecided && (
+                            <>
+                                <Box
+                                    display="grid"
+                                    gridTemplateColumns={{ base: '1fr', md: '1fr 1fr' }}
+                                    gap={4}
+                                >
+                                    <Field.Root>
+                                        <Field.Label>Påmelding åpner</Field.Label>
+                                        <Input
+                                            name="reg_opens"
+                                            type="datetime-local"
+                                            value={formData.reg_opens}
+                                            onChange={handleChange}
+                                        />
+                                        <Field.HelperText>Tomt betyr åpen med en gang</Field.HelperText>
+                                    </Field.Root>
+
+                                    <Field.Root>
+                                        <Field.Label>Påmeldingsfrist</Field.Label>
+                                        <Input
+                                            name="reg_deadline"
+                                            type="datetime-local"
+                                            value={formData.reg_deadline}
+                                            onChange={handleChange}
+                                        />
+                                        <Field.HelperText>Tomt betyr ingen frist</Field.HelperText>
+                                    </Field.Root>
+                                </Box>
+
+                                <Field.Root maxW={{ md: 'calc(50% - 0.5rem)' }}>
                                     <Field.Label>Maks antall deltakere</Field.Label>
                                     <Input
                                         name="max_attendees"
@@ -803,117 +614,251 @@ export function EventForm({
                                     <Field.HelperText>La stå tomt for ubegrenset</Field.HelperText>
                                 </Field.Root>
 
-                                <Field.Root>
-                                    <Field.Label>Påmeldingsfrist</Field.Label>
-                                    <Input
-                                        name="reg_deadline"
-                                        type="datetime-local"
-                                        value={formData.reg_deadline}
-                                        onChange={handleChange}
-                                    />
-                                </Field.Root>
-                            </Box>
-
-                            <Box>
-                                <Text fontSize="sm" fontWeight="medium" mb={1}>
-                                    Reserverte plasser
-                                </Text>
-                                <Text fontSize="xs" color="fg.muted" mb={3}>
-                                    Reserver et antall av plassene for én eller flere klasser.
-                                    Resten av plassene er åpne for alle. Deltakere havner i den
-                                    mest spesifikke puljen de passer i, deretter i bredere puljer,
-                                    og til slutt på de åpne plassene. Puljer kan ligge inni
-                                    hverandre (f.eks. 3.–6. og 6. klasse), men ikke delvis
-                                    overlappe.
-                                </Text>
-                                <Stack gap={2}>
-                                    {formData.kull_pools.map((pool, index) => (
-                                        <Box
-                                            key={index}
-                                            p={3}
-                                            borderWidth="1px"
-                                            borderColor="gray.200"
-                                            rounded="md"
-                                        >
-                                            <Box
-                                                display="flex"
-                                                flexWrap="wrap"
-                                                gap={3}
-                                                mb={3}
-                                                role="group"
-                                                aria-label={`Klasser i pulje ${index + 1}`}
-                                            >
-                                                {poolKullOptions.map((kull) => (
-                                                    <Checkbox.Root
-                                                        key={kull}
-                                                        size="sm"
-                                                        checked={pool.kull.includes(kull)}
-                                                        onCheckedChange={(details) =>
-                                                            togglePoolKull(
-                                                                index,
-                                                                kull,
-                                                                !!details.checked
-                                                            )
-                                                        }
-                                                    >
-                                                        <Checkbox.HiddenInput />
-                                                        <Checkbox.Control />
-                                                        <Checkbox.Label>
-                                                            {kullToKlasse(kull)}. klasse
-                                                        </Checkbox.Label>
-                                                    </Checkbox.Root>
-                                                ))}
-                                            </Box>
-                                            <Box display="flex" gap={2} alignItems="center">
-                                                <Input
-                                                    aria-label="Antall plasser"
-                                                    type="number"
-                                                    min="1"
-                                                    w="8rem"
-                                                    value={pool.spots}
-                                                    onChange={(e) =>
-                                                        updateKullPool(index, {
-                                                            spots: e.target.value,
-                                                        })
-                                                    }
-                                                    placeholder="Plasser"
-                                                />
-                                                <Text fontSize="sm" color="fg.muted" flex="1">
-                                                    {pool.kull.length > 0
-                                                        ? `plasser for ${formatPoolKlasser(pool.kull)}`
-                                                        : 'Velg klasser'}
-                                                </Text>
-                                                <Button
-                                                    type="button"
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    onClick={() => removeKullPool(index)}
-                                                >
-                                                    Fjern
-                                                </Button>
-                                            </Box>
-                                        </Box>
-                                    ))}
-                                </Stack>
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    size="sm"
-                                    mt={formData.kull_pools.length > 0 ? 3 : 0}
-                                    onClick={addKullPool}
-                                >
-                                    Legg til reserverte plasser
-                                </Button>
-                                {formData.kull_pools.length > 0 && (
-                                    <Text fontSize="xs" color="fg.muted" mt={2}>
-                                        {Number.isFinite(maxAttendeesInput)
-                                            ? `${reservedSpots} reservert, ${Math.max(0, maxAttendeesInput - reservedSpots)} åpne for alle.`
-                                            : 'Sett maks antall deltakere for å bruke reserverte plasser.'}
+                                <Box>
+                                    <Text fontSize="sm" fontWeight="medium" mb={2}>
+                                        Hvilke kull kan melde seg på?
                                     </Text>
-                                )}
-                            </Box>
-                        </>
+                                    <Box display="flex" flexWrap="wrap" gap={4}>
+                                        {kullOptions.map((kull) => (
+                                            <Checkbox.Root
+                                                key={kull}
+                                                checked={formData.allowed_kull.includes(kull)}
+                                                onCheckedChange={(details) =>
+                                                    toggleAllowedKull(kull, !!details.checked)
+                                                }
+                                            >
+                                                <Checkbox.HiddenInput />
+                                                <Checkbox.Control />
+                                                <Checkbox.Label>
+                                                    {kullToKlasse(kull)}. klasse
+                                                </Checkbox.Label>
+                                            </Checkbox.Root>
+                                        ))}
+                                    </Box>
+                                    <Text fontSize="xs" color="fg.muted" mt={2}>
+                                        Fjern avhukingen for kull som ikke skal kunne melde seg på.
+                                    </Text>
+                                </Box>
+
+                                <Box>
+                                    <Text fontSize="sm" fontWeight="medium" mb={1}>
+                                        Reserverte plasser
+                                    </Text>
+                                    <Text fontSize="xs" color="fg.muted" mb={3}>
+                                        Reserver et antall av plassene for én eller flere klasser.
+                                        Resten av plassene er åpne for alle. Deltakere havner i den
+                                        mest spesifikke puljen de passer i, deretter i bredere
+                                        puljer, og til slutt på de åpne plassene. Puljer kan ligge
+                                        inni hverandre (f.eks. 3.–6. og 6. klasse), men ikke delvis
+                                        overlappe.
+                                    </Text>
+                                    <Stack gap={2}>
+                                        {formData.kull_pools.map((pool, index) => (
+                                            <Box
+                                                key={index}
+                                                p={3}
+                                                borderWidth="1px"
+                                                borderColor="gray.200"
+                                                rounded="md"
+                                            >
+                                                <Box
+                                                    display="flex"
+                                                    flexWrap="wrap"
+                                                    gap={3}
+                                                    mb={3}
+                                                    role="group"
+                                                    aria-label={`Klasser i pulje ${index + 1}`}
+                                                >
+                                                    {poolKullOptions.map((kull) => (
+                                                        <Checkbox.Root
+                                                            key={kull}
+                                                            size="sm"
+                                                            checked={pool.kull.includes(kull)}
+                                                            onCheckedChange={(details) =>
+                                                                togglePoolKull(
+                                                                    index,
+                                                                    kull,
+                                                                    !!details.checked
+                                                                )
+                                                            }
+                                                        >
+                                                            <Checkbox.HiddenInput />
+                                                            <Checkbox.Control />
+                                                            <Checkbox.Label>
+                                                                {kullToKlasse(kull)}. klasse
+                                                            </Checkbox.Label>
+                                                        </Checkbox.Root>
+                                                    ))}
+                                                </Box>
+                                                <Box display="flex" gap={2} alignItems="center">
+                                                    <Input
+                                                        aria-label="Antall plasser"
+                                                        type="number"
+                                                        min="1"
+                                                        w="8rem"
+                                                        value={pool.spots}
+                                                        onChange={(e) =>
+                                                            updateKullPool(index, {
+                                                                spots: e.target.value,
+                                                            })
+                                                        }
+                                                        placeholder="Plasser"
+                                                    />
+                                                    <Text fontSize="sm" color="fg.muted" flex="1">
+                                                        {pool.kull.length > 0
+                                                            ? `plasser for ${formatPoolKlasser(pool.kull)}`
+                                                            : 'Velg klasser'}
+                                                    </Text>
+                                                    <Button
+                                                        type="button"
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        onClick={() => removeKullPool(index)}
+                                                    >
+                                                        Fjern
+                                                    </Button>
+                                                </Box>
+                                            </Box>
+                                        ))}
+                                    </Stack>
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        mt={formData.kull_pools.length > 0 ? 3 : 0}
+                                        onClick={addKullPool}
+                                    >
+                                        Legg til reserverte plasser
+                                    </Button>
+                                    {formData.kull_pools.length > 0 && (
+                                        <Text fontSize="xs" color="fg.muted" mt={2}>
+                                            {Number.isFinite(maxAttendeesInput)
+                                                ? `${reservedSpots} reservert, ${Math.max(0, maxAttendeesInput - reservedSpots)} åpne for alle.`
+                                                : 'Sett maks antall deltakere for å bruke reserverte plasser.'}
+                                        </Text>
+                                    )}
+                                </Box>
+                            </>
+                        )}
+                    </FormSection>
+
+                    {!signupUndecided && (
+                        <FormSection
+                            title="Påmeldingsskjema"
+                            description="Hva deltakerne fyller ut når de melder seg på."
+                        >
+                            <Field.Root>
+                                <Checkbox.Root
+                                    checked={hasFood}
+                                    onCheckedChange={(details) => setHasFood(!!details.checked)}
+                                >
+                                    <Checkbox.HiddenInput />
+                                    <Checkbox.Control />
+                                    <Checkbox.Label>Servering av mat eller drikke</Checkbox.Label>
+                                </Checkbox.Root>
+                                <Field.HelperText>
+                                    Deltakerne blir spurt om allergier og matpreferanser.
+                                </Field.HelperText>
+                            </Field.Root>
+
+                            <Field.Root>
+                                <Checkbox.Root
+                                    checked={formData.require_phone}
+                                    onCheckedChange={(details) =>
+                                        setFormData((prev) => ({
+                                            ...prev,
+                                            require_phone: !!details.checked,
+                                        }))
+                                    }
+                                >
+                                    <Checkbox.HiddenInput />
+                                    <Checkbox.Control />
+                                    <Checkbox.Label>Krev telefonnummer</Checkbox.Label>
+                                </Checkbox.Root>
+                            </Field.Root>
+
+                            <Field.Root>
+                                <Checkbox.Root
+                                    checked={hasExtraQuestions}
+                                    onCheckedChange={(details) => {
+                                        const checked = !!details.checked
+                                        setHasExtraQuestions(checked)
+                                        // Start with one empty question so there is something to fill in
+                                        if (checked && formData.signup_questions.length === 0) {
+                                            setFormData((prev) => ({
+                                                ...prev,
+                                                signup_questions: [newSignupQuestionDraft()],
+                                            }))
+                                        }
+                                    }}
+                                >
+                                    <Checkbox.HiddenInput />
+                                    <Checkbox.Control />
+                                    <Checkbox.Label>Ekstra spørsmål til deltakerne?</Checkbox.Label>
+                                </Checkbox.Root>
+                                <Field.HelperText>
+                                    Navn, e-post, kull og TrAMS-medlemskap spørres det allerede om.
+                                </Field.HelperText>
+                            </Field.Root>
+                            {hasExtraQuestions && (
+                                <SignupQuestionsEditor
+                                    value={formData.signup_questions}
+                                    onChange={(signup_questions) =>
+                                        setFormData((prev) => ({ ...prev, signup_questions }))
+                                    }
+                                />
+                            )}
+                        </FormSection>
                     )}
+
+                    <FormSection title="Etter arrangementet">
+                        <Field.Root>
+                            <Checkbox.Root
+                                checked={hasFeedbackForm}
+                                onCheckedChange={(details) => {
+                                    const checked = !!details.checked
+                                    setHasFeedbackForm(checked)
+                                    if (checked && feedbackQuestions.length === 0) {
+                                        setFeedbackQuestions([newFeedbackQuestion()])
+                                    }
+                                }}
+                            >
+                                <Checkbox.HiddenInput />
+                                <Checkbox.Control />
+                                <Checkbox.Label>Bruk tilbakemeldingsskjema</Checkbox.Label>
+                            </Checkbox.Root>
+                            <Field.HelperText>
+                                Anonyme spørsmål deltakerne kan svare på etter arrangementet. Uten
+                                skjema sendes det ingen lenke til tilbakemelding.
+                            </Field.HelperText>
+                        </Field.Root>
+
+                        {hasFeedbackForm && (
+                            <>
+                                <FeedbackQuestionsEditor
+                                    value={feedbackQuestions}
+                                    onChange={setFeedbackQuestions}
+                                />
+                                <Field.Root>
+                                    <Checkbox.Root
+                                        checked={feedbackOpen}
+                                        onCheckedChange={(details) =>
+                                            setFeedbackOpen(!!details.checked)
+                                        }
+                                    >
+                                        <Checkbox.HiddenInput />
+                                        <Checkbox.Control />
+                                        <Checkbox.Label>Åpne skjemaet for deltakere nå</Checkbox.Label>
+                                    </Checkbox.Root>
+                                    <Field.HelperText>
+                                        Når skjemaet er åpent vises det på arrangementssiden, og
+                                        lenken kan sendes på e-post fra deltakerlisten. Svarene
+                                        vises under «Tilbakemeldinger» i admin.
+                                    </Field.HelperText>
+                                </Field.Root>
+                            </>
+                        )}
+                    </FormSection>
 
                     <Box
                         display="flex"

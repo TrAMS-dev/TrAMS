@@ -1,6 +1,6 @@
 'use client'
 
-import { Box, Button, Checkbox, Field, Flex, Input, NativeSelect, Stack, Text, Textarea } from '@chakra-ui/react'
+import { Box, Button, Checkbox, Field, Flex, Input, NativeSelect, Stack, Textarea } from '@chakra-ui/react'
 import {
     MAX_SIGNUP_QUESTIONS,
     SIGNUP_QUESTION_TYPES,
@@ -28,7 +28,7 @@ export function draftToQuestion(d: SignupQuestionDraft): SignupQuestion {
     }
 }
 
-function newDraft(): SignupQuestionDraft {
+export function newSignupQuestionDraft(): SignupQuestionDraft {
     return { id: crypto.randomUUID(), type: 'checkbox', label: '', required: false, optionsText: '' }
 }
 
@@ -57,14 +57,6 @@ export function SignupQuestionsEditor({ value, onChange }: SignupQuestionsEditor
 
     return (
         <Box>
-            <Text fontSize="sm" fontWeight="medium" mb={1}>
-                Spørsmål ved påmelding
-            </Text>
-            <Text fontSize="xs" color="fg.muted" mb={3}>
-                Valgfritt. Deltakerne svarer på spørsmålene når de melder seg på, og svarene vises
-                i deltakerlisten.
-            </Text>
-
             <Stack gap={3}>
                 {value.map((q, index) => (
                     <Box key={q.id} p={3} borderWidth="1px" borderColor="gray.200" rounded="md">
@@ -168,7 +160,7 @@ export function SignupQuestionsEditor({ value, onChange }: SignupQuestionsEditor
                 size="sm"
                 mt={value.length > 0 ? 3 : 0}
                 disabled={value.length >= MAX_SIGNUP_QUESTIONS}
-                onClick={() => onChange([...value, newDraft()])}
+                onClick={() => onChange([...value, newSignupQuestionDraft()])}
             >
                 Legg til spørsmål
             </Button>
