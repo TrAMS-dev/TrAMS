@@ -17,6 +17,8 @@ import { useAuth } from '@/hooks/useAuth'
 import { parseKullPools } from '@/lib/kullPools'
 import { parseSignupQuestions } from '@/lib/signupQuestions'
 import { questionToDraft } from '@/components/admin/SignupQuestionsEditor'
+import { parseFeedbackQuestions } from '@/lib/eventFeedback'
+import type { Json } from '@/types/supabase'
 
 export default function AdminEditEventPage() {
     const router = useRouter()
@@ -82,6 +84,8 @@ export default function AdminEditEventPage() {
                     kull: p.kull,
                     spots: String(p.spots),
                 })),
+                feedback_open: Boolean(data.feedback_open),
+                feedback_questions: parseFeedbackQuestions(data.feedback_questions),
             })
             setLoading(false)
         }
@@ -116,6 +120,8 @@ export default function AdminEditEventPage() {
                     require_phone: payload.require_phone,
                     allowed_kull: payload.allowed_kull,
                     kull_pools: payload.kull_pools,
+                    feedback_open: payload.feedback_open,
+                    feedback_questions: payload.feedback_questions as unknown as Json,
                 })
                 .eq('id', eventId)
 

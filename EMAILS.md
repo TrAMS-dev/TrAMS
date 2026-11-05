@@ -17,8 +17,9 @@ All emails are sent through [Resend](https://resend.com) from `web@trams.no` and
 | 9 | Course booking – customer confirmation | `Bekreftelse på kursbestilling - TrAMS` | The booking contact person | Course booking form submitted |
 | 10 | Course booking – admin notification | `Ny kursbestilling: <course> - <name>` | `ADMIN_EMAIL` (default `ekstern@trams.no`) or `ADMIN_EMAIL_LEVANGER` (default `levanger@trams.no`) | Course booking form submitted |
 | 11 | Website feedback | `Tilbakemelding på nettsiden` | `WEB_NOTIFY_EMAIL` (default `web@trams.no`) | Someone sends feedback from the footer |
+| 12 | After the event | `Takk for at du deltok: <title>` | Participants marked «Møtt» | Admin clicks send under «Etter arrangementet» on the participants page |
 
-Reply-To: emails 1–6 use the event's `contact_email` when it is set; otherwise replies go to `web@trams.no`. Email 7 replies to the new user; email 10 replies to the booking contact person; email 11 replies to the sender if they gave an email address.
+Reply-To: emails 1–6 and 12 use the event's `contact_email` when it is set; otherwise replies go to `web@trams.no`. Email 7 replies to the new user; email 10 replies to the booking contact person; email 11 replies to the sender if they gave an email address.
 
 ## Event emails
 
@@ -57,6 +58,14 @@ Code: [lib/eventSignupEmail.ts](lib/eventSignupEmail.ts)
 - **Recipients:** Everyone with `status = 'confirmed'` on the event.
 - **Content:** Reminds them of their spot with event details and link. If they can't come, they must email the event's contact address (or reply) at least 24 hours before the event starts.
 - **Requires:** `CRON_SECRET` and `SUPABASE_SERVICE_ROLE_KEY`.
+
+### 12. After the event (feedback form and certificate)
+- **Sent from:** [app/api/admin/event-participants/followup/route.ts](app/api/admin/event-participants/followup/route.ts), called by [components/admin/EventFollowupPanel.tsx](components/admin/EventFollowupPanel.tsx)
+- **When:** An admin sends it from the participants page after the event has ended. By default only participants who haven't got it yet (`EventParticipants.followup_sent_at` is empty) get it; the admin can also resend to everyone who attended.
+- **Recipients:** Everyone with `attended = true` on the event.
+- **Content:** Thanks them for coming, with one or both of:
+  - a link to the event's feedback form (`/arrangementer/<slug>?tilbakemelding`, opens the form directly; requires the form to be open with at least one question)
+  - a personal certificate link (`/kursbevis/<id>.<signature>`), a printable page with name, course, date and place. The link is signed with `CERTIFICATE_SECRET` (falls back to `SUPABASE_SERVICE_ROLE_KEY`), so changing that secret invalidates links already sent.
 
 ## User account emails
 

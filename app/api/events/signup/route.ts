@@ -1,4 +1,7 @@
 import { createClient } from '@/utils/supabase/server'
+import { createAdminClient } from '@/utils/supabase/admin'
+import type { SupabaseClient } from '@supabase/supabase-js'
+import type { Database } from '@/types/supabase'
 import { sendEventSignupEmail } from '@/lib/eventSignupEmail'
 import { NextResponse } from 'next/server'
 import { isKullAllowed } from '@/utils/functions/activeYears'
@@ -7,10 +10,10 @@ import { parseSignupQuestions, validateSignupAnswers } from '@/lib/signupQuestio
 
 /** Kull of rows that count toward max_attendees (excludes waitlist). */
 async function confirmedParticipantKull(
-    supabase: Awaited<ReturnType<typeof createClient>>,
+    db: SupabaseClient<Database>,
     eventId: number
 ) {
-    const { data, error } = await supabase
+    const { data, error } = await db
         .from('EventParticipants')
         .select('kull')
         .eq('eventId', eventId)
@@ -49,6 +52,17 @@ export async function POST(request: Request) {
         }
 
         const supabase = await createClient()
+        // EventParticipants is not readable with the anon key (it holds contact and
+        // health data), so the duplicate check, capacity counts and the write go
+        // through the service-role client. This route does all validation itself.
+        const db = createAdminClient()
+        if (!db) {
+            console.error('Event signup: SUPABASE_SERVICE_ROLE_KEY is not set')
+            return NextResponse.json(
+                { error: 'Kunne ikke melde deg på. Prøv igjen senere.' },
+                { status: 500 }
+            )
+        }
 
         // Check if event exists and get details
         const { data: event, error: eventError } = await supabase
@@ -126,7 +140,7 @@ export async function POST(request: Request) {
             }
         }
 
-        const { data: existingParticipant } = await supabase
+        const { data: existingParticipant } = await db
             .from('EventParticipants')
             .select('id, status')
             .eq('eventId', eventIdNum)
@@ -144,7 +158,7 @@ export async function POST(request: Request) {
             let confirmedKull: (number | null)[] = []
             if (event.max_attendees) {
                 const { kull: rows, error: countError } = await confirmedParticipantKull(
-                    supabase,
+                    db,
                     eventIdNum
                 )
                 if (countError || !rows) {
@@ -162,7 +176,7 @@ export async function POST(request: Request) {
                 }
             }
 
-            const { data: waitlistRows, error: waitlistError } = await supabase
+            const { data: waitlistRows, error: waitlistError } = await db
                 .from('EventParticipants')
                 .select('id, kull')
                 .eq('eventId', eventIdNum)
@@ -207,7 +221,7 @@ export async function POST(request: Request) {
                     ? allergies.trim()
                     : null
 
-            const { data: participant, error: updateError } = await supabase
+            const { data: participant, error: updateError } = await db
                 .from('EventParticipants')
                 .update({
                     name: nameStr,
@@ -257,7 +271,7 @@ export async function POST(request: Request) {
 
         if (event.max_attendees) {
             const { kull: confirmedKull, error: countError } = await confirmedParticipantKull(
-                supabase,
+                db,
                 eventIdNum
             )
 
@@ -271,7 +285,7 @@ export async function POST(request: Request) {
         }
 
         // Insert participant
-        const { data: participant, error: insertError } = await supabase
+        const { data: participant, error: insertError } = await db
             .from('EventParticipants')
             .insert({
                 name: nameStr,
@@ -300,7 +314,7 @@ export async function POST(request: Request) {
 
         let waitlistQueuePosition: number | null = null
         if (status === 'waitlist' && participant) {
-            const { count, error: countError } = await supabase
+            const { count, error: countError } = await db
                 .from('EventParticipants')
                 .select('*', { count: 'exact', head: true })
                 .eq('eventId', eventIdNum)

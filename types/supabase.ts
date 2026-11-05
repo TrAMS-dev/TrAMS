@@ -146,6 +146,7 @@ export type Database = {
           custom_question_response: boolean | null
           email: string | null
           eventId: number | null
+          followup_sent_at: string | null
           id: number
           kull: number | null
           name: string | null
@@ -161,6 +162,7 @@ export type Database = {
           custom_question_response?: boolean | null
           email?: string | null
           eventId?: number | null
+          followup_sent_at?: string | null
           id?: number
           kull?: number | null
           name?: string | null
@@ -176,6 +178,7 @@ export type Database = {
           custom_question_response?: boolean | null
           email?: string | null
           eventId?: number | null
+          followup_sent_at?: string | null
           id?: number
           kull?: number | null
           name?: string | null
@@ -362,6 +365,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_public_event_participants: {
+        Args: { p_event_id: number }
+        Returns: {
+          id: number
+          kull: number
+          name: string
+          status: string
+        }[]
+      }
       is_admin: { Args: never; Returns: boolean }
     }
     Enums: {

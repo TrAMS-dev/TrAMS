@@ -13,6 +13,7 @@ import {
     Wrap,
 } from '@chakra-ui/react'
 import EventSignupDialog from '@/components/EventSignupDialog'
+import EventFeedbackDialog from '@/components/EventFeedbackDialog'
 import EventParticipantListDialog from '@/components/EventParticipantListDialog'
 import { LinkifiedText } from '@/components/LinkifiedText'
 import { PageContainer } from '@/components/PageContainer'
@@ -20,7 +21,9 @@ import { ContentCard, cardStyles } from '@/components/ContentCard'
 import { PrimaryLinkButton } from '@/components/PrimaryLinkButton'
 import { SectionHeading, SubsectionHeading, BodyText } from '@/components/Typography'
 import HeroImage from '@/components/HeroImage'
+import { parseFeedbackQuestions } from '@/lib/eventFeedback'
 import { createClient } from '@/utils/supabase/client'
+import { fetchPublicEventParticipants } from '@/lib/publicEventParticipants'
 import type { Tables } from '@/types/supabase'
 import { useParams } from 'next/navigation'
 import { APP_TIME_ZONE } from '@/lib/datetimeLocal'
@@ -59,6 +62,7 @@ export default function EventArrangementDetailClient({
     >([])
     const [loading, setLoading] = useState(true)
     const [signupOpen, setSignupOpen] = useState(false)
+    const [feedbackOpen, setFeedbackOpen] = useState(false)
     const [participantListOpen, setParticipantListOpen] = useState(false)
 
     /** Bumped to refetch, e.g. after a new signup. */
@@ -92,14 +96,22 @@ export default function EventArrangementDetailClient({
             const row = eventData as EventWithAuthorProfile
             const { profiles, ...eventRow } = row
             setEvent(eventRow)
+
+            // Lenken i e-posten etter arrangementet (?tilbakemelding) åpner skjemaet direkte
+            if (
+                eventRow.feedback_open &&
+                parseFeedbackQuestions(eventRow.feedback_questions).length > 0 &&
+                new URLSearchParams(window.location.search).has('tilbakemelding')
+            ) {
+                setFeedbackOpen(true)
+            }
             setAuthorDisplayName(
                 profiles?.full_name?.trim() || profiles?.email?.trim() || null
             )
 
-            const { data: participantRows, error: participantsError } = await supabase
-                .from('EventParticipants')
-                .select('id, name, kull, status, created_at')
-                .eq('eventId', eventData.id)
+            // Rows come ordered by signup time (keeps waitlist queue order).
+            const { data: participantRows, error: participantsError } =
+                await fetchPublicEventParticipants(supabase, eventData.id)
 
             if (!participantsError && participantRows) {
                 const sortByName = (
@@ -118,10 +130,6 @@ export default function EventArrangementDetailClient({
 
                 const waitlist = participantRows
                     .filter((p) => p.status === 'waitlist')
-                    .sort(
-                        (a, b) =>
-                            new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-                    )
                     .map(({ id, name, kull }) => ({ id, name, kull }))
 
                 setPublicParticipants(confirmed)
@@ -172,6 +180,9 @@ export default function EventArrangementDetailClient({
     }
 
     const hasFood: boolean = event.has_food
+
+    const feedbackQuestions = parseFeedbackQuestions(event.feedback_questions)
+    const showFeedback = Boolean(event.feedback_open) && feedbackQuestions.length > 0
 
     const isDateUnspecified = isDateUnspecifiedEvent(event)
     const isSignupUndecided = event.signup_undecided
@@ -378,6 +389,24 @@ export default function EventArrangementDetailClient({
                                             Dersom du ikke gjør dette, vil du bli nedprioritert på senere
                                             TrAMS-arrangementer.
                                         </BodyText>
+                                    </Box>
+                                )}
+                                {showFeedback && (
+                                    <Box borderTopWidth="1px" borderColor="gray.100" pt={6}>
+                                        <SubsectionHeading as="h2" fontSize="1.4rem" mb={4}>
+                                            Gi tilbakemelding
+                                        </SubsectionHeading>
+                                        <BodyText mb={4}>
+                                            Arrangøren ønsker innspill om dette arrangementet.
+                                            Tilbakemeldingen er anonym.
+                                        </BodyText>
+                                        <Button
+                                            bg="var(--color-primary)"
+                                            color="white"
+                                            onClick={() => setFeedbackOpen(true)}
+                                        >
+                                            Gi tilbakemelding
+                                        </Button>
                                     </Box>
                                 )}
                             </Stack>
@@ -603,6 +632,14 @@ export default function EventArrangementDetailClient({
                 eventSignupQuestions={signupQuestions}
                 eventRequiresPhone={event.require_phone}
                 eventAllowedKull={event.allowed_kull}
+            />
+
+            <EventFeedbackDialog
+                open={feedbackOpen}
+                onClose={() => setFeedbackOpen(false)}
+                eventId={event.id}
+                eventTitle={event.title || 'dette arrangementet'}
+                questions={feedbackQuestions}
             />
 
             <EventParticipantListDialog

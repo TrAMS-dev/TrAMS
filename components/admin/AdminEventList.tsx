@@ -102,6 +102,9 @@ function EventActions({ row }: { row: AdminEventRow }) {
             <Link href={`/admin/arrangement/${event.slug}/participants`}>
                 <Button size="xs" variant="outline">Deltakere</Button>
             </Link>
+            <Link href={`/admin/arrangement/${event.slug}/feedback`}>
+                <Button size="xs" variant="outline">Tilbakemeldinger</Button>
+            </Link>
             <Link href={`/admin/arrangement/${event.slug}`}>
                 <Button size="xs" variant="subtle">Rediger</Button>
             </Link>

@@ -2,6 +2,8 @@ import { createClient } from '@/utils/supabase/server'
 import { NextResponse } from 'next/server'
 import { parseKullPools, validateKullPools } from '@/lib/kullPools'
 import { parseSignupQuestions, validateSignupQuestions } from '@/lib/signupQuestions'
+import { parseFeedbackQuestions } from '@/lib/eventFeedback'
+import type { Json } from '@/types/supabase'
 
 function generateSlug(title: string): string {
     return title
@@ -36,6 +38,8 @@ export async function POST(request: Request) {
             require_phone,
             allowed_kull,
             kull_pools,
+            feedback_open,
+            feedback_questions,
         } = body
 
         const isDateUnspecified = Boolean(date_unspecified)
@@ -136,6 +140,10 @@ export async function POST(request: Request) {
                 require_phone: !isSignupUndecided && require_phone === true,
                 allowed_kull: allowedKull.length > 0 ? allowedKull : null,
                 kull_pools: kullPools,
+                feedback_open: Boolean(feedback_open),
+                feedback_questions: parseFeedbackQuestions(
+                    feedback_questions
+                ) as unknown as Json,
             })
             .select()
             .single()

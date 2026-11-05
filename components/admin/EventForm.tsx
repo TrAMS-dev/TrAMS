@@ -12,6 +12,8 @@ import {
     Button,
     Field,
     Checkbox,
+    NativeSelect,
+    HStack,
 } from '@chakra-ui/react'
 import { useRouter } from 'next/navigation'
 import { ImageUploader } from '@/components/admin/ImageUploader'
@@ -26,6 +28,14 @@ import {
     SignupQuestionsEditor,
     draftToQuestion,
 } from '@/components/admin/SignupQuestionsEditor'
+import {
+    FEEDBACK_QUESTION_TYPES,
+    FEEDBACK_TYPE_LABELS,
+    MAX_FEEDBACK_QUESTIONS,
+    newFeedbackQuestionId,
+    type FeedbackQuestion,
+    type FeedbackQuestionType,
+} from '@/lib/eventFeedback'
 
 export interface EventFormValues {
     title: string
@@ -47,6 +57,8 @@ export interface EventFormValues {
     allowed_kull: number[]
     /** Reserved spots per kull; spots is the raw input value. */
     kull_pools: { kull: number[]; spots: string }[]
+    feedback_open: boolean
+    feedback_questions: FeedbackQuestion[]
 }
 
 export interface EventFormPayload {
@@ -69,6 +81,8 @@ export interface EventFormPayload {
     require_phone: boolean
     allowed_kull: number[] | null
     kull_pools: KullPool[]
+    feedback_open: boolean
+    feedback_questions: FeedbackQuestion[]
 }
 
 export const emptyEventFormValues: EventFormValues = {
@@ -89,6 +103,8 @@ export const emptyEventFormValues: EventFormValues = {
     require_phone: false,
     allowed_kull: [],
     kull_pools: [],
+    feedback_open: false,
+    feedback_questions: [],
 }
 
 interface EventFormProps {
@@ -186,6 +202,36 @@ export function EventForm({
         formData.end_datetime !== '' &&
         formData.end_datetime < formData.start_datetime
 
+    const [feedbackOpen, setFeedbackOpen] = useState(initialValues.feedback_open)
+    const [feedbackQuestions, setFeedbackQuestions] = useState<FeedbackQuestion[]>(
+        initialValues.feedback_questions
+    )
+    const addFeedbackQuestion = () => {
+        setFeedbackQuestions((prev) =>
+            prev.length >= MAX_FEEDBACK_QUESTIONS
+                ? prev
+                : [
+                      ...prev,
+                      {
+                          id: newFeedbackQuestionId(),
+                          label: '',
+                          type: 'rating',
+                          required: false,
+                      },
+                  ]
+        )
+    }
+
+    const updateFeedbackQuestion = (id: string, patch: Partial<FeedbackQuestion>) => {
+        setFeedbackQuestions((prev) =>
+            prev.map((q) => (q.id === id ? { ...q, ...patch } : q))
+        )
+    }
+
+    const removeFeedbackQuestion = (id: string) => {
+        setFeedbackQuestions((prev) => prev.filter((q) => q.id !== id))
+    }
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target
         setFormData((prev) => ({ ...prev, [name]: value }))
@@ -209,6 +255,21 @@ export function EventForm({
             toaster.create({
                 title: 'Velg minst ett kull',
                 description: 'Minst ett kull må kunne melde seg på arrangementet.',
+                type: 'error',
+                duration: 5000,
+            })
+            return
+        }
+
+        const cleanedFeedbackQuestions: FeedbackQuestion[] = feedbackQuestions
+            .map((q) => ({ ...q, label: q.label.trim() }))
+            .filter((q) => q.label !== '')
+
+        if (feedbackOpen && cleanedFeedbackQuestions.length === 0) {
+            toaster.create({
+                title: 'Legg til minst ett tilbakemeldingsspørsmål',
+                description:
+                    'Når tilbakemeldingsskjemaet er åpent, må du ha minst ett spørsmål med tekst.',
                 type: 'error',
                 duration: 5000,
             })
@@ -343,6 +404,8 @@ export function EventForm({
             // All active kull checked means no restriction
             allowed_kull: allowedKull,
             kull_pools: kullPools,
+            feedback_open: feedbackOpen,
+            feedback_questions: cleanedFeedbackQuestions,
         }
 
         try {
@@ -509,6 +572,148 @@ export function EventForm({
                             </Field.HelperText>
                         </Field.Root>
                     )}
+
+                    <Box
+                        borderWidth="1px"
+                        borderColor="gray.200"
+                        borderRadius="md"
+                        p={4}
+                    >
+                        <Stack gap={4}>
+                            <Box>
+                                <Heading size="sm">
+                                    Tilbakemeldingsskjema (etter arrangementet)
+                                </Heading>
+                                <Text fontSize="sm" color="gray.600" mt={1}>
+                                    Definer spørsmål deltakerne kan svare på fra arrangementssiden.
+                                    Svarene er anonyme og vises under «Tilbakemeldinger» i admin.
+                                </Text>
+                            </Box>
+
+                            <Checkbox.Root
+                                checked={feedbackOpen}
+                                onCheckedChange={(details) =>
+                                    setFeedbackOpen(!!details.checked)
+                                }
+                            >
+                                <Checkbox.HiddenInput />
+                                <Checkbox.Control />
+                                <Checkbox.Label>
+                                    Åpne tilbakemeldingsskjema for deltakere
+                                </Checkbox.Label>
+                            </Checkbox.Root>
+                            <Text fontSize="xs" color="gray.500" mt={-2}>
+                                Vises på arrangementssiden når dette er på og minst ett spørsmål er
+                                lagt til.
+                            </Text>
+
+                            {feedbackQuestions.length === 0 && (
+                                <Text fontSize="sm" color="gray.500">
+                                    Ingen spørsmål lagt til enda.
+                                </Text>
+                            )}
+
+                            <Stack gap={3}>
+                                {feedbackQuestions.map((question, index) => (
+                                    <Box
+                                        key={question.id}
+                                        borderWidth="1px"
+                                        borderColor="gray.200"
+                                        borderRadius="md"
+                                        p={3}
+                                        bg="gray.50"
+                                    >
+                                        <Stack gap={3}>
+                                            <Field.Root>
+                                                <Field.Label fontSize="sm">
+                                                    Spørsmål {index + 1}
+                                                </Field.Label>
+                                                <Input
+                                                    value={question.label}
+                                                    onChange={(e) =>
+                                                        updateFeedbackQuestion(question.id, {
+                                                            label: e.target.value,
+                                                        })
+                                                    }
+                                                    placeholder="F.eks. Hvordan opplevde du arrangementet?"
+                                                />
+                                            </Field.Root>
+
+                                            <HStack
+                                                gap={4}
+                                                flexWrap="wrap"
+                                                align="flex-end"
+                                            >
+                                                <Field.Root maxW="220px">
+                                                    <Field.Label fontSize="sm">Type</Field.Label>
+                                                    <NativeSelect.Root size="sm">
+                                                        <NativeSelect.Field
+                                                            value={question.type}
+                                                            onChange={(e) =>
+                                                                updateFeedbackQuestion(
+                                                                    question.id,
+                                                                    {
+                                                                        type: e.target
+                                                                            .value as FeedbackQuestionType,
+                                                                    }
+                                                                )
+                                                            }
+                                                        >
+                                                            {FEEDBACK_QUESTION_TYPES.map((t) => (
+                                                                <option key={t} value={t}>
+                                                                    {FEEDBACK_TYPE_LABELS[t]}
+                                                                </option>
+                                                            ))}
+                                                        </NativeSelect.Field>
+                                                        <NativeSelect.Indicator />
+                                                    </NativeSelect.Root>
+                                                </Field.Root>
+
+                                                <Checkbox.Root
+                                                    checked={question.required}
+                                                    onCheckedChange={(details) =>
+                                                        updateFeedbackQuestion(question.id, {
+                                                            required: !!details.checked,
+                                                        })
+                                                    }
+                                                >
+                                                    <Checkbox.HiddenInput />
+                                                    <Checkbox.Control />
+                                                    <Checkbox.Label>Påkrevd</Checkbox.Label>
+                                                </Checkbox.Root>
+
+                                                <Button
+                                                    type="button"
+                                                    size="sm"
+                                                    variant="outline"
+                                                    colorPalette="red"
+                                                    ml="auto"
+                                                    onClick={() =>
+                                                        removeFeedbackQuestion(question.id)
+                                                    }
+                                                >
+                                                    Fjern
+                                                </Button>
+                                            </HStack>
+                                        </Stack>
+                                    </Box>
+                                ))}
+                            </Stack>
+
+                            <Button
+                                type="button"
+                                size="sm"
+                                variant="outline"
+                                alignSelf="flex-start"
+                                onClick={addFeedbackQuestion}
+                                disabled={
+                                    feedbackQuestions.length >= MAX_FEEDBACK_QUESTIONS
+                                }
+                            >
+                                + Legg til spørsmål
+                            </Button>
+                        </Stack>
+                    </Box>
 
                     <Field.Root w="full">
                         <Field.Label>Bilde</Field.Label>
