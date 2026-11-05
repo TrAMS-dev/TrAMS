@@ -15,6 +15,7 @@ import { forMedisinstudenterPageType } from './forMedisinstudenterPageType'
 import { instruktorPageType } from './instruktorPageType'
 import { aboutPageType } from './aboutPageType'
 import { siteSettingsType } from './siteSettingsType'
+import { certificateSettingsType } from './certificateSettingsType'
 
 export const schemaTypes = [
     boardMemberType,
@@ -34,10 +35,12 @@ export const schemaTypes = [
     instruktorPageType,
     aboutPageType,
     siteSettingsType,
+    certificateSettingsType,
 ]
 
 export const SingletonTypes = [
     'siteSettings',
+    'certificateSettings',
     'homePage',
     'aboutPage',
     'vedtekter',

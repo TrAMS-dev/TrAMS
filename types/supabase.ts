@@ -200,6 +200,7 @@ export type Database = {
         Row: {
           allowed_kull: number[] | null
           author: string | null
+          certificate_description: string | null
           contact_email: string | null
           created_at: string
           custom_question: string | null
@@ -228,6 +229,7 @@ export type Database = {
         Insert: {
           allowed_kull?: number[] | null
           author?: string | null
+          certificate_description?: string | null
           contact_email?: string | null
           created_at?: string
           custom_question?: string | null
@@ -256,6 +258,7 @@ export type Database = {
         Update: {
           allowed_kull?: number[] | null
           author?: string | null
+          certificate_description?: string | null
           contact_email?: string | null
           created_at?: string
           custom_question?: string | null

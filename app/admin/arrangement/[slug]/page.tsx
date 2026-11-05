@@ -85,6 +85,7 @@ export default function AdminEditEventPage() {
                     spots: String(p.spots),
                 })),
                 feedback_questions: parseFeedbackQuestions(data.feedback_questions),
+                certificate_description: data.certificate_description ?? '',
             })
             setLoading(false)
         }
@@ -120,6 +121,7 @@ export default function AdminEditEventPage() {
                     allowed_kull: payload.allowed_kull,
                     kull_pools: payload.kull_pools,
                     feedback_questions: payload.feedback_questions as unknown as Json,
+                    certificate_description: payload.certificate_description,
                 })
                 .eq('id', eventId)
 

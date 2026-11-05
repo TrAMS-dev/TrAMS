@@ -39,6 +39,7 @@ export async function POST(request: Request) {
             allowed_kull,
             kull_pools,
             feedback_questions,
+            certificate_description,
         } = body
 
         const isDateUnspecified = Boolean(date_unspecified)
@@ -142,6 +143,10 @@ export async function POST(request: Request) {
                 feedback_questions: parseFeedbackQuestions(
                     feedback_questions
                 ) as unknown as Json,
+                certificate_description:
+                    typeof certificate_description === 'string'
+                        ? certificate_description.trim().slice(0, 2000) || null
+                        : null,
             })
             .select()
             .single()

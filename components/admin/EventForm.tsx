@@ -79,6 +79,7 @@ export interface EventFormValues {
     /** Reserved spots per kull; spots is the raw input value. */
     kull_pools: { kull: number[]; spots: string }[]
     feedback_questions: FeedbackQuestion[]
+    certificate_description: string
 }
 
 export interface EventFormPayload {
@@ -102,6 +103,7 @@ export interface EventFormPayload {
     allowed_kull: number[] | null
     kull_pools: KullPool[]
     feedback_questions: FeedbackQuestion[]
+    certificate_description: string | null
 }
 
 export const emptyEventFormValues: EventFormValues = {
@@ -123,6 +125,7 @@ export const emptyEventFormValues: EventFormValues = {
     allowed_kull: [],
     kull_pools: [],
     feedback_questions: [],
+    certificate_description: '',
 }
 
 interface EventFormProps {
@@ -408,6 +411,7 @@ export function EventForm({
             allowed_kull: allowedKull,
             kull_pools: kullPools,
             feedback_questions: cleanedFeedbackQuestions,
+            certificate_description: formData.certificate_description.trim() || null,
         }
 
         try {
@@ -834,6 +838,20 @@ export function EventForm({
                                 onChange={setFeedbackQuestions}
                             />
                         )}
+
+                        <Field.Root>
+                            <Field.Label>Beskrivelse på kursbevis</Field.Label>
+                            <Textarea
+                                name="certificate_description"
+                                value={formData.certificate_description}
+                                onChange={handleChange}
+                                rows={3}
+                                placeholder="F.eks. Kurset omfatter en gjennomgang av prosedyren for perifer venekanylering, samt praktisk trening i mindre grupper med instruktører."
+                            />
+                            <Field.HelperText>
+                                Valgfritt. Vises på kursbeviset de som møtte får på e-post.
+                            </Field.HelperText>
+                        </Field.Root>
                     </FormSection>
 
                     <Box

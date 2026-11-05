@@ -52,3 +52,13 @@ export function verifyCertificateToken(token: string): number | null {
 
     return participantId
 }
+
+/**
+ * Used only until «Kursbevis (signatur)» is filled in in Sanity, where the signer
+ * is updated each year.
+ */
+export const FALLBACK_CERTIFICATE_SIGNER = {
+    name: 'Oskar Brennersted',
+    title: 'Leder TrAMS',
+    signatureSrc: '/assets/kursbevis-signatur.png',
+}

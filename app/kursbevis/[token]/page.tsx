@@ -1,7 +1,8 @@
 import type { Metadata } from 'next'
-import Image from 'next/image'
 import { notFound } from 'next/navigation'
-import { verifyCertificateToken } from '@/lib/certificate'
+import { FALLBACK_CERTIFICATE_SIGNER, verifyCertificateToken } from '@/lib/certificate'
+import { client } from '@/sanity/lib/client'
+import { CERTIFICATE_SETTINGS_QUERY } from '@/sanity/lib/queries'
 import { APP_TIME_ZONE } from '@/lib/datetimeLocal'
 import { createAdminClient } from '@/utils/supabase/admin'
 import { createClient } from '@/utils/supabase/server'
@@ -12,27 +13,60 @@ export const metadata: Metadata = {
     robots: { index: false, follow: false },
 }
 
-function osloDate(d: Date, options: Intl.DateTimeFormatOptions) {
-    return d.toLocaleString('nb-NO', { timeZone: APP_TIME_ZONE, ...options })
+/** «25.11.24», or «25.11.24–26.11.24» when the event spans several days (Oslo time). */
+function formatCourseDate(startIso: string | null, endIso: string | null): string | null {
+    const fmt = (iso: string) =>
+        new Date(iso).toLocaleDateString('nb-NO', {
+            timeZone: APP_TIME_ZONE,
+            day: '2-digit',
+            month: '2-digit',
+            year: '2-digit',
+        })
+    if (!startIso || Number.isNaN(new Date(startIso).getTime())) return null
+    const start = fmt(startIso)
+    const end = endIso && !Number.isNaN(new Date(endIso).getTime()) ? fmt(endIso) : start
+    return end === start ? start : `${start}–${end}`
 }
 
-/** «12. mars 2026, kl. 17:00–20:00», eller «12. mars 2026 – 13. mars 2026» over flere dager. */
-function formatWhen(startIso: string | null, endIso: string | null): string | null {
-    if (!startIso) return null
-    const start = new Date(startIso)
-    if (Number.isNaN(start.getTime())) return null
-    const end = endIso ? new Date(endIso) : null
-    const dateOpts: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'long', year: 'numeric' }
-    const timeOpts: Intl.DateTimeFormatOptions = { hour: '2-digit', minute: '2-digit' }
-    const startDate = osloDate(start, dateOpts)
-
-    if (!end || Number.isNaN(end.getTime())) {
-        return `${startDate}, kl. ${osloDate(start, timeOpts)}`
+/** The signer from Sanity («Kursbevis (signatur)»), or the fallback until that is filled in. */
+async function getSigner() {
+    try {
+        const settings = await client.fetch(CERTIFICATE_SETTINGS_QUERY)
+        if (settings?.signerName && settings.signatureUrl) {
+            return {
+                name: settings.signerName,
+                title: settings.signerTitle || 'Leder TrAMS',
+                signatureSrc: settings.signatureUrl,
+            }
+        }
+    } catch (e) {
+        console.error('Certificate: could not fetch signer from Sanity', e)
     }
-    const endDate = osloDate(end, dateOpts)
-    if (endDate !== startDate) return `${startDate} – ${endDate}`
-    return `${startDate}, kl. ${osloDate(start, timeOpts)}–${osloDate(end, timeOpts)}`
+    return FALLBACK_CERTIFICATE_SIGNER
 }
+
+/** The thin red line with a heartbeat near the right edge, as on the printed certificate. */
+function EcgLine() {
+    return (
+        <svg
+            viewBox="0 0 596 60"
+            preserveAspectRatio="none"
+            style={{ position: 'absolute', left: 0, right: 0, top: '81.1%', width: '100%', height: '7%' }}
+            aria-hidden
+        >
+            <path
+                d="M0 36 H532 L537 33 L541 40 L548 30 L556 8 L563 54 L568 36 H596"
+                fill="none"
+                stroke={RED}
+                strokeWidth="1.6"
+                strokeLinejoin="round"
+                vectorEffect="non-scaling-stroke"
+            />
+        </svg>
+    )
+}
+
+const RED = '#e5392c'
 
 export default async function CertificatePage({
     params,
@@ -54,24 +88,27 @@ export default async function CertificatePage({
 
     const { data: event } = await supabase
         .from('Events')
-        .select('title, start_datetime, end_datetime, location')
+        .select('title, start_datetime, end_datetime, certificate_description')
         .eq('id', participant.eventId)
         .maybeSingle()
     if (!event) notFound()
 
     const name = participant.name?.trim() || 'Deltaker'
-    const title = event.title?.trim() || 'Arrangement'
-    const when = formatWhen(event.start_datetime, event.end_datetime)
-    const where = event.location?.trim() || null
+    const title = event.title?.trim() || 'arrangementet'
+    const date = formatCourseDate(event.start_datetime, event.end_datetime)
+    const description = event.certificate_description?.trim() || null
+    const signer = await getSigner()
 
     return (
         <main className="certificate-page" style={styles.page}>
             <style>{`
-                @page { size: A4 landscape; margin: 12mm; }
+                @page { size: A4 portrait; margin: 0; }
                 @media print {
-                    .certificate-page { background: #fff !important; padding: 0 !important; }
+                    html, body { background: #fff !important; }
+                    .certificate-page { padding: 0 !important; background: #fff !important; }
                     .certificate-actions { display: none !important; }
-                    .certificate { box-shadow: none !important; max-width: none !important; }
+                    .certificate-frame { width: 210mm !important; max-width: none !important; }
+                    .certificate { box-shadow: none !important; }
                 }
             `}</style>
 
@@ -79,67 +116,121 @@ export default async function CertificatePage({
                 <PrintButton />
             </div>
 
-            <article className="certificate" style={styles.certificate}>
-                <Image src="/assets/Logo.png" alt="TrAMS" width={110} height={110} priority />
-                <p style={styles.kicker}>Kursbevis</p>
-                <p style={styles.lead}>Dette bekrefter at</p>
-                <h1 style={styles.name}>{name}</h1>
-                <p style={styles.lead}>har deltatt på</p>
-                <h2 style={styles.title}>{title}</h2>
-                {(when || where) && (
-                    <p style={styles.details}>{[when, where].filter(Boolean).join(' · ')}</p>
-                )}
-                <p style={styles.footer}>Trondheim Akuttmedisinske Studentforening (TrAMS)</p>
-            </article>
+            {/* Sized in container units (cqw) so the page scales like a sheet of A4 */}
+            <div className="certificate-frame" style={styles.frame}>
+                <article className="certificate" style={styles.certificate}>
+                    {/* eslint-disable-next-line @next/next/no-img-element -- plain img prints reliably */}
+                    <img src="/assets/Logo.png" alt="TrAMS" style={styles.logo} />
+
+                    <h1 style={styles.heading}>KURSBEVIS</h1>
+
+                    <p style={{ ...styles.text, marginTop: '9cqw' }}>Det bekreftes herved at</p>
+                    <p style={styles.name}>{name}</p>
+                    <p style={styles.text}>har deltatt på {title}.</p>
+
+                    {date && (
+                        <p style={{ ...styles.text, marginTop: '4.5cqw' }}>
+                            Kurset ble arrangert {date} av Trondheim akuttmedisinske
+                            studentforening (TrAMS).
+                        </p>
+                    )}
+                    {description && (
+                        <p style={{ ...styles.text, marginTop: '4.5cqw' }}>{description}</p>
+                    )}
+
+                    <div style={styles.signature}>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                            src={signer.signatureSrc}
+                            alt={`Signatur, ${signer.name}`}
+                            style={styles.signatureImage}
+                        />
+                        <p style={styles.signer}>{signer.name}</p>
+                        <p style={styles.signer}>{signer.title}</p>
+                    </div>
+
+                    <EcgLine />
+
+                    <footer style={styles.footer}>
+                        <p style={{ fontSize: '2.1cqw' }}>Trondheim akuttmedisinske studentforening</p>
+                        <p style={{ marginTop: '3cqw' }}>
+                            Fakultet for medisin og helsevitenskap, Fred Kavli-bygget, 1.et ved
+                            varemottak,
+                            <br />
+                            7491 Trondheim
+                        </p>
+                        <p style={{ color: '#222' }}>web@trams.no &nbsp;|&nbsp; www.trams.no</p>
+                    </footer>
+                </article>
+            </div>
         </main>
     )
 }
+
+const BODY_FONT = '"Century Gothic", "Futura", "Avenir Next", "Avenir", var(--font-family), sans-serif'
 
 const styles = {
     page: {
         minHeight: '100vh',
         background: 'var(--color-altBg)',
         padding: '32px 16px',
-        color: 'var(--color-text)',
-        fontFamily: 'var(--font-family)',
+        color: '#111',
     },
-    actions: { maxWidth: 900, margin: '0 auto 24px', display: 'flex', justifyContent: 'flex-end' },
+    actions: { maxWidth: 794, margin: '0 auto 24px', display: 'flex', justifyContent: 'flex-end' },
+    frame: { width: '100%', maxWidth: 794, margin: '0 auto', containerType: 'inline-size' },
     certificate: {
-        maxWidth: 900,
-        margin: '0 auto',
-        padding: '48px 32px',
+        position: 'relative',
+        width: '100%',
+        aspectRatio: '210 / 297',
         background: '#fff',
-        border: '10px double var(--color-primary)',
         boxShadow: '0 10px 30px rgba(0,0,0,0.08)',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
         textAlign: 'center',
+        padding: '7.5cqw 13cqw 0',
+        fontFamily: BODY_FONT,
+        overflow: 'hidden',
     },
-    kicker: {
-        marginTop: 24,
-        fontSize: 14,
-        fontWeight: 700,
-        letterSpacing: '0.3em',
-        textTransform: 'uppercase',
-        color: '#6b7280',
+    logo: { width: '19.5cqw', height: '19.5cqw' },
+    heading: {
+        marginTop: '9cqw',
+        fontFamily: BODY_FONT,
+        fontSize: '6.6cqw',
+        fontWeight: 400,
+        letterSpacing: '0.02em',
+        color: RED,
+        lineHeight: 1,
     },
-    lead: { marginTop: 28, fontSize: 18, color: '#4b5563' },
+    text: { marginTop: '3cqw', fontSize: '2.25cqw', lineHeight: 1.55 },
     name: {
-        marginTop: 10,
-        padding: '0 24px 12px',
-        borderBottom: '2px solid #e5e7eb',
-        fontSize: 'clamp(2rem, 5vw, 3rem)',
-        fontWeight: 800,
-        lineHeight: 1.2,
+        marginTop: '3cqw',
+        fontSize: '2.6cqw',
+        textDecoration: 'underline',
+        textUnderlineOffset: '0.35em',
     },
-    title: {
-        marginTop: 10,
-        fontSize: 'clamp(1.5rem, 3.5vw, 2rem)',
-        fontWeight: 700,
-        lineHeight: 1.3,
-        color: 'var(--color-primary)',
+    signature: {
+        position: 'absolute',
+        top: '66%',
+        left: 0,
+        right: 0,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
     },
-    details: { marginTop: 16, fontSize: 16, color: '#4b5563' },
-    footer: { marginTop: 48, fontSize: 14, color: '#6b7280' },
+    signatureImage: { width: '40cqw', height: 'auto' },
+    signer: {
+        fontFamily: '"Times New Roman", Times, serif',
+        fontSize: '3.1cqw',
+        lineHeight: 1.4,
+    },
+    footer: {
+        position: 'absolute',
+        top: '88%',
+        left: 0,
+        right: 0,
+        fontSize: '1.85cqw',
+        color: '#8a8a8a',
+        lineHeight: 1.5,
+    },
 } satisfies Record<string, React.CSSProperties>
