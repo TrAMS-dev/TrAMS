@@ -18,12 +18,10 @@ export async function fetchPublicEventParticipants(
     supabase: SupabaseClient<Database>,
     eventId: number
 ) {
-    // The function is added by migration 20261105000000 and is not in the generated
-    // types until `npm run typegen` runs against a database that has it. Drop this
-    // cast once types/supabase.ts includes get_public_event_participants.
-    const untyped = supabase as unknown as SupabaseClient
-    const { data, error } = await untyped.rpc('get_public_event_participants', {
+    const { data, error } = await supabase.rpc('get_public_event_participants', {
         p_event_id: eventId,
     })
-    return { data: (data as PublicEventParticipant[] | null) ?? null, error }
+    // Generated types mark name/kull as non-null, but the columns are nullable.
+    const rows: PublicEventParticipant[] | null = data ?? null
+    return { data: rows, error }
 }

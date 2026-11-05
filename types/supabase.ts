@@ -356,6 +356,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_public_event_participants: {
+        Args: { p_event_id: number }
+        Returns: {
+          id: number
+          kull: number
+          name: string
+          status: string
+        }[]
+      }
       is_admin: { Args: never; Returns: boolean }
     }
     Enums: {
