@@ -64,7 +64,7 @@ export async function POST(request: Request) {
     const { data: event, error: eventError } = await supabase
         .from('Events')
         .select(
-            'id, title, slug, start_datetime, end_datetime, date_unspecified, planned_month, location, contact_email, feedback_open, feedback_questions'
+            'id, title, slug, start_datetime, end_datetime, date_unspecified, planned_month, location, contact_email, feedback_questions'
         )
         .eq('id', eventId)
         .single()
@@ -83,10 +83,10 @@ export async function POST(request: Request) {
         if (!event.slug) {
             return NextResponse.json({ error: 'Arrangementet mangler lenke' }, { status: 400 })
         }
-        if (!event.feedback_open || parseFeedbackQuestions(event.feedback_questions).length === 0) {
+        if (parseFeedbackQuestions(event.feedback_questions).length === 0) {
             return NextResponse.json(
                 {
-                    error: 'Tilbakemeldingsskjemaet er ikke åpent. Legg til spørsmål og åpne skjemaet under «Rediger».',
+                    error: 'Arrangementet har ikke tilbakemeldingsskjema. Legg det til under «Rediger».',
                 },
                 { status: 400 }
             )

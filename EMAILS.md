@@ -64,7 +64,7 @@ Code: [lib/eventSignupEmail.ts](lib/eventSignupEmail.ts)
 - **When:** An admin sends it from the participants page after the event has ended. By default only participants who haven't got it yet (`EventParticipants.followup_sent_at` is empty) get it; the admin can also resend to everyone who attended.
 - **Recipients:** Everyone with `attended = true` on the event.
 - **Content:** Thanks them for coming, with one or both of:
-  - a link to the event's feedback form (`/arrangementer/<slug>?tilbakemelding`, opens the form directly; requires the form to be open with at least one question)
+  - a link to the event's feedback form (`/arrangementer/<slug>?tilbakemelding`, opens the form directly; the event needs at least one feedback question. The form is not shown on the event page, and only accepts answers after the event has ended)
   - a personal certificate link (`/kursbevis/<id>.<signature>`), a printable page with name, course, date and place. The link is signed with `CERTIFICATE_SECRET` (falls back to `SUPABASE_SERVICE_ROLE_KEY`), so changing that secret invalidates links already sent.
 
 ## User account emails

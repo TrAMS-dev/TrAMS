@@ -38,7 +38,6 @@ export async function POST(request: Request) {
             require_phone,
             allowed_kull,
             kull_pools,
-            feedback_open,
             feedback_questions,
         } = body
 
@@ -140,7 +139,6 @@ export async function POST(request: Request) {
                 require_phone: !isSignupUndecided && require_phone === true,
                 allowed_kull: allowedKull.length > 0 ? allowedKull : null,
                 kull_pools: kullPools,
-                feedback_open: Boolean(feedback_open),
                 feedback_questions: parseFeedbackQuestions(
                     feedback_questions
                 ) as unknown as Json,

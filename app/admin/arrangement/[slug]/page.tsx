@@ -84,7 +84,6 @@ export default function AdminEditEventPage() {
                     kull: p.kull,
                     spots: String(p.spots),
                 })),
-                feedback_open: Boolean(data.feedback_open),
                 feedback_questions: parseFeedbackQuestions(data.feedback_questions),
             })
             setLoading(false)
@@ -120,7 +119,6 @@ export default function AdminEditEventPage() {
                     require_phone: payload.require_phone,
                     allowed_kull: payload.allowed_kull,
                     kull_pools: payload.kull_pools,
-                    feedback_open: payload.feedback_open,
                     feedback_questions: payload.feedback_questions as unknown as Json,
                 })
                 .eq('id', eventId)

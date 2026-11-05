@@ -5,6 +5,7 @@ import {
     validateFeedbackSubmission,
 } from '@/lib/eventFeedback'
 import type { Json } from '@/types/supabase'
+import { isEventPast } from '@/lib/eventDate'
 
 export async function POST(request: Request) {
     try {
@@ -23,7 +24,7 @@ export async function POST(request: Request) {
 
         const { data: event, error: eventError } = await supabase
             .from('Events')
-            .select('id, feedback_open, feedback_questions')
+            .select('id, start_datetime, end_datetime, date_unspecified, planned_month, feedback_questions')
             .eq('id', eventIdNum)
             .single()
 
@@ -34,14 +35,15 @@ export async function POST(request: Request) {
             )
         }
 
-        if (!event.feedback_open) {
+        // The form is sent by email after the event, so it only takes answers once it has ended
+        const questions = parseFeedbackQuestions(event.feedback_questions)
+        if (questions.length === 0 || !isEventPast(event)) {
             return NextResponse.json(
                 { error: 'Tilbakemeldingsskjemaet er ikke åpent' },
                 { status: 400 }
             )
         }
 
-        const questions = parseFeedbackQuestions(event.feedback_questions)
         const validation = validateFeedbackSubmission(questions, answers)
         if (!validation.ok) {
             return NextResponse.json({ error: validation.error }, { status: 400 })

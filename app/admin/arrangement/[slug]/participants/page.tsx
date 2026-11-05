@@ -133,7 +133,7 @@ export default function AdminParticipantsPage() {
             const { data: event, error: eventError } = await supabase
                 .from('Events')
                 .select(
-                    'id, title, max_attendees, signup_questions, require_phone, start_datetime, end_datetime, date_unspecified, planned_month, feedback_open, feedback_questions'
+                    'id, title, max_attendees, signup_questions, require_phone, start_datetime, end_datetime, date_unspecified, planned_month, feedback_questions'
                 )
                 .eq('slug', slug)
                 .single()
@@ -149,9 +149,7 @@ export default function AdminParticipantsPage() {
             setEventSignupQuestions(parseSignupQuestions(event.signup_questions))
             setEventRequiresPhone(Boolean(event.require_phone))
             setEventIsPast(isEventPast(event))
-            setFeedbackFormReady(
-                event.feedback_open && parseFeedbackQuestions(event.feedback_questions).length > 0
-            )
+            setFeedbackFormReady(parseFeedbackQuestions(event.feedback_questions).length > 0)
 
             // Get participants
             const { data, error } = await supabase

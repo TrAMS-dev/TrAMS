@@ -78,7 +78,6 @@ export interface EventFormValues {
     allowed_kull: number[]
     /** Reserved spots per kull; spots is the raw input value. */
     kull_pools: { kull: number[]; spots: string }[]
-    feedback_open: boolean
     feedback_questions: FeedbackQuestion[]
 }
 
@@ -102,7 +101,6 @@ export interface EventFormPayload {
     require_phone: boolean
     allowed_kull: number[] | null
     kull_pools: KullPool[]
-    feedback_open: boolean
     feedback_questions: FeedbackQuestion[]
 }
 
@@ -124,7 +122,6 @@ export const emptyEventFormValues: EventFormValues = {
     require_phone: false,
     allowed_kull: [],
     kull_pools: [],
-    feedback_open: false,
     feedback_questions: [],
 }
 
@@ -227,9 +224,8 @@ export function EventForm({
         formData.end_datetime < formData.start_datetime
 
     const [hasFeedbackForm, setHasFeedbackForm] = useState(
-        initialValues.feedback_open || initialValues.feedback_questions.length > 0
+        initialValues.feedback_questions.length > 0
     )
-    const [feedbackOpen, setFeedbackOpen] = useState(initialValues.feedback_open)
     const [feedbackQuestions, setFeedbackQuestions] = useState<FeedbackQuestion[]>(
         initialValues.feedback_questions
     )
@@ -268,13 +264,12 @@ export function EventForm({
                   .map((q) => ({ ...q, label: q.label.trim() }))
                   .filter((q) => q.label !== '')
             : []
-        const feedbackFormOpen = hasFeedbackForm && feedbackOpen
 
-        if (feedbackFormOpen && cleanedFeedbackQuestions.length === 0) {
+        if (hasFeedbackForm && cleanedFeedbackQuestions.length === 0) {
             toaster.create({
                 title: 'Legg til minst ett tilbakemeldingsspørsmål',
                 description:
-                    'Når tilbakemeldingsskjemaet er åpent, må du ha minst ett spørsmål med tekst.',
+                    'Skriv inn minst ett spørsmål, eller fjern avhukingen for tilbakemeldingsskjema.',
                 type: 'error',
                 duration: 5000,
             })
@@ -412,7 +407,6 @@ export function EventForm({
             // All active kull checked means no restriction
             allowed_kull: allowedKull,
             kull_pools: kullPools,
-            feedback_open: feedbackFormOpen,
             feedback_questions: cleanedFeedbackQuestions,
         }
 
@@ -828,35 +822,17 @@ export function EventForm({
                                 <Checkbox.Label>Bruk tilbakemeldingsskjema</Checkbox.Label>
                             </Checkbox.Root>
                             <Field.HelperText>
-                                Anonyme spørsmål deltakerne kan svare på etter arrangementet. Uten
-                                skjema sendes det ingen lenke til tilbakemelding.
+                                Anonyme spørsmål som sendes på e-post til de som møtte, fra
+                                deltakerlisten etter arrangementet. Svarene vises under
+                                «Tilbakemeldinger» i admin.
                             </Field.HelperText>
                         </Field.Root>
 
                         {hasFeedbackForm && (
-                            <>
-                                <FeedbackQuestionsEditor
-                                    value={feedbackQuestions}
-                                    onChange={setFeedbackQuestions}
-                                />
-                                <Field.Root>
-                                    <Checkbox.Root
-                                        checked={feedbackOpen}
-                                        onCheckedChange={(details) =>
-                                            setFeedbackOpen(!!details.checked)
-                                        }
-                                    >
-                                        <Checkbox.HiddenInput />
-                                        <Checkbox.Control />
-                                        <Checkbox.Label>Åpne skjemaet for deltakere nå</Checkbox.Label>
-                                    </Checkbox.Root>
-                                    <Field.HelperText>
-                                        Når skjemaet er åpent vises det på arrangementssiden, og
-                                        lenken kan sendes på e-post fra deltakerlisten. Svarene
-                                        vises under «Tilbakemeldinger» i admin.
-                                    </Field.HelperText>
-                                </Field.Root>
-                            </>
+                            <FeedbackQuestionsEditor
+                                value={feedbackQuestions}
+                                onChange={setFeedbackQuestions}
+                            />
                         )}
                     </FormSection>
 

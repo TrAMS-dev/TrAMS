@@ -9,7 +9,7 @@ interface EventFollowupPanelProps {
     eventId: number
     eventSlug: string
     eventIsPast: boolean
-    /** Skjemaet er åpent og har minst ett spørsmål. */
+    /** Arrangementet har tilbakemeldingsskjema med minst ett spørsmål. */
     feedbackFormReady: boolean
     attendedCount: number
     /** Antall som har møtt og ikke har fått e-posten ennå. */
@@ -127,12 +127,12 @@ export default function EventFollowupPanel({
                         </Checkbox.Root>
                         {!feedbackFormReady && (
                             <Text fontSize="xs" color="gray.600" pl={7}>
-                                Skjemaet er ikke åpent.{' '}
+                                Arrangementet har ikke tilbakemeldingsskjema.{' '}
                                 <NextLink
                                     href={`/admin/arrangement/${eventSlug}`}
                                     style={{ textDecoration: 'underline' }}
                                 >
-                                    Legg til spørsmål og åpne det under «Rediger»
+                                    Legg det til under «Rediger»
                                 </NextLink>
                                 .
                             </Text>

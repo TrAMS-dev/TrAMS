@@ -46,7 +46,6 @@ export default function AdminFeedbackPage() {
     const slug = params.slug as string
 
     const [eventTitle, setEventTitle] = useState('')
-    const [feedbackOpen, setFeedbackOpen] = useState(false)
     const [questions, setQuestions] = useState<FeedbackQuestion[]>([])
     const [responses, setResponses] = useState<FeedbackRow[]>([])
     const [loading, setLoading] = useState(true)
@@ -57,7 +56,7 @@ export default function AdminFeedbackPage() {
 
             const { data: event, error: eventError } = await supabase
                 .from('Events')
-                .select('id, title, feedback_open, feedback_questions')
+                .select('id, title, feedback_questions')
                 .eq('slug', slug)
                 .single()
 
@@ -68,7 +67,6 @@ export default function AdminFeedbackPage() {
             }
 
             setEventTitle(event.title || 'Arrangement')
-            setFeedbackOpen(Boolean(event.feedback_open))
             setQuestions(parseFeedbackQuestions(event.feedback_questions))
 
             const { data, error } = await supabase
@@ -206,21 +204,6 @@ export default function AdminFeedbackPage() {
                 </Box>
             ) : (
                 <Stack gap={4}>
-                    {!feedbackOpen && (
-                        <Box
-                            p={4}
-                            borderWidth="1px"
-                            borderColor="orange.200"
-                            bg="orange.50"
-                            rounded="md"
-                        >
-                            <Text fontSize="sm" color="gray.700">
-                                Tilbakemeldingsskjemaet er ikke åpent. Deltakere ser det ikke på
-                                arrangementssiden før du skrur det på under «Rediger».
-                            </Text>
-                        </Box>
-                    )}
-
                     {responses.length === 0 && (
                         <Box p={6} bg="white" rounded="lg" shadow="sm">
                             <Text color="gray.600">Ingen tilbakemeldinger enda.</Text>

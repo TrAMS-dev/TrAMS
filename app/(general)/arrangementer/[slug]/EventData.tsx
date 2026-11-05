@@ -27,7 +27,7 @@ import { fetchPublicEventParticipants } from '@/lib/publicEventParticipants'
 import type { Tables } from '@/types/supabase'
 import { useParams } from 'next/navigation'
 import { APP_TIME_ZONE } from '@/lib/datetimeLocal'
-import { formatEventDate, isDateUnspecifiedEvent } from '@/lib/eventDate'
+import { formatEventDate, isDateUnspecifiedEvent, isEventPast } from '@/lib/eventDate'
 import { kullToKlasse } from '@/utils/functions/activeYears'
 import { formatPoolKlasser, parseKullPools, summarizeCapacity } from '@/lib/kullPools'
 import { parseSignupQuestions } from '@/lib/signupQuestions'
@@ -97,9 +97,9 @@ export default function EventArrangementDetailClient({
             const { profiles, ...eventRow } = row
             setEvent(eventRow)
 
-            // Lenken i e-posten etter arrangementet (?tilbakemelding) åpner skjemaet direkte
+            // Skjemaet nås bare via lenken i e-posten etter arrangementet (?tilbakemelding)
             if (
-                eventRow.feedback_open &&
+                isEventPast(eventRow) &&
                 parseFeedbackQuestions(eventRow.feedback_questions).length > 0 &&
                 new URLSearchParams(window.location.search).has('tilbakemelding')
             ) {
@@ -182,7 +182,6 @@ export default function EventArrangementDetailClient({
     const hasFood: boolean = event.has_food
 
     const feedbackQuestions = parseFeedbackQuestions(event.feedback_questions)
-    const showFeedback = Boolean(event.feedback_open) && feedbackQuestions.length > 0
 
     const isDateUnspecified = isDateUnspecifiedEvent(event)
     const isSignupUndecided = event.signup_undecided
@@ -389,24 +388,6 @@ export default function EventArrangementDetailClient({
                                             Dersom du ikke gjør dette, vil du bli nedprioritert på senere
                                             TrAMS-arrangementer.
                                         </BodyText>
-                                    </Box>
-                                )}
-                                {showFeedback && (
-                                    <Box borderTopWidth="1px" borderColor="gray.100" pt={6}>
-                                        <SubsectionHeading as="h2" fontSize="1.4rem" mb={4}>
-                                            Gi tilbakemelding
-                                        </SubsectionHeading>
-                                        <BodyText mb={4}>
-                                            Arrangøren ønsker innspill om dette arrangementet.
-                                            Tilbakemeldingen er anonym.
-                                        </BodyText>
-                                        <Button
-                                            bg="var(--color-primary)"
-                                            color="white"
-                                            onClick={() => setFeedbackOpen(true)}
-                                        >
-                                            Gi tilbakemelding
-                                        </Button>
                                     </Box>
                                 )}
                             </Stack>
