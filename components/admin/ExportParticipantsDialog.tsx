@@ -12,9 +12,15 @@ import {
     HStack,
 } from '@chakra-ui/react'
 import type { Tables } from '@/types/supabase'
+import {
+    type SignupQuestion,
+    formatSignupAnswer,
+    parseSignupAnswers,
+} from '@/lib/signupQuestions'
 
 export type ParticipantRow = Tables<'EventParticipants'>
 
+/** Fast kolonne, eller `question:<id>` for et påmeldingsspørsmål. */
 export type ExportColumnKey =
     | 'name'
     | 'email'
@@ -22,15 +28,23 @@ export type ExportColumnKey =
     | 'phone'
     | 'allergies'
     | 'membership'
-    | 'customQuestion'
     | 'status'
     | 'attendance'
     | 'signedUpAt'
+    | `question:${string}`
 
 interface ColumnDef {
     key: ExportColumnKey
     label: string
-    getValue: (p: ParticipantRow, customQuestion: string | null) => string
+    getValue: (p: ParticipantRow) => string
+}
+
+function questionColumn(q: SignupQuestion): ColumnDef {
+    return {
+        key: `question:${q.id}`,
+        label: q.label,
+        getValue: (p) => formatSignupAnswer(q, parseSignupAnswers(p.question_answers)[q.id]),
+    }
 }
 
 function memberConfirmLabel(p: ParticipantRow) {
@@ -57,11 +71,6 @@ const ALL_COLUMNS: ColumnDef[] = [
         getValue: (p) => memberConfirmLabel(p),
     },
     {
-        key: 'customQuestion',
-        label: 'Tilleggsspørsmål',
-        getValue: (p) => (p.custom_question_response ? 'Ja' : 'Nei'),
-    },
-    {
         key: 'status',
         label: 'Status',
         getValue: (p) => (p.status === 'waitlist' ? 'Venteliste' : 'Påmeldt'),
@@ -74,19 +83,6 @@ const ALL_COLUMNS: ColumnDef[] = [
     },
 ]
 
-const DEFAULT_SELECTED_COLUMNS: ExportColumnKey[] = [
-    'name',
-    'email',
-    'kull',
-    'phone',
-    'allergies',
-    'membership',
-    'customQuestion',
-    'status',
-    'attendance',
-    'signedUpAt',
-]
-
 type ExportScope = 'all' | 'confirmed' | 'waitlist'
 type AttendanceFilter = 'all' | 'attended' | 'notAttended' | 'unregistered'
 
@@ -94,7 +90,7 @@ interface ExportParticipantsDialogProps {
     open: boolean
     onClose: () => void
     participants: ParticipantRow[]
-    eventCustomQuestion: string | null
+    eventSignupQuestions: SignupQuestion[]
     includePhone: boolean
     slug: string
 }
@@ -107,25 +103,28 @@ export default function ExportParticipantsDialog({
     open,
     onClose,
     participants,
-    eventCustomQuestion,
+    eventSignupQuestions,
     includePhone,
     slug,
 }: ExportParticipantsDialogProps) {
     const [scope, setScope] = useState<ExportScope>('all')
     const [attendanceFilter, setAttendanceFilter] = useState<AttendanceFilter>('all')
-    const [selectedColumns, setSelectedColumns] = useState<Set<ExportColumnKey>>(
-        () => new Set(DEFAULT_SELECTED_COLUMNS)
+    const [deselectedColumns, setDeselectedColumns] = useState<Set<ExportColumnKey>>(
+        () => new Set()
     )
 
-    const availableColumns = useMemo(
-        () =>
-            ALL_COLUMNS.filter(
-                (c) =>
-                    (c.key !== 'customQuestion' || !!eventCustomQuestion) &&
-                    (c.key !== 'phone' || includePhone)
-            ),
-        [eventCustomQuestion, includePhone]
-    )
+    // Question columns go right after the membership column
+    const availableColumns = useMemo(() => {
+        const fixed = ALL_COLUMNS.filter((c) => c.key !== 'phone' || includePhone)
+        const insertAt = fixed.findIndex((c) => c.key === 'membership') + 1
+        return [
+            ...fixed.slice(0, insertAt),
+            ...eventSignupQuestions.map(questionColumn),
+            ...fixed.slice(insertAt),
+        ]
+    }, [eventSignupQuestions, includePhone])
+
+    const selectedColumns = availableColumns.filter((c) => !deselectedColumns.has(c.key))
 
     const filteredRows = useMemo(() => {
         return participants.filter((p) => {
@@ -141,10 +140,10 @@ export default function ExportParticipantsDialog({
     }, [participants, scope, attendanceFilter])
 
     const toggleColumn = (key: ExportColumnKey, checked: boolean) => {
-        setSelectedColumns((prev) => {
+        setDeselectedColumns((prev) => {
             const next = new Set(prev)
-            if (checked) next.add(key)
-            else next.delete(key)
+            if (checked) next.delete(key)
+            else next.add(key)
             return next
         })
     }
@@ -156,13 +155,13 @@ export default function ExportParticipantsDialog({
     }
 
     const handleDownload = () => {
-        const columns = availableColumns.filter((c) => selectedColumns.has(c.key))
+        const columns = selectedColumns
         if (columns.length === 0 || filteredRows.length === 0) return
 
         const csvContent = [
             columns.map((c) => csvCell(c.label)).join(','),
             ...filteredRows.map((p) =>
-                columns.map((c) => csvCell(c.getValue(p, eventCustomQuestion))).join(',')
+                columns.map((c) => csvCell(c.getValue(p))).join(',')
             ),
         ].join('\n')
 
@@ -274,7 +273,7 @@ export default function ExportParticipantsDialog({
                                     {availableColumns.map((c) => (
                                         <Checkbox.Root
                                             key={c.key}
-                                            checked={selectedColumns.has(c.key)}
+                                            checked={!deselectedColumns.has(c.key)}
                                             onCheckedChange={(details) =>
                                                 toggleColumn(c.key, !!details.checked)
                                             }
@@ -289,7 +288,7 @@ export default function ExportParticipantsDialog({
 
                             <Text fontSize="sm" color="gray.600">
                                 {filteredRows.length} deltaker(e) vil bli eksportert med{' '}
-                                {selectedColumns.size} kolonne(r).
+                                {selectedColumns.length} kolonne(r).
                             </Text>
                         </Stack>
                     </Dialog.Body>
@@ -300,7 +299,7 @@ export default function ExportParticipantsDialog({
                         </Button>
                         <Button
                             onClick={handleDownload}
-                            disabled={filteredRows.length === 0 || selectedColumns.size === 0}
+                            disabled={filteredRows.length === 0 || selectedColumns.length === 0}
                         >
                             Last ned CSV
                         </Button>

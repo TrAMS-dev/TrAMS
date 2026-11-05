@@ -21,6 +21,12 @@ import type { Tables } from '@/types/supabase'
 import { toaster } from '@/components/ui/toaster'
 import { useAuth } from '@/hooks/useAuth'
 import ExportParticipantsDialog from '@/components/admin/ExportParticipantsDialog'
+import {
+    type SignupQuestion,
+    formatSignupAnswer,
+    parseSignupAnswers,
+    parseSignupQuestions,
+} from '@/lib/signupQuestions'
 import ParticipantCommentsDialog, {
     type ParticipantComment,
 } from '@/components/admin/ParticipantCommentsDialog'
@@ -48,7 +54,7 @@ export default function AdminParticipantsPage() {
     const [eventId, setEventId] = useState<number | null>(null)
     const [eventTitle, setEventTitle] = useState('')
     const [eventMaxAttendees, setEventMaxAttendees] = useState<number | null>(null)
-    const [eventCustomQuestion, setEventCustomQuestion] = useState<string | null>(null)
+    const [eventSignupQuestions, setEventSignupQuestions] = useState<SignupQuestion[]>([])
     const [eventRequiresPhone, setEventRequiresPhone] = useState(false)
     const [loading, setLoading] = useState(true)
     const [savingId, setSavingId] = useState<number | null>(null)
@@ -112,7 +118,7 @@ export default function AdminParticipantsPage() {
             // Get event id first
             const { data: event, error: eventError } = await supabase
                 .from('Events')
-                .select('id, title, max_attendees, custom_question, require_phone')
+                .select('id, title, max_attendees, signup_questions, require_phone')
                 .eq('slug', slug)
                 .single()
 
@@ -124,7 +130,7 @@ export default function AdminParticipantsPage() {
             setEventId(event.id)
             setEventTitle(event.title || 'Arrangement')
             setEventMaxAttendees(event.max_attendees ?? null)
-            setEventCustomQuestion(event.custom_question ?? null)
+            setEventSignupQuestions(parseSignupQuestions(event.signup_questions))
             setEventRequiresPhone(Boolean(event.require_phone))
 
             // Get participants
@@ -541,11 +547,11 @@ export default function AdminParticipantsPage() {
                             <Table.ColumnHeader maxW="200px">
                                 Medlemskap (selvrapportert)
                             </Table.ColumnHeader>
-                            {eventCustomQuestion && (
-                                <Table.ColumnHeader maxW="200px">
-                                    {eventCustomQuestion}
+                            {eventSignupQuestions.map((q) => (
+                                <Table.ColumnHeader key={q.id} maxW="200px">
+                                    {q.label}
                                 </Table.ColumnHeader>
-                            )}
+                            ))}
                             <Table.ColumnHeader>Status</Table.ColumnHeader>
                             <Table.ColumnHeader>Oppmøte</Table.ColumnHeader>
                             <Table.ColumnHeader>Påmeldt</Table.ColumnHeader>
@@ -556,7 +562,7 @@ export default function AdminParticipantsPage() {
                     <Table.Body>
                         {participants.length === 0 && (
                             <Table.Row>
-                                <Table.Cell colSpan={10 + (eventCustomQuestion ? 1 : 0) + (showPhone ? 1 : 0)} textAlign="center" py={8} color="gray.500">
+                                <Table.Cell colSpan={10 + eventSignupQuestions.length + (showPhone ? 1 : 0)} textAlign="center" py={8} color="gray.500">
                                     Ingen påmeldte enda.
                                 </Table.Cell>
                             </Table.Row>
@@ -583,19 +589,29 @@ export default function AdminParticipantsPage() {
                                         </Badge>
                                     )}
                                 </Table.Cell>
-                                {eventCustomQuestion && (
-                                    <Table.Cell>
-                                        {p.custom_question_response ? (
-                                            <Badge colorPalette="green" size="lg">
-                                                Ja
-                                            </Badge>
-                                        ) : (
-                                            <Badge colorPalette="gray" variant="outline" size="lg">
-                                                Nei
-                                            </Badge>
-                                        )}
-                                    </Table.Cell>
-                                )}
+                                {eventSignupQuestions.map((q) => {
+                                    const answer = parseSignupAnswers(p.question_answers)[q.id]
+                                    if (q.type === 'checkbox') {
+                                        return (
+                                            <Table.Cell key={q.id}>
+                                                {answer === true ? (
+                                                    <Badge colorPalette="green" size="lg">
+                                                        Ja
+                                                    </Badge>
+                                                ) : (
+                                                    <Badge colorPalette="gray" variant="outline" size="lg">
+                                                        Nei
+                                                    </Badge>
+                                                )}
+                                            </Table.Cell>
+                                        )
+                                    }
+                                    return (
+                                        <Table.Cell key={q.id} maxW="240px">
+                                            {formatSignupAnswer(q, answer) || '-'}
+                                        </Table.Cell>
+                                    )
+                                })}
                                 <Table.Cell>
                                     {p.status === 'waitlist' ? (
                                         <Badge colorPalette="orange">Venteliste</Badge>
@@ -715,7 +731,7 @@ export default function AdminParticipantsPage() {
                 open={exportDialogOpen}
                 onClose={() => setExportDialogOpen(false)}
                 participants={participants}
-                eventCustomQuestion={eventCustomQuestion}
+                eventSignupQuestions={eventSignupQuestions}
                 includePhone={showPhone}
                 slug={slug}
             />

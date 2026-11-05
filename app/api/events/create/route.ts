@@ -1,6 +1,7 @@
 import { createClient } from '@/utils/supabase/server'
 import { NextResponse } from 'next/server'
 import { parseKullPools, validateKullPools } from '@/lib/kullPools'
+import { parseSignupQuestions, validateSignupQuestions } from '@/lib/signupQuestions'
 
 function generateSlug(title: string): string {
     return title
@@ -31,7 +32,7 @@ export async function POST(request: Request) {
             signup_undecided,
             planned_month,
             has_food,
-            custom_question,
+            signup_questions,
             require_phone,
             allowed_kull,
             kull_pools,
@@ -83,6 +84,12 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: poolError }, { status: 400 })
         }
 
+        const signupQuestions = hideSignup ? [] : parseSignupQuestions(signup_questions)
+        const questionError = validateSignupQuestions(signupQuestions)
+        if (questionError) {
+            return NextResponse.json({ error: questionError }, { status: 400 })
+        }
+
         const supabase = await createClient()
 
         // Generate unique slug
@@ -125,7 +132,7 @@ export async function POST(request: Request) {
                 planned_month: isDateUnspecified ? planned_month : null,
                 slug,
                 has_food: Boolean(has_food),
-                custom_question: isSignupUndecided ? null : (custom_question || null),
+                signup_questions: signupQuestions,
                 require_phone: !isSignupUndecided && require_phone === true,
                 allowed_kull: allowedKull.length > 0 ? allowedKull : null,
                 kull_pools: kullPools,

@@ -20,6 +20,12 @@ import { toaster } from '@/components/ui/toaster'
 import { datetimeLocalToUtcIso } from '@/lib/datetimeLocal'
 import { activeYears, kullToKlasse } from '@/utils/functions/activeYears'
 import { type KullPool, formatPoolKlasser, validateKullPools } from '@/lib/kullPools'
+import { type SignupQuestion, validateSignupQuestions } from '@/lib/signupQuestions'
+import {
+    type SignupQuestionDraft,
+    SignupQuestionsEditor,
+    draftToQuestion,
+} from '@/components/admin/SignupQuestionsEditor'
 
 export interface EventFormValues {
     title: string
@@ -35,7 +41,7 @@ export interface EventFormValues {
     author: string
     planned_month: string
     has_food: boolean
-    custom_question: string
+    signup_questions: SignupQuestionDraft[]
     require_phone: boolean
     /** Empty means every kull may sign up (all boxes checked). */
     allowed_kull: number[]
@@ -59,7 +65,7 @@ export interface EventFormPayload {
     date_unspecified: boolean
     signup_undecided: boolean
     has_food: boolean
-    custom_question: string | null
+    signup_questions: SignupQuestion[]
     require_phone: boolean
     allowed_kull: number[] | null
     kull_pools: KullPool[]
@@ -79,7 +85,7 @@ export const emptyEventFormValues: EventFormValues = {
     author: '',
     planned_month: '',
     has_food: false,
-    custom_question: '',
+    signup_questions: [],
     require_phone: false,
     allowed_kull: [],
     kull_pools: [],
@@ -303,6 +309,19 @@ export function EventForm({
             return
         }
 
+        const signupQuestions = hideSignup ? [] : formData.signup_questions.map(draftToQuestion)
+        const questionError = validateSignupQuestions(signupQuestions)
+        if (questionError) {
+            toaster.create({
+                title: 'Ugyldige spørsmål ved påmelding',
+                description: questionError,
+                type: 'error',
+                duration: 5000,
+            })
+            setIsSubmitting(false)
+            return
+        }
+
         const payload: EventFormPayload = {
             title: formData.title,
             description: formData.description,
@@ -319,7 +338,7 @@ export function EventForm({
             date_unspecified: dateUnspecified,
             signup_undecided: signupUndecided,
             has_food: hasFood,
-            custom_question: signupUndecided ? null : formData.custom_question.trim() || null,
+            signup_questions: signupQuestions,
             require_phone: !signupUndecided && formData.require_phone,
             // All active kull checked means no restriction
             allowed_kull: allowedKull,
@@ -461,21 +480,12 @@ export function EventForm({
                     </Field.Root>
 
                     {!signupUndecided && (
-                        <Field.Root>
-                            <Field.Label>
-                                Spørsmål til påmelding (ja/nei-spørsmål, valgfritt)
-                            </Field.Label>
-                            <Input
-                                name="custom_question"
-                                value={formData.custom_question}
-                                onChange={handleChange}
-                                placeholder="F.eks. Har du deltatt på kurset tidligere?"
-                            />
-                            <Field.HelperText>
-                                Dersom du fyller ut dette, vil deltakerne få et avhukingsspørsmål under
-                                påmelding.
-                            </Field.HelperText>
-                        </Field.Root>
+                        <SignupQuestionsEditor
+                            value={formData.signup_questions}
+                            onChange={(signup_questions) =>
+                                setFormData((prev) => ({ ...prev, signup_questions }))
+                            }
+                        />
                     )}
 
                     {!signupUndecided && (

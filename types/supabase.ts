@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "13.0.5"
+    PostgrestVersion: "14.18"
   }
   graphql_public: {
     Tables: {
@@ -150,6 +150,7 @@ export type Database = {
           kull: number | null
           name: string | null
           phone: string | null
+          question_answers: Json
           status: string
         }
         Insert: {
@@ -164,6 +165,7 @@ export type Database = {
           kull?: number | null
           name?: string | null
           phone?: string | null
+          question_answers?: Json
           status?: string
         }
         Update: {
@@ -178,6 +180,7 @@ export type Database = {
           kull?: number | null
           name?: string | null
           phone?: string | null
+          question_answers?: Json
           status?: string
         }
         Relationships: [
@@ -213,6 +216,7 @@ export type Database = {
           reg_opens: string | null
           reminder_sent_at: string | null
           require_phone: boolean
+          signup_questions: Json
           signup_undecided: boolean
           slug: string | null
           start_datetime: string | null
@@ -240,6 +244,7 @@ export type Database = {
           reg_opens?: string | null
           reminder_sent_at?: string | null
           require_phone?: boolean
+          signup_questions?: Json
           signup_undecided?: boolean
           slug?: string | null
           start_datetime?: string | null
@@ -267,6 +272,7 @@ export type Database = {
           reg_opens?: string | null
           reminder_sent_at?: string | null
           require_phone?: boolean
+          signup_questions?: Json
           signup_undecided?: boolean
           slug?: string | null
           start_datetime?: string | null

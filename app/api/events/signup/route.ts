@@ -3,6 +3,7 @@ import { sendEventSignupEmail } from '@/lib/eventSignupEmail'
 import { NextResponse } from 'next/server'
 import { isKullAllowed } from '@/utils/functions/activeYears'
 import { hasFreeSpotForKull, parseKullPools } from '@/lib/kullPools'
+import { parseSignupQuestions, validateSignupAnswers } from '@/lib/signupQuestions'
 
 /** Kull of rows that count toward max_attendees (excludes waitlist). */
 async function confirmedParticipantKull(
@@ -20,7 +21,7 @@ async function confirmedParticipantKull(
 export async function POST(request: Request) {
     try {
         const body = await request.json()
-        const { name, email, kull, phone, allergies, eventId, confirmedTramsMember, customQuestionResponse } = body
+        const { name, email, kull, phone, allergies, eventId, confirmedTramsMember, questionAnswers } = body
 
         const nameStr = typeof name === 'string' ? name.trim() : ''
         const emailStr = typeof email === 'string' ? email.trim() : ''
@@ -41,7 +42,6 @@ export async function POST(request: Request) {
 
         /** Selvrapportert medlemskap; ikke påkrevd for påmelding, men lagres for admin. */
         const confirmedTramsMemberBool = confirmedTramsMember === true
-        const customQuestionResponseBool = customQuestionResponse === true
 
         const kullNum = Number.parseInt(kullStr, 10)
         if (!Number.isFinite(kullNum)) {
@@ -91,6 +91,15 @@ export async function POST(request: Request) {
                 { status: 400 }
             )
         }
+
+        const answerCheck = validateSignupAnswers(
+            parseSignupQuestions(event.signup_questions),
+            questionAnswers
+        )
+        if ('error' in answerCheck) {
+            return NextResponse.json({ error: answerCheck.error }, { status: 400 })
+        }
+        const answers = answerCheck.answers
 
         const kullPools = parseKullPools(event.kull_pools)
 
@@ -208,7 +217,7 @@ export async function POST(request: Request) {
                     allergies: allergiesValue,
                     status: 'confirmed',
                     confirmed_trams_member: confirmedTramsMemberBool,
-                    custom_question_response: customQuestionResponseBool,
+                    question_answers: answers,
                 })
                 .eq('id', existingParticipant.id)
                 .select()
@@ -276,7 +285,7 @@ export async function POST(request: Request) {
                 eventId: eventIdNum,
                 status,
                 confirmed_trams_member: confirmedTramsMemberBool,
-                custom_question_response: customQuestionResponseBool,
+                question_answers: answers,
             })
             .select()
             .single()
