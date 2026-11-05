@@ -24,6 +24,9 @@ import ExportParticipantsDialog from '@/components/admin/ExportParticipantsDialo
 import ParticipantCommentsDialog, {
     type ParticipantComment,
 } from '@/components/admin/ParticipantCommentsDialog'
+import EventFollowupPanel from '@/components/admin/EventFollowupPanel'
+import { isEventPast } from '@/lib/eventDate'
+import { parseFeedbackQuestions } from '@/lib/eventFeedback'
 
 function isConfirmedParticipant(p: Tables<'EventParticipants'>) {
     return p.status !== 'waitlist'
@@ -50,6 +53,9 @@ export default function AdminParticipantsPage() {
     const [eventMaxAttendees, setEventMaxAttendees] = useState<number | null>(null)
     const [eventCustomQuestion, setEventCustomQuestion] = useState<string | null>(null)
     const [eventRequiresPhone, setEventRequiresPhone] = useState(false)
+    const [eventIsPast, setEventIsPast] = useState(false)
+    const [feedbackFormReady, setFeedbackFormReady] = useState(false)
+    const [openingCertificateId, setOpeningCertificateId] = useState<number | null>(null)
     const [loading, setLoading] = useState(true)
     const [savingId, setSavingId] = useState<number | null>(null)
     const [deletingId, setDeletingId] = useState<number | null>(null)
@@ -78,6 +84,14 @@ export default function AdminParticipantsPage() {
         const confirmed = participants.filter(isConfirmedParticipant)
         const attended = confirmed.filter((p) => p.attended === true).length
         return { confirmedCount: confirmed.length, attendedCount: attended }
+    }, [participants])
+
+    const followupSummary = useMemo(() => {
+        const attended = participants.filter((p) => p.attended === true)
+        return {
+            attendedCount: attended.length,
+            notSentCount: attended.filter((p) => !p.followup_sent_at).length,
+        }
     }, [participants])
 
     const waitlistCount = useMemo(
@@ -112,7 +126,9 @@ export default function AdminParticipantsPage() {
             // Get event id first
             const { data: event, error: eventError } = await supabase
                 .from('Events')
-                .select('id, title, max_attendees, custom_question, require_phone')
+                .select(
+                    'id, title, max_attendees, custom_question, require_phone, start_datetime, end_datetime, date_unspecified, planned_month, feedback_open, feedback_questions'
+                )
                 .eq('slug', slug)
                 .single()
 
@@ -126,6 +142,10 @@ export default function AdminParticipantsPage() {
             setEventMaxAttendees(event.max_attendees ?? null)
             setEventCustomQuestion(event.custom_question ?? null)
             setEventRequiresPhone(Boolean(event.require_phone))
+            setEventIsPast(isEventPast(event))
+            setFeedbackFormReady(
+                event.feedback_open && parseFeedbackQuestions(event.feedback_questions).length > 0
+            )
 
             // Get participants
             const { data, error } = await supabase
@@ -212,6 +232,33 @@ export default function AdminParticipantsPage() {
             })
         } finally {
             setSavingId(null)
+        }
+    }
+
+    const handleOpenCertificate = async (participantId: number) => {
+        // Åpne fanen med en gang, ellers blokkeres den som popup etter await
+        const tab = window.open('', '_blank')
+        setOpeningCertificateId(participantId)
+        try {
+            const res = await fetch(
+                `/api/admin/event-participants/certificate?participantId=${participantId}`
+            )
+            const payload = (await res.json().catch(() => ({}))) as { error?: string; url?: string }
+            if (!res.ok || !payload.url) {
+                throw new Error(payload.error || 'Kunne ikke hente kursbevis')
+            }
+            if (tab) tab.location.href = payload.url
+            else window.location.href = payload.url
+        } catch (e) {
+            tab?.close()
+            toaster.create({
+                title: 'Kunne ikke åpne kursbevis',
+                description: e instanceof Error ? e.message : 'Prøv igjen.',
+                type: 'error',
+                duration: 5000,
+            })
+        } finally {
+            setOpeningCertificateId(null)
         }
     }
 
@@ -529,6 +576,23 @@ export default function AdminParticipantsPage() {
                 </Box>
             )}
 
+            {eventId != null && (
+                <EventFollowupPanel
+                    eventId={eventId}
+                    eventSlug={slug}
+                    eventIsPast={eventIsPast}
+                    feedbackFormReady={feedbackFormReady}
+                    attendedCount={followupSummary.attendedCount}
+                    notSentCount={followupSummary.notSentCount}
+                    onSent={(ids, sentAt) => {
+                        const sent = new Set(ids)
+                        setParticipants((prev) =>
+                            prev.map((p) => (sent.has(p.id) ? { ...p, followup_sent_at: sentAt } : p))
+                        )
+                    }}
+                />
+            )}
+
             <Box bg="white" shadow="sm" rounded="lg" overflowX="auto">
                 <Table.Root striped>
                     <Table.Header>
@@ -622,6 +686,29 @@ export default function AdminParticipantsPage() {
                                         </NativeSelect.Field>
                                         <NativeSelect.Indicator />
                                     </NativeSelect.Root>
+                                    {p.attended === true && (
+                                        <HStack mt={1} gap={2} flexWrap="wrap">
+                                            <Button
+                                                size="2xs"
+                                                variant="ghost"
+                                                px={1}
+                                                loading={openingCertificateId === p.id}
+                                                onClick={() => handleOpenCertificate(p.id)}
+                                            >
+                                                Kursbevis ↗
+                                            </Button>
+                                            {p.followup_sent_at && (
+                                                <Text
+                                                    fontSize="xs"
+                                                    color="gray.500"
+                                                    title={new Date(p.followup_sent_at).toLocaleString('nb-NO')}
+                                                >
+                                                    E-post sendt{' '}
+                                                    {new Date(p.followup_sent_at).toLocaleDateString('nb-NO')}
+                                                </Text>
+                                            )}
+                                        </HStack>
+                                    )}
                                 </Table.Cell>
                                 <Table.Cell color="gray.500" fontSize="sm">
                                     {new Date(p.created_at).toLocaleString('nb-NO')}
