@@ -21,6 +21,7 @@ import { PrimaryLinkButton } from '@/components/PrimaryLinkButton'
 import { SectionHeading, SubsectionHeading, BodyText } from '@/components/Typography'
 import HeroImage from '@/components/HeroImage'
 import { createClient } from '@/utils/supabase/client'
+import { fetchPublicEventParticipants } from '@/lib/publicEventParticipants'
 import type { Tables } from '@/types/supabase'
 import { useParams } from 'next/navigation'
 import { APP_TIME_ZONE } from '@/lib/datetimeLocal'
@@ -95,10 +96,9 @@ export default function EventArrangementDetailClient({
                 profiles?.full_name?.trim() || profiles?.email?.trim() || null
             )
 
-            const { data: participantRows, error: participantsError } = await supabase
-                .from('EventParticipants')
-                .select('id, name, kull, status, created_at')
-                .eq('eventId', eventData.id)
+            // Rows come ordered by signup time (keeps waitlist queue order).
+            const { data: participantRows, error: participantsError } =
+                await fetchPublicEventParticipants(supabase, eventData.id)
 
             if (!participantsError && participantRows) {
                 const sortByName = (
@@ -117,10 +117,6 @@ export default function EventArrangementDetailClient({
 
                 const waitlist = participantRows
                     .filter((p) => p.status === 'waitlist')
-                    .sort(
-                        (a, b) =>
-                            new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-                    )
                     .map(({ id, name, kull }) => ({ id, name, kull }))
 
                 setPublicParticipants(confirmed)
