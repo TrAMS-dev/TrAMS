@@ -13,7 +13,6 @@ import {
     Wrap,
 } from '@chakra-ui/react'
 import EventSignupDialog from '@/components/EventSignupDialog'
-import EventFeedbackDialog from '@/components/EventFeedbackDialog'
 import EventParticipantListDialog from '@/components/EventParticipantListDialog'
 import { LinkifiedText } from '@/components/LinkifiedText'
 import { PageContainer } from '@/components/PageContainer'
@@ -21,13 +20,12 @@ import { ContentCard, cardStyles } from '@/components/ContentCard'
 import { PrimaryLinkButton } from '@/components/PrimaryLinkButton'
 import { SectionHeading, SubsectionHeading, BodyText } from '@/components/Typography'
 import HeroImage from '@/components/HeroImage'
-import { parseFeedbackQuestions } from '@/lib/eventFeedback'
 import { createClient } from '@/utils/supabase/client'
 import { fetchPublicEventParticipants } from '@/lib/publicEventParticipants'
 import type { Tables } from '@/types/supabase'
 import { useParams } from 'next/navigation'
 import { APP_TIME_ZONE } from '@/lib/datetimeLocal'
-import { formatEventDate, isDateUnspecifiedEvent, isEventPast } from '@/lib/eventDate'
+import { formatEventDate, isDateUnspecifiedEvent } from '@/lib/eventDate'
 import { kullToKlasse } from '@/utils/functions/activeYears'
 import { formatPoolKlasser, parseKullPools, summarizeCapacity } from '@/lib/kullPools'
 import { parseSignupQuestions } from '@/lib/signupQuestions'
@@ -62,7 +60,6 @@ export default function EventArrangementDetailClient({
     >([])
     const [loading, setLoading] = useState(true)
     const [signupOpen, setSignupOpen] = useState(false)
-    const [feedbackOpen, setFeedbackOpen] = useState(false)
     const [participantListOpen, setParticipantListOpen] = useState(false)
 
     /** Bumped to refetch, e.g. after a new signup. */
@@ -97,13 +94,10 @@ export default function EventArrangementDetailClient({
             const { profiles, ...eventRow } = row
             setEvent(eventRow)
 
-            // Skjemaet nås bare via lenken i e-posten etter arrangementet (?tilbakemelding)
-            if (
-                isEventPast(eventRow) &&
-                parseFeedbackQuestions(eventRow.feedback_questions).length > 0 &&
-                new URLSearchParams(window.location.search).has('tilbakemelding')
-            ) {
-                setFeedbackOpen(true)
+            // Old email links used ?tilbakemelding; the form now has its own page
+            if (new URLSearchParams(window.location.search).has('tilbakemelding')) {
+                window.location.replace(`/arrangementer/${encodeURIComponent(slug)}/tilbakemelding`)
+                return
             }
             setAuthorDisplayName(
                 profiles?.full_name?.trim() || profiles?.email?.trim() || null
@@ -181,7 +175,6 @@ export default function EventArrangementDetailClient({
 
     const hasFood: boolean = event.has_food
 
-    const feedbackQuestions = parseFeedbackQuestions(event.feedback_questions)
 
     const isDateUnspecified = isDateUnspecifiedEvent(event)
     const isSignupUndecided = event.signup_undecided
@@ -613,14 +606,6 @@ export default function EventArrangementDetailClient({
                 eventSignupQuestions={signupQuestions}
                 eventRequiresPhone={event.require_phone}
                 eventAllowedKull={event.allowed_kull}
-            />
-
-            <EventFeedbackDialog
-                open={feedbackOpen}
-                onClose={() => setFeedbackOpen(false)}
-                eventId={event.id}
-                eventTitle={event.title || 'dette arrangementet'}
-                questions={feedbackQuestions}
             />
 
             <EventParticipantListDialog
