@@ -28,6 +28,7 @@ import { APP_TIME_ZONE } from '@/lib/datetimeLocal'
 import { formatEventDate, isDateUnspecifiedEvent } from '@/lib/eventDate'
 import { kullToKlasse } from '@/utils/functions/activeYears'
 import { formatPoolKlasser, parseKullPools, summarizeCapacity } from '@/lib/kullPools'
+import { parseSignupQuestions } from '@/lib/signupQuestions'
 
 type EventWithAuthorProfile = Tables<'Events'> & {
     profiles: { full_name: string | null; email: string | null } | null
@@ -92,6 +93,12 @@ export default function EventArrangementDetailClient({
             const row = eventData as EventWithAuthorProfile
             const { profiles, ...eventRow } = row
             setEvent(eventRow)
+
+            // Old email links used ?tilbakemelding; the form now has its own page
+            if (new URLSearchParams(window.location.search).has('tilbakemelding')) {
+                window.location.replace(`/arrangementer/${encodeURIComponent(slug)}/tilbakemelding`)
+                return
+            }
             setAuthorDisplayName(
                 profiles?.full_name?.trim() || profiles?.email?.trim() || null
             )
@@ -168,6 +175,7 @@ export default function EventArrangementDetailClient({
 
     const hasFood: boolean = event.has_food
 
+
     const isDateUnspecified = isDateUnspecifiedEvent(event)
     const isSignupUndecided = event.signup_undecided
     const startDate = event.start_datetime ? new Date(event.start_datetime) : null
@@ -180,6 +188,7 @@ export default function EventArrangementDetailClient({
     const isRegistrationClosed = regDeadline ? now > regDeadline : false
     const isFull = event.max_attendees ? participantCount >= event.max_attendees : false
     const kullPools = parseKullPools(event.kull_pools)
+    const signupQuestions = parseSignupQuestions(event.signup_questions)
     const capacity =
         event.max_attendees && kullPools.length > 0
             ? summarizeCapacity(
@@ -594,7 +603,7 @@ export default function EventArrangementDetailClient({
                 onSuccess={handleSignupSuccess}
                 membershipSignupHref={membershipSignupHref}
                 eventHasFood={hasFood}
-                eventCustomQuestion={event.custom_question}
+                eventSignupQuestions={signupQuestions}
                 eventRequiresPhone={event.require_phone}
                 eventAllowedKull={event.allowed_kull}
             />

@@ -11,10 +11,18 @@ import {
     NativeSelect,
     Field,
     Checkbox,
+    Fieldset,
+    Stack,
     Text,
 } from '@chakra-ui/react'
 import { toaster } from "@/components/ui/toaster"
 import { activeYears, isKullAllowed } from '@/utils/functions/activeYears'
+import {
+    type SignupAnswer,
+    type SignupAnswers,
+    type SignupQuestion,
+    validateSignupAnswers,
+} from '@/lib/signupQuestions'
 
 interface EventSignupDialogProps {
     open: boolean
@@ -25,7 +33,7 @@ interface EventSignupDialogProps {
     eventHasFood: boolean
     /** Medlemskap — fra Sanity (`forMedisinstudenterPage.membershipSignupUrl`) eller fallback. */
     membershipSignupHref?: string
-    eventCustomQuestion?: string | null
+    eventSignupQuestions?: SignupQuestion[]
     eventRequiresPhone?: boolean
     /** Null or empty means every kull may sign up. */
     eventAllowedKull?: number[] | null
@@ -47,7 +55,7 @@ export default function EventSignupDialog({
     eventHasFood,
     onSuccess,
     membershipSignupHref = 'https://forms.gle/GDLsAZTeVvTKmCqw9',
-    eventCustomQuestion,
+    eventSignupQuestions = [],
     eventRequiresPhone = false,
     eventAllowedKull,
 }: EventSignupDialogProps) {
@@ -60,8 +68,20 @@ export default function EventSignupDialog({
         allergies: '',
     })
     const [declaresTramsMember, setDeclaresTramsMember] = useState(false)
-    const [customQuestionResponse, setCustomQuestionResponse] = useState(false)
+    const [answers, setAnswers] = useState<SignupAnswers>({})
     const [isSubmitting, setIsSubmitting] = useState(false)
+
+    const setAnswer = (questionId: string, answer: SignupAnswer) =>
+        setAnswers((prev) => ({ ...prev, [questionId]: answer }))
+
+    const toggleChoice = (questionId: string, option: string, checked: boolean) => {
+        const current = answers[questionId]
+        const chosen = Array.isArray(current) ? current : []
+        setAnswer(
+            questionId,
+            checked ? [...chosen, option] : chosen.filter((o) => o !== option)
+        )
+    }
 
     const handleChange = (
         e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -90,6 +110,16 @@ export default function EventSignupDialog({
             })
             return
         }
+        const answerCheck = validateSignupAnswers(eventSignupQuestions, answers)
+        if ('error' in answerCheck) {
+            toaster.create({
+                title: 'Svar på spørsmålene',
+                type: 'error',
+                description: answerCheck.error,
+                duration: 5000,
+            })
+            return
+        }
         setIsSubmitting(true)
 
         try {
@@ -102,7 +132,7 @@ export default function EventSignupDialog({
                     ...formData,
                     eventId,
                     confirmedTramsMember: declaresTramsMember,
-                    customQuestionResponse,
+                    questionAnswers: answerCheck.answers,
                 }),
             })
 
@@ -136,7 +166,7 @@ export default function EventSignupDialog({
                 allergies: '',
             })
             setDeclaresTramsMember(false)
-            setCustomQuestionResponse(false)
+            setAnswers({})
 
             onSuccess?.()
             onClose()
@@ -241,22 +271,88 @@ export default function EventSignupDialog({
                                 </Field.Root>
                             )}
 
-                            {eventCustomQuestion && (
-                                <Box>
-                                    <Checkbox.Root
-                                        checked={customQuestionResponse}
-                                        onCheckedChange={(details) =>
-                                            setCustomQuestionResponse(!!details.checked)
-                                        }
-                                    >
-                                        <Checkbox.HiddenInput />
-                                        <Checkbox.Control />
-                                        <Checkbox.Label>
-                                            {eventCustomQuestion}
-                                        </Checkbox.Label>
-                                    </Checkbox.Root>
-                                </Box>
-                            )}
+                            {eventSignupQuestions.map((q) => {
+                                const answer = answers[q.id]
+                                const label = `${q.label}${q.required ? ' *' : ''}`
+
+                                if (q.type === 'checkbox') {
+                                    return (
+                                        <Checkbox.Root
+                                            key={q.id}
+                                            checked={answer === true}
+                                            onCheckedChange={(details) =>
+                                                setAnswer(q.id, !!details.checked)
+                                            }
+                                        >
+                                            <Checkbox.HiddenInput />
+                                            <Checkbox.Control />
+                                            <Checkbox.Label>{label}</Checkbox.Label>
+                                        </Checkbox.Root>
+                                    )
+                                }
+
+                                if (q.type === 'multi_choice') {
+                                    const chosen = Array.isArray(answer) ? answer : []
+                                    return (
+                                        <Fieldset.Root key={q.id}>
+                                            <Fieldset.Legend fontSize="sm" fontWeight="medium">
+                                                {label}
+                                            </Fieldset.Legend>
+                                            <Stack gap={2} mt={2}>
+                                                {q.options.map((option) => (
+                                                    <Checkbox.Root
+                                                        key={option}
+                                                        checked={chosen.includes(option)}
+                                                        onCheckedChange={(details) =>
+                                                            toggleChoice(
+                                                                q.id,
+                                                                option,
+                                                                !!details.checked
+                                                            )
+                                                        }
+                                                    >
+                                                        <Checkbox.HiddenInput />
+                                                        <Checkbox.Control />
+                                                        <Checkbox.Label>{option}</Checkbox.Label>
+                                                    </Checkbox.Root>
+                                                ))}
+                                            </Stack>
+                                        </Fieldset.Root>
+                                    )
+                                }
+
+                                return (
+                                    <Field.Root key={q.id} required={q.required}>
+                                        <Field.Label>{label}</Field.Label>
+                                        {q.type === 'text' ? (
+                                            <Input
+                                                value={typeof answer === 'string' ? answer : ''}
+                                                onChange={(e) => setAnswer(q.id, e.target.value)}
+                                                maxLength={1000}
+                                            />
+                                        ) : (
+                                            <NativeSelect.Root>
+                                                <NativeSelect.Field
+                                                    value={typeof answer === 'string' ? answer : ''}
+                                                    onChange={(e) =>
+                                                        setAnswer(q.id, e.target.value)
+                                                    }
+                                                >
+                                                    <option value="" disabled={q.required}>
+                                                        Velg
+                                                    </option>
+                                                    {q.options.map((option) => (
+                                                        <option key={option} value={option}>
+                                                            {option}
+                                                        </option>
+                                                    ))}
+                                                </NativeSelect.Field>
+                                                <NativeSelect.Indicator />
+                                            </NativeSelect.Root>
+                                        )}
+                                    </Field.Root>
+                                )
+                            })}
 
                             <Box>
                                 <Checkbox.Root

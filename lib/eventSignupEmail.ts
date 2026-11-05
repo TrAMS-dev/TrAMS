@@ -410,3 +410,107 @@ export async function sendEventReminderEmails(
 
     return sent
 }
+
+const SUBJECT_FOLLOWUP = (title: string) => `Takk for at du deltok: ${title}`
+
+export interface EventFollowupContext {
+    eventId: number
+    eventTitle: string
+    eventSlug: string | null
+    startDatetime: string | null
+    location: string | null
+    contactEmail: string | null
+    /** Lenke til tilbakemeldingsskjemaet, eller null for å utelate den. */
+    feedbackUrl: string | null
+}
+
+export interface EventFollowupRecipient {
+    participantId: number
+    name: string
+    email: string
+    /** Personlig lenke til kursbevis, eller null for å utelate den. */
+    certificateUrl: string | null
+}
+
+function buttonLink(href: string, label: string): string {
+    const safe = escapeHtml(href)
+    return `<p style="margin:20px 0;"><a href="${safe}" style="display:inline-block;background-color:#c41e3a;color:#ffffff;text-decoration:none;font-weight:bold;padding:12px 20px;border-radius:6px;">${escapeHtml(label)}</a></p>
+<p style="color:#888;font-size:12px;line-height:1.5;margin-top:-8px;">Fungerer ikke knappen? Kopier denne lenken: <a href="${safe}" style="color:#c41e3a;word-break:break-all;">${safe}</a></p>`
+}
+
+function followupEmailHtml(ctx: EventFollowupContext, r: EventFollowupRecipient): string {
+    const title = ctx.eventTitle.trim()
+    const when = formatNbDate(ctx.startDatetime)
+    const where = ctx.location ? escapeHtml(ctx.location.trim()) : null
+    const detail = courseWhenWhereFragment(title, when, where, 'på')
+
+    const parts = [
+        `<p style="color:#555;line-height:1.6;margin-top:0;">${greetingFor(r.name)} Takk for at du deltok ${detail}.</p>`,
+    ]
+    if (ctx.feedbackUrl) {
+        parts.push(
+            `<p style="color:#555;line-height:1.6;">Vi vil gjerne høre hva du synes, slik at vi kan gjøre kursene våre enda bedre. Tilbakemeldingen er anonym og tar bare et par minutter.</p>`,
+            buttonLink(ctx.feedbackUrl, 'Gi tilbakemelding')
+        )
+    }
+    if (r.certificateUrl) {
+        parts.push(
+            `<p style="color:#555;line-height:1.6;">Her er kursbeviset ditt. Du kan skrive det ut eller lagre det som PDF fra nettleseren.</p>`,
+            buttonLink(r.certificateUrl, 'Se kursbevis')
+        )
+    }
+    parts.push(questionsParagraph(ctx.contactEmail))
+
+    return emailShell(parts.join('\n'))
+}
+
+/**
+ * Sender e-post etter arrangementet med lenke til tilbakemeldingsskjema og/eller kursbevis.
+ * Returnerer id-ene til deltakerne Resend tok imot e-post for. Kaster ved feil fra Resend
+ * (deltakere i tidligere, vellykkede batcher er da allerede sendt, se `onBatchSent`).
+ */
+export async function sendEventFollowupEmails(
+    ctx: EventFollowupContext,
+    recipients: EventFollowupRecipient[],
+    onBatchSent?: (participantIds: number[]) => Promise<void>
+): Promise<number[]> {
+    if (!process.env.RESEND_API_KEY) {
+        console.warn('sendEventFollowupEmails: RESEND_API_KEY missing, skipping')
+        return []
+    }
+
+    const seen = new Set<string>()
+    const valid: EventFollowupRecipient[] = []
+    for (const r of recipients) {
+        const to = r.email.trim().toLowerCase()
+        if (!to || to.length > 320 || !EMAIL_RE.test(to) || seen.has(to)) continue
+        seen.add(to)
+        valid.push({ ...r, email: to })
+    }
+
+    const replyTo = replyToFor(ctx.contactEmail)
+    const subject = SUBJECT_FOLLOWUP(ctx.eventTitle.trim())
+    const sentIds: number[] = []
+
+    for (let i = 0; i < valid.length; i += RESEND_BATCH_LIMIT) {
+        const chunk = valid.slice(i, i + RESEND_BATCH_LIMIT)
+        const result = await resend.batch.send(
+            chunk.map((r) => ({
+                from: 'TrAMS <web@trams.no>',
+                to: [r.email],
+                subject,
+                html: followupEmailHtml(ctx, r),
+                ...(replyTo ? { replyTo } : {}),
+            }))
+        )
+
+        if (result.error) {
+            throw new Error(`Resend batch error: ${result.error.message}`)
+        }
+        const ids = chunk.map((r) => r.participantId)
+        sentIds.push(...ids)
+        await onBatchSent?.(ids)
+    }
+
+    return sentIds
+}

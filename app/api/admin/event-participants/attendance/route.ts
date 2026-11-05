@@ -1,5 +1,46 @@
 import { createClient } from '@/utils/supabase/server'
 import { NextResponse } from 'next/server'
+import {
+    FOLLOWUP_EVENT_COLUMNS,
+    autoFollowupContent,
+    isInAutoFollowupWindow,
+    sendFollowup,
+} from '@/lib/eventFollowup'
+
+type Supabase = Awaited<ReturnType<typeof createClient>>
+
+/**
+ * Sends the follow-up email (feedback form and certificate) to a participant who was
+ * just marked as attended, if the event has ended recently and they haven't had it yet.
+ * Returns when it was sent, or null. Failures are logged and don't affect the attendance change.
+ */
+async function sendAutoFollowup(supabase: Supabase, participantId: number): Promise<string | null> {
+    try {
+        const { data: participant } = await supabase
+            .from('EventParticipants')
+            .select('id, name, email, eventId, followup_sent_at')
+            .eq('id', participantId)
+            .single()
+        if (!participant?.eventId || participant.followup_sent_at) return null
+
+        const { data: event } = await supabase
+            .from('Events')
+            .select(FOLLOWUP_EVENT_COLUMNS)
+            .eq('id', participant.eventId)
+            .single()
+        // Before the event has ended, the daily cron (/api/cron/event-followups) sends it later
+        if (!event || !isInAutoFollowupWindow(event)) return null
+
+        const content = autoFollowupContent(event)
+        if (!content.sendFeedback && !content.sendCertificate) return null
+
+        const { sentIds, sentAt } = await sendFollowup(supabase, event, [participant], content)
+        return sentIds.length > 0 ? sentAt : null
+    } catch (e) {
+        console.error('Attendance: automatic followup failed', e)
+        return null
+    }
+}
 
 function parseAttendedBody(raw: unknown): boolean | null | undefined {
     if (raw === null) return null
@@ -65,5 +106,7 @@ export async function PATCH(request: Request) {
         return NextResponse.json({ error: 'Fant ikke deltakeren eller ingen endring tillatt' }, { status: 404 })
     }
 
-    return NextResponse.json({ participant: row })
+    const followupSentAt = row.attended === true ? await sendAutoFollowup(supabase, row.id) : null
+
+    return NextResponse.json({ participant: row, followupSentAt })
 }

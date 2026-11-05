@@ -17,8 +17,9 @@ All emails are sent through [Resend](https://resend.com) from `web@trams.no` and
 | 9 | Course booking – customer confirmation | `Bekreftelse på kursbestilling - TrAMS` | The booking contact person | Course booking form submitted |
 | 10 | Course booking – admin notification | `Ny kursbestilling: <course> - <name>` | `ADMIN_EMAIL` (default `ekstern@trams.no`) or `ADMIN_EMAIL_LEVANGER` (default `levanger@trams.no`) | Course booking form submitted |
 | 11 | Website feedback | `Tilbakemelding på nettsiden` | `WEB_NOTIFY_EMAIL` (default `web@trams.no`) | Someone sends feedback from the footer |
+| 12 | After the event | `Takk for at du deltok: <title>` | Participants marked «Møtt» | Automatically when marked «Møtt» after the event (or daily cron if marked before it ended); admins can also send manually |
 
-Reply-To: emails 1–6 use the event's `contact_email` when it is set; otherwise replies go to `web@trams.no`. Email 7 replies to the new user; email 10 replies to the booking contact person; email 11 replies to the sender if they gave an email address.
+Reply-To: emails 1–6 and 12 use the event's `contact_email` when it is set; otherwise replies go to `web@trams.no`. Email 7 replies to the new user; email 10 replies to the booking contact person; email 11 replies to the sender if they gave an email address.
 
 ## Event emails
 
@@ -57,6 +58,19 @@ Code: [lib/eventSignupEmail.ts](lib/eventSignupEmail.ts)
 - **Recipients:** Everyone with `status = 'confirmed'` on the event.
 - **Content:** Reminds them of their spot with event details and link. If they can't come, they must email the event's contact address (or reply) at least 24 hours before the event starts.
 - **Requires:** `CRON_SECRET` and `SUPABASE_SERVICE_ROLE_KEY`.
+
+### 12. After the event (feedback form and certificate)
+- **Sent from:** [app/api/admin/event-participants/followup/route.ts](app/api/admin/event-participants/followup/route.ts), called by [components/admin/EventFollowupPanel.tsx](components/admin/EventFollowupPanel.tsx)
+- **Also sent from:** [app/api/admin/event-participants/attendance/route.ts](app/api/admin/event-participants/attendance/route.ts) and [app/api/cron/event-followups/route.ts](app/api/cron/event-followups/route.ts) (Vercel Cron, daily at 18:00 UTC), both through [lib/eventFollowup.ts](lib/eventFollowup.ts)
+- **When:** Automatically, once per participant (`EventParticipants.followup_sent_at`), for events that ended within the last 14 days:
+  - right away when an admin sets a participant to «Møtt» after the event has ended
+  - by the daily cron for participants set to «Møtt» before the event ended
+  - The automatic email includes the certificate, and the feedback link if the event has feedback questions.
+  - Admins can also send it manually from the participants page, choosing the content, or resend it to everyone who attended.
+- **Recipients:** Everyone with `attended = true` on the event.
+- **Content:** Thanks them for coming, with one or both of:
+  - a link to the event's feedback form (`/arrangementer/<slug>/tilbakemelding`, a separate page with the form; the event needs at least one feedback question. The form is not linked from the event page, and only accepts answers after the event has ended. Old `?tilbakemelding` links redirect there)
+  - a personal certificate link (`/kursbevis/<id>.<signature>`), a printable page with name, course, date and place. The link is signed with `CERTIFICATE_SECRET` (falls back to `SUPABASE_SERVICE_ROLE_KEY`), so changing that secret invalidates links already sent.
 
 ## User account emails
 

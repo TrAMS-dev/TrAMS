@@ -15,6 +15,10 @@ import { toaster } from '@/components/ui/toaster'
 import { utcIsoToDatetimeLocalValue } from '@/lib/datetimeLocal'
 import { useAuth } from '@/hooks/useAuth'
 import { parseKullPools } from '@/lib/kullPools'
+import { parseSignupQuestions } from '@/lib/signupQuestions'
+import { questionToDraft } from '@/components/admin/SignupQuestionsEditor'
+import { parseFeedbackQuestions } from '@/lib/eventFeedback'
+import type { Json } from '@/types/supabase'
 
 export default function AdminEditEventPage() {
     const router = useRouter()
@@ -73,13 +77,15 @@ export default function AdminEditEventPage() {
                 author: data.author || '',
                 planned_month: data.planned_month || '',
                 has_food: Boolean(data.has_food),
-                custom_question: data.custom_question || '',
+                signup_questions: parseSignupQuestions(data.signup_questions).map(questionToDraft),
                 require_phone: Boolean(data.require_phone),
                 allowed_kull: data.allowed_kull ?? [],
                 kull_pools: parseKullPools(data.kull_pools).map((p) => ({
                     kull: p.kull,
                     spots: String(p.spots),
                 })),
+                feedback_questions: parseFeedbackQuestions(data.feedback_questions),
+                certificate_description: data.certificate_description ?? '',
             })
             setLoading(false)
         }
@@ -110,10 +116,12 @@ export default function AdminEditEventPage() {
                     signup_undecided: payload.signup_undecided,
                     planned_month: payload.planned_month,
                     has_food: payload.has_food,
-                    custom_question: payload.custom_question,
+                    signup_questions: payload.signup_questions,
                     require_phone: payload.require_phone,
                     allowed_kull: payload.allowed_kull,
                     kull_pools: payload.kull_pools,
+                    feedback_questions: payload.feedback_questions as unknown as Json,
+                    certificate_description: payload.certificate_description,
                 })
                 .eq('id', eventId)
 

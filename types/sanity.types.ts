@@ -15,6 +15,46 @@
 export declare const internalGroqTypeReferenceTo: unique symbol;
 
 // Source: sanity/extract.json
+export type SanityImageAssetReference = {
+  _ref: string;
+  _type: "reference";
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+};
+
+export type CertificateSettings = {
+  _id: string;
+  _type: "certificateSettings";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  signerName: string;
+  signerTitle: string;
+  signature: {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+  };
+};
+
+export type SanityImageCrop = {
+  _type: "sanity.imageCrop";
+  top: number;
+  bottom: number;
+  left: number;
+  right: number;
+};
+
+export type SanityImageHotspot = {
+  _type: "sanity.imageHotspot";
+  x: number;
+  y: number;
+  height: number;
+  width: number;
+};
+
 export type SiteSettings = {
   _id: string;
   _type: "siteSettings";
@@ -217,13 +257,6 @@ export type BookKursPage = {
   }>;
 };
 
-export type SanityImageAssetReference = {
-  _ref: string;
-  _type: "reference";
-  _weak?: boolean;
-  [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
-};
-
 export type FirstAidCoursePage = {
   _id: string;
   _type: "firstAidCoursePage";
@@ -291,22 +324,6 @@ export type FirstAidCoursePage = {
     _key: string;
   }>;
   evaluationFormUrl?: string;
-};
-
-export type SanityImageCrop = {
-  _type: "sanity.imageCrop";
-  top: number;
-  bottom: number;
-  left: number;
-  right: number;
-};
-
-export type SanityImageHotspot = {
-  _type: "sanity.imageHotspot";
-  x: number;
-  y: number;
-  height: number;
-  width: number;
 };
 
 export type CooperationPartners = {
@@ -791,16 +808,17 @@ export type Geopoint = {
 };
 
 export type AllSanitySchemaTypes =
+  | SanityImageAssetReference
+  | CertificateSettings
+  | SanityImageCrop
+  | SanityImageHotspot
   | SiteSettings
   | AboutPage
   | InstruktorPage
   | ForMedisinstudenterPage
   | HomePage
   | BookKursPage
-  | SanityImageAssetReference
   | FirstAidCoursePage
-  | SanityImageCrop
-  | SanityImageHotspot
   | CooperationPartners
   | MarkorPage
   | AkuttCalling
@@ -1609,9 +1627,17 @@ export type BOARD_ROLE_SLUGS_QUERY_RESULT = Array<{
   _updatedAt: string;
 }>;
 
+// Source: sanity/lib/queries.ts
+// Variable: CERTIFICATE_SETTINGS_QUERY
+// Query: *[_type == "certificateSettings"][0] {  signerName,  signerTitle,  "signatureUrl": signature.asset->url}
+export type CERTIFICATE_SETTINGS_QUERY_RESULT = {
+  signerName: string;
+  signerTitle: string;
+  signatureUrl: string | null;
+} | null;
+
 // Query TypeMap
-import "@sanity/client";
-declare module "@sanity/client" {
+declare global {
   interface SanityQueries {
     "*[_type == \"boardMember\"] | order(\n  select(\n    role == 'boardLeader' => 1,\n    role == 'subjectLeader' => 2,\n    role == 'internalLeader' => 3,\n    role == 'externalLeader' => 4,\n    role == 'internalCoordinator' => 5,\n    role == 'externalCoordinator' => 6,\n    role == 'committeeLeader' => 7,\n    role == 'instructorLeader' => 8,\n    role == 'financialLeader' => 9,\n    role == 'marketingLeader' => 10,\n    role == 'extraLeader' => 11,\n    role == 'sponsorLeader' => 12,\n    role == 'equipmentLeader' => 13,\n    role == 'secretary' => 14,\n    role == 'mentorLeader' => 15,\n    99\n  ) asc,\n  _createdAt asc\n) {\n  _id,\n  name,\n  slug,\n  role,\n  email,\n  profileImage,\n  PersonalImage,\n  bio,\n  activeFrom,\n  activeTo\n}": BOARD_MEMBERS_QUERY_RESULT;
     '*[_type == "boardMember" && slug.current == $slug][0] {\n  _id,\n  name,\n  slug,\n  role,\n  email,\n  profileImage,\n  PersonalImage,\n  bio,\n  activeFrom,\n  activeTo\n}': BOARD_MEMBER_QUERY_BY_SLUG_RESULT;
@@ -1633,5 +1659,10 @@ declare module "@sanity/client" {
     '*[_type == "siteSettings"][0] {\n  _id,\n  address,\n  orgNumber,\n  contactEmail,\n  instagramUrl,\n  facebookUrl,\n  githubUrl\n}': SITE_SETTINGS_QUERY_RESULT;
     '*[_type == "boardRole" && lower(role) == $slug][0] {\n  _id,\n  role,\n  title,\n  description,\n  "member": *[_type == "boardMember" && role == ^.role] | order(activeTo desc)[0]\n}': BOARD_ROLE_PAGE_QUERY_RESULT;
     '*[_type == "boardRole" && defined(role)] {\n  "slug": lower(role),\n  _updatedAt\n}': BOARD_ROLE_SLUGS_QUERY_RESULT;
+    '*[_type == "certificateSettings"][0] {\n  signerName,\n  signerTitle,\n  "signatureUrl": signature.asset->url\n}': CERTIFICATE_SETTINGS_QUERY_RESULT;
   }
+}
+// Lets @sanity/client releases that predate the global registry read it too
+declare module "@sanity/client" {
+  interface SanityQueries extends globalThis.SanityQueries {}
 }
