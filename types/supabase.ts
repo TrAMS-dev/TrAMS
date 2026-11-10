@@ -201,6 +201,7 @@ export type Database = {
           allowed_kull: number[] | null
           author: string | null
           certificate_description: string | null
+          certificate_enabled: boolean
           contact_email: string | null
           created_at: string
           custom_question: string | null
@@ -230,6 +231,7 @@ export type Database = {
           allowed_kull?: number[] | null
           author?: string | null
           certificate_description?: string | null
+          certificate_enabled?: boolean
           contact_email?: string | null
           created_at?: string
           custom_question?: string | null
@@ -259,6 +261,7 @@ export type Database = {
           allowed_kull?: number[] | null
           author?: string | null
           certificate_description?: string | null
+          certificate_enabled?: boolean
           contact_email?: string | null
           created_at?: string
           custom_question?: string | null

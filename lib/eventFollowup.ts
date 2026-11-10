@@ -15,7 +15,7 @@ export const AUTO_FOLLOWUP_WINDOW_DAYS = 14
 
 /** Columns needed from Events to send the follow-up email. */
 export const FOLLOWUP_EVENT_COLUMNS =
-    'id, title, slug, start_datetime, end_datetime, date_unspecified, planned_month, location, contact_email, feedback_questions'
+    'id, title, slug, start_datetime, end_datetime, date_unspecified, planned_month, location, contact_email, feedback_questions, certificate_enabled'
 
 export type FollowupEvent = Pick<
     Tables<'Events'>,
@@ -29,6 +29,7 @@ export type FollowupEvent = Pick<
     | 'location'
     | 'contact_email'
     | 'feedback_questions'
+    | 'certificate_enabled'
 >
 
 export type FollowupParticipant = Pick<Tables<'EventParticipants'>, 'id' | 'name' | 'email'>
@@ -43,11 +44,11 @@ export function hasFeedbackForm(event: FollowupEvent): boolean {
     return Boolean(event.slug) && parseFeedbackQuestions(event.feedback_questions).length > 0
 }
 
-/** What the automatic email contains: the feedback link if there is a form, and the certificate. */
+/** What the automatic email contains: the feedback link and the certificate, where the event uses them. */
 export function autoFollowupContent(event: FollowupEvent): FollowupContent {
     return {
         sendFeedback: hasFeedbackForm(event),
-        sendCertificate: isCertificateSigningConfigured(),
+        sendCertificate: event.certificate_enabled && isCertificateSigningConfigured(),
     }
 }
 

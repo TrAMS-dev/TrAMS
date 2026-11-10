@@ -65,12 +65,12 @@ Code: [lib/eventSignupEmail.ts](lib/eventSignupEmail.ts)
 - **When:** Automatically, once per participant (`EventParticipants.followup_sent_at`), for events that ended within the last 14 days:
   - right away when an admin sets a participant to «Møtt» after the event has ended
   - by the daily cron for participants set to «Møtt» before the event ended
-  - The automatic email includes the certificate, and the feedback link if the event has feedback questions.
+  - The automatic email includes the certificate if the event has «Send kursbevis» on (`Events.certificate_enabled`), and the feedback link if the event has feedback questions. If it has neither, nothing is sent.
   - Admins can also send it manually from the participants page, choosing the content, or resend it to everyone who attended.
 - **Recipients:** Everyone with `attended = true` on the event.
 - **Content:** Thanks them for coming, with one or both of:
   - a link to the event's feedback form (`/arrangementer/<slug>/tilbakemelding`, a separate page with the form; the event needs at least one feedback question. The form is not linked from the event page, and only accepts answers after the event has ended. Old `?tilbakemelding` links redirect there)
-  - a personal certificate link (`/kursbevis/<id>.<signature>`), a printable page with name, course, date and place. The link is signed with `CERTIFICATE_SECRET` (falls back to `SUPABASE_SERVICE_ROLE_KEY`), so changing that secret invalidates links already sent.
+  - a personal certificate link (`/kursbevis/<id>.<signature>`), a printable A4 page with name, course, date, an optional course description and the signature set in Sanity. Only included when the event has «Send kursbevis» on. The link is signed with `CERTIFICATE_SECRET` (falls back to `SUPABASE_SERVICE_ROLE_KEY`), so changing that secret invalidates links already sent.
 
 ## User account emails
 

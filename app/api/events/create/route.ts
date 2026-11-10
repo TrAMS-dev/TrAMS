@@ -39,6 +39,7 @@ export async function POST(request: Request) {
             allowed_kull,
             kull_pools,
             feedback_questions,
+            certificate_enabled,
             certificate_description,
         } = body
 
@@ -143,6 +144,7 @@ export async function POST(request: Request) {
                 feedback_questions: parseFeedbackQuestions(
                     feedback_questions
                 ) as unknown as Json,
+                certificate_enabled: certificate_enabled === true,
                 certificate_description:
                     typeof certificate_description === 'string'
                         ? certificate_description.trim().slice(0, 2000) || null

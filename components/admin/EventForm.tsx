@@ -80,6 +80,7 @@ export interface EventFormValues {
     /** Reserved spots per kull; spots is the raw input value. */
     kull_pools: { kull: number[]; spots: string }[]
     feedback_questions: FeedbackQuestion[]
+    certificate_enabled: boolean
     certificate_description: string
 }
 
@@ -104,6 +105,7 @@ export interface EventFormPayload {
     allowed_kull: number[] | null
     kull_pools: KullPool[]
     feedback_questions: FeedbackQuestion[]
+    certificate_enabled: boolean
     certificate_description: string | null
 }
 
@@ -126,6 +128,7 @@ export const emptyEventFormValues: EventFormValues = {
     allowed_kull: [],
     kull_pools: [],
     feedback_questions: [],
+    certificate_enabled: false,
     certificate_description: '',
 }
 
@@ -412,6 +415,7 @@ export function EventForm({
             allowed_kull: allowedKull,
             kull_pools: kullPools,
             feedback_questions: cleanedFeedbackQuestions,
+            certificate_enabled: formData.certificate_enabled,
             certificate_description: formData.certificate_description.trim() || null,
         }
 
@@ -847,19 +851,41 @@ export function EventForm({
                         )}
 
                         <Field.Root>
-                            <Field.Label>Beskrivelse på kursbevis</Field.Label>
-                            <Textarea
-                                name="certificate_description"
-                                value={formData.certificate_description}
-                                onChange={handleChange}
-                                rows={3}
-                                placeholder="Hva kurset omfattet, f.eks. teori og praktisk trening i mindre grupper med instruktører."
-                            />
+                            <Checkbox.Root
+                                checked={formData.certificate_enabled}
+                                onCheckedChange={(details) =>
+                                    setFormData((prev) => ({
+                                        ...prev,
+                                        certificate_enabled: !!details.checked,
+                                    }))
+                                }
+                            >
+                                <Checkbox.HiddenInput />
+                                <Checkbox.Control />
+                                <Checkbox.Label>Send kursbevis</Checkbox.Label>
+                            </Checkbox.Root>
                             <Field.HelperText>
-                                Valgfritt. Vises under datoen på kursbeviset de som møtte får på
-                                e-post. Står feltet tomt, utelates avsnittet.
+                                De som møtte får et personlig kursbevis på e-post etter
+                                arrangementet.
                             </Field.HelperText>
                         </Field.Root>
+
+                        {formData.certificate_enabled && (
+                            <Field.Root>
+                                <Field.Label>Beskrivelse på kursbevis</Field.Label>
+                                <Textarea
+                                    name="certificate_description"
+                                    value={formData.certificate_description}
+                                    onChange={handleChange}
+                                    rows={3}
+                                    placeholder="Hva kurset omfattet, f.eks. teori og praktisk trening i mindre grupper med instruktører."
+                                />
+                                <Field.HelperText>
+                                    Valgfritt. Vises under datoen på kursbeviset. Står feltet tomt,
+                                    utelates avsnittet.
+                                </Field.HelperText>
+                            </Field.Root>
+                        )}
                     </FormSection>
 
                     <Box

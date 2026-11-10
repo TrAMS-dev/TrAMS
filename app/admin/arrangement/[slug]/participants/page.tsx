@@ -61,6 +61,7 @@ export default function AdminParticipantsPage() {
     const [eventRequiresPhone, setEventRequiresPhone] = useState(false)
     const [eventIsPast, setEventIsPast] = useState(false)
     const [feedbackFormReady, setFeedbackFormReady] = useState(false)
+    const [certificateEnabled, setCertificateEnabled] = useState(false)
     const [openingCertificateId, setOpeningCertificateId] = useState<number | null>(null)
     const [loading, setLoading] = useState(true)
     const [savingId, setSavingId] = useState<number | null>(null)
@@ -133,7 +134,7 @@ export default function AdminParticipantsPage() {
             const { data: event, error: eventError } = await supabase
                 .from('Events')
                 .select(
-                    'id, title, max_attendees, signup_questions, require_phone, start_datetime, end_datetime, date_unspecified, planned_month, feedback_questions'
+                    'id, title, max_attendees, signup_questions, require_phone, start_datetime, end_datetime, date_unspecified, planned_month, feedback_questions, certificate_enabled'
                 )
                 .eq('slug', slug)
                 .single()
@@ -150,6 +151,7 @@ export default function AdminParticipantsPage() {
             setEventRequiresPhone(Boolean(event.require_phone))
             setEventIsPast(isEventPast(event))
             setFeedbackFormReady(parseFeedbackQuestions(event.feedback_questions).length > 0)
+            setCertificateEnabled(Boolean(event.certificate_enabled))
 
             // Get participants
             const { data, error } = await supabase
@@ -600,6 +602,7 @@ export default function AdminParticipantsPage() {
                     eventSlug={slug}
                     eventIsPast={eventIsPast}
                     feedbackFormReady={feedbackFormReady}
+                    certificateEnabled={certificateEnabled}
                     attendedCount={followupSummary.attendedCount}
                     notSentCount={followupSummary.notSentCount}
                     onSent={(ids, sentAt) => {
@@ -716,15 +719,17 @@ export default function AdminParticipantsPage() {
                                     </NativeSelect.Root>
                                     {p.attended === true && (
                                         <HStack mt={1} gap={2} flexWrap="wrap">
-                                            <Button
-                                                size="2xs"
-                                                variant="ghost"
-                                                px={1}
-                                                loading={openingCertificateId === p.id}
-                                                onClick={() => handleOpenCertificate(p.id)}
-                                            >
-                                                Kursbevis ↗
-                                            </Button>
+                                            {certificateEnabled && (
+                                                <Button
+                                                    size="2xs"
+                                                    variant="ghost"
+                                                    px={1}
+                                                    loading={openingCertificateId === p.id}
+                                                    onClick={() => handleOpenCertificate(p.id)}
+                                                >
+                                                    Kursbevis ↗
+                                                </Button>
+                                            )}
                                             {p.followup_sent_at && (
                                                 <Text
                                                     fontSize="xs"

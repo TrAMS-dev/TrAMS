@@ -88,6 +88,13 @@ export async function POST(request: Request) {
         }
     }
 
+    if (sendCertificate && !event.certificate_enabled) {
+        return NextResponse.json(
+            { error: 'Kursbevis er slått av for dette arrangementet. Slå det på under «Rediger».' },
+            { status: 400 }
+        )
+    }
+
     if (sendCertificate && !isCertificateSigningConfigured()) {
         console.error('Followup: CERTIFICATE_SECRET / SUPABASE_SERVICE_ROLE_KEY is not set')
         return NextResponse.json(

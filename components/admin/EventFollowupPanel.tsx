@@ -11,6 +11,8 @@ interface EventFollowupPanelProps {
     eventIsPast: boolean
     /** Arrangementet har tilbakemeldingsskjema med minst ett spørsmål. */
     feedbackFormReady: boolean
+    /** Arrangementet har «Send kursbevis» slått på. */
+    certificateEnabled: boolean
     attendedCount: number
     /** Antall som har møtt og ikke har fått e-posten ennå. */
     notSentCount: number
@@ -23,22 +25,33 @@ export default function EventFollowupPanel({
     eventSlug,
     eventIsPast,
     feedbackFormReady,
+    certificateEnabled,
     attendedCount,
     notSentCount,
     onSent,
 }: EventFollowupPanelProps) {
     const [sendFeedback, setSendFeedback] = useState(feedbackFormReady)
-    const [sendCertificate, setSendCertificate] = useState(true)
+    const [sendCertificate, setSendCertificate] = useState(certificateEnabled)
     const [sending, setSending] = useState(false)
 
     const includeFeedback = sendFeedback && feedbackFormReady
-    const nothingSelected = !includeFeedback && !sendCertificate
+    const includeCertificate = sendCertificate && certificateEnabled
+    const nothingSelected = !includeFeedback && !includeCertificate
     const whatText = [
         includeFeedback ? 'tilbakemeldingsskjema' : null,
-        sendCertificate ? 'kursbevis' : null,
+        includeCertificate ? 'kursbevis' : null,
     ]
         .filter(Boolean)
         .join(' og ')
+
+    const autoContent = [
+        certificateEnabled ? 'kursbevis' : null,
+        feedbackFormReady ? 'lenke til tilbakemeldingsskjemaet' : null,
+    ].filter(Boolean)
+    const autoText =
+        autoContent.length > 0
+            ? `Alle som registreres som «Møtt» får automatisk e-post med ${autoContent.join(' og ')} når arrangementet er ferdig.`
+            : 'Arrangementet bruker verken kursbevis eller tilbakemeldingsskjema, så det sendes ingen e-post etter arrangementet. Slå dem på under «Rediger».'
 
     const send = async (resendAll: boolean) => {
         const count = resendAll ? attendedCount : notSentCount
@@ -57,7 +70,7 @@ export default function EventFollowupPanel({
                 body: JSON.stringify({
                     eventId,
                     sendFeedback: includeFeedback,
-                    sendCertificate,
+                    sendCertificate: includeCertificate,
                     resendAll,
                 }),
             })
@@ -102,18 +115,12 @@ export default function EventFollowupPanel({
             </Text>
 
             {!eventIsPast ? (
-                <Text fontSize="sm" color="gray.700">
-                    Alle som registreres som «Møtt» får automatisk e-post med kursbevis, og lenke
-                    til tilbakemeldingsskjemaet hvis arrangementet har et, når arrangementet er
-                    ferdig.
-                </Text>
+                <Text fontSize="sm" color="gray.700">{autoText}</Text>
             ) : (
                 <Stack gap={3}>
                     <Text fontSize="sm" color="gray.700">
-                        Deltakere som registreres som «Møtt» får e-posten automatisk. Her kan du
-                        sende den manuelt, velge innhold eller sende på nytt. Kursbeviset er en
-                        personlig side med navn, kurs og dato som de kan skrive ut eller lagre som
-                        PDF. {attendedCount} har møtt, {attendedCount - notSentCount} har allerede
+                        {autoText} Her kan du også sende manuelt, velge innhold eller sende på
+                        nytt. {attendedCount} har møtt, {attendedCount - notSentCount} har allerede
                         fått e-posten.
                     </Text>
 
@@ -140,13 +147,26 @@ export default function EventFollowupPanel({
                             </Text>
                         )}
                         <Checkbox.Root
-                            checked={sendCertificate}
+                            checked={includeCertificate}
+                            disabled={!certificateEnabled}
                             onCheckedChange={(d) => setSendCertificate(!!d.checked)}
                         >
                             <Checkbox.HiddenInput />
                             <Checkbox.Control />
                             <Checkbox.Label>Personlig kursbevis</Checkbox.Label>
                         </Checkbox.Root>
+                        {!certificateEnabled && (
+                            <Text fontSize="xs" color="gray.600" pl={7}>
+                                Kursbevis er slått av for dette arrangementet.{' '}
+                                <NextLink
+                                    href={`/admin/arrangement/${eventSlug}`}
+                                    style={{ textDecoration: 'underline' }}
+                                >
+                                    Slå det på under «Rediger»
+                                </NextLink>
+                                .
+                            </Text>
+                        )}
                     </Stack>
 
                     <HStack flexWrap="wrap" gap={3}>
