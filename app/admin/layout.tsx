@@ -50,6 +50,13 @@ export default function AdminLayout({
                                                 >
                                                     Oppmøte
                                                 </Link>
+                                                <Link
+                                                    href="/admin/tilbakemeldingsmaler"
+                                                    fontWeight="medium"
+                                                    _hover={{ color: 'var(--color-primary)' }}
+                                                >
+                                                    Tilbakemeldingsmaler
+                                                </Link>
                                                 {isAdmin && (
                                                     <>
                                                         <Link

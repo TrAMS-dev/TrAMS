@@ -21,9 +21,18 @@ import type { Tables } from '@/types/supabase'
 import { toaster } from '@/components/ui/toaster'
 import { useAuth } from '@/hooks/useAuth'
 import ExportParticipantsDialog from '@/components/admin/ExportParticipantsDialog'
+import {
+    type SignupQuestion,
+    formatSignupAnswer,
+    parseSignupAnswers,
+    parseSignupQuestions,
+} from '@/lib/signupQuestions'
 import ParticipantCommentsDialog, {
     type ParticipantComment,
 } from '@/components/admin/ParticipantCommentsDialog'
+import EventFollowupPanel from '@/components/admin/EventFollowupPanel'
+import { isEventPast } from '@/lib/eventDate'
+import { parseFeedbackQuestions } from '@/lib/eventFeedback'
 
 function isConfirmedParticipant(p: Tables<'EventParticipants'>) {
     return p.status !== 'waitlist'
@@ -48,8 +57,12 @@ export default function AdminParticipantsPage() {
     const [eventId, setEventId] = useState<number | null>(null)
     const [eventTitle, setEventTitle] = useState('')
     const [eventMaxAttendees, setEventMaxAttendees] = useState<number | null>(null)
-    const [eventCustomQuestion, setEventCustomQuestion] = useState<string | null>(null)
+    const [eventSignupQuestions, setEventSignupQuestions] = useState<SignupQuestion[]>([])
     const [eventRequiresPhone, setEventRequiresPhone] = useState(false)
+    const [eventIsPast, setEventIsPast] = useState(false)
+    const [feedbackFormReady, setFeedbackFormReady] = useState(false)
+    const [certificateEnabled, setCertificateEnabled] = useState(false)
+    const [openingCertificateId, setOpeningCertificateId] = useState<number | null>(null)
     const [loading, setLoading] = useState(true)
     const [savingId, setSavingId] = useState<number | null>(null)
     const [deletingId, setDeletingId] = useState<number | null>(null)
@@ -78,6 +91,14 @@ export default function AdminParticipantsPage() {
         const confirmed = participants.filter(isConfirmedParticipant)
         const attended = confirmed.filter((p) => p.attended === true).length
         return { confirmedCount: confirmed.length, attendedCount: attended }
+    }, [participants])
+
+    const followupSummary = useMemo(() => {
+        const attended = participants.filter((p) => p.attended === true)
+        return {
+            attendedCount: attended.length,
+            notSentCount: attended.filter((p) => !p.followup_sent_at).length,
+        }
     }, [participants])
 
     const waitlistCount = useMemo(
@@ -112,7 +133,9 @@ export default function AdminParticipantsPage() {
             // Get event id first
             const { data: event, error: eventError } = await supabase
                 .from('Events')
-                .select('id, title, max_attendees, custom_question, require_phone')
+                .select(
+                    'id, title, max_attendees, signup_questions, require_phone, start_datetime, end_datetime, date_unspecified, planned_month, feedback_questions, certificate_enabled'
+                )
                 .eq('slug', slug)
                 .single()
 
@@ -124,8 +147,11 @@ export default function AdminParticipantsPage() {
             setEventId(event.id)
             setEventTitle(event.title || 'Arrangement')
             setEventMaxAttendees(event.max_attendees ?? null)
-            setEventCustomQuestion(event.custom_question ?? null)
+            setEventSignupQuestions(parseSignupQuestions(event.signup_questions))
             setEventRequiresPhone(Boolean(event.require_phone))
+            setEventIsPast(isEventPast(event))
+            setFeedbackFormReady(parseFeedbackQuestions(event.feedback_questions).length > 0)
+            setCertificateEnabled(Boolean(event.certificate_enabled))
 
             // Get participants
             const { data, error } = await supabase
@@ -181,6 +207,7 @@ export default function AdminParticipantsPage() {
             const payload = (await res.json().catch(() => ({}))) as {
                 error?: string
                 participant?: { id: number; attended: boolean | null }
+                followupSentAt?: string | null
             }
 
             if (!res.ok) {
@@ -188,13 +215,26 @@ export default function AdminParticipantsPage() {
             }
 
             if (payload.participant) {
+                const followupSentAt = payload.followupSentAt ?? null
                 setParticipants((prev) =>
                     prev.map((p) =>
                         p.id === participantId
-                            ? { ...p, attended: payload.participant!.attended }
+                            ? {
+                                  ...p,
+                                  attended: payload.participant!.attended,
+                                  followup_sent_at: followupSentAt ?? p.followup_sent_at,
+                              }
                             : p
                     )
                 )
+                if (followupSentAt) {
+                    toaster.create({
+                        title: 'E-post sendt',
+                        description: 'Deltakeren har fått e-posten som sendes etter arrangementet.',
+                        type: 'success',
+                        duration: 4000,
+                    })
+                }
             }
         } catch (e) {
             console.error('Error updating attendance:', e)
@@ -212,6 +252,33 @@ export default function AdminParticipantsPage() {
             })
         } finally {
             setSavingId(null)
+        }
+    }
+
+    const handleOpenCertificate = async (participantId: number) => {
+        // Åpne fanen med en gang, ellers blokkeres den som popup etter await
+        const tab = window.open('', '_blank')
+        setOpeningCertificateId(participantId)
+        try {
+            const res = await fetch(
+                `/api/admin/event-participants/certificate?participantId=${participantId}`
+            )
+            const payload = (await res.json().catch(() => ({}))) as { error?: string; url?: string }
+            if (!res.ok || !payload.url) {
+                throw new Error(payload.error || 'Kunne ikke hente kursbevis')
+            }
+            if (tab) tab.location.href = payload.url
+            else window.location.href = payload.url
+        } catch (e) {
+            tab?.close()
+            toaster.create({
+                title: 'Kunne ikke åpne kursbevis',
+                description: e instanceof Error ? e.message : 'Prøv igjen.',
+                type: 'error',
+                duration: 5000,
+            })
+        } finally {
+            setOpeningCertificateId(null)
         }
     }
 
@@ -529,6 +596,24 @@ export default function AdminParticipantsPage() {
                 </Box>
             )}
 
+            {eventId != null && (
+                <EventFollowupPanel
+                    eventId={eventId}
+                    eventSlug={slug}
+                    eventIsPast={eventIsPast}
+                    feedbackFormReady={feedbackFormReady}
+                    certificateEnabled={certificateEnabled}
+                    attendedCount={followupSummary.attendedCount}
+                    notSentCount={followupSummary.notSentCount}
+                    onSent={(ids, sentAt) => {
+                        const sent = new Set(ids)
+                        setParticipants((prev) =>
+                            prev.map((p) => (sent.has(p.id) ? { ...p, followup_sent_at: sentAt } : p))
+                        )
+                    }}
+                />
+            )}
+
             <Box bg="white" shadow="sm" rounded="lg" overflowX="auto">
                 <Table.Root striped>
                     <Table.Header>
@@ -541,11 +626,11 @@ export default function AdminParticipantsPage() {
                             <Table.ColumnHeader maxW="200px">
                                 Medlemskap (selvrapportert)
                             </Table.ColumnHeader>
-                            {eventCustomQuestion && (
-                                <Table.ColumnHeader maxW="200px">
-                                    {eventCustomQuestion}
+                            {eventSignupQuestions.map((q) => (
+                                <Table.ColumnHeader key={q.id} maxW="200px">
+                                    {q.label}
                                 </Table.ColumnHeader>
-                            )}
+                            ))}
                             <Table.ColumnHeader>Status</Table.ColumnHeader>
                             <Table.ColumnHeader>Oppmøte</Table.ColumnHeader>
                             <Table.ColumnHeader>Påmeldt</Table.ColumnHeader>
@@ -556,7 +641,7 @@ export default function AdminParticipantsPage() {
                     <Table.Body>
                         {participants.length === 0 && (
                             <Table.Row>
-                                <Table.Cell colSpan={10 + (eventCustomQuestion ? 1 : 0) + (showPhone ? 1 : 0)} textAlign="center" py={8} color="gray.500">
+                                <Table.Cell colSpan={10 + eventSignupQuestions.length + (showPhone ? 1 : 0)} textAlign="center" py={8} color="gray.500">
                                     Ingen påmeldte enda.
                                 </Table.Cell>
                             </Table.Row>
@@ -583,19 +668,29 @@ export default function AdminParticipantsPage() {
                                         </Badge>
                                     )}
                                 </Table.Cell>
-                                {eventCustomQuestion && (
-                                    <Table.Cell>
-                                        {p.custom_question_response ? (
-                                            <Badge colorPalette="green" size="lg">
-                                                Ja
-                                            </Badge>
-                                        ) : (
-                                            <Badge colorPalette="gray" variant="outline" size="lg">
-                                                Nei
-                                            </Badge>
-                                        )}
-                                    </Table.Cell>
-                                )}
+                                {eventSignupQuestions.map((q) => {
+                                    const answer = parseSignupAnswers(p.question_answers)[q.id]
+                                    if (q.type === 'checkbox') {
+                                        return (
+                                            <Table.Cell key={q.id}>
+                                                {answer === true ? (
+                                                    <Badge colorPalette="green" size="lg">
+                                                        Ja
+                                                    </Badge>
+                                                ) : (
+                                                    <Badge colorPalette="gray" variant="outline" size="lg">
+                                                        Nei
+                                                    </Badge>
+                                                )}
+                                            </Table.Cell>
+                                        )
+                                    }
+                                    return (
+                                        <Table.Cell key={q.id} maxW="240px">
+                                            {formatSignupAnswer(q, answer) || '-'}
+                                        </Table.Cell>
+                                    )
+                                })}
                                 <Table.Cell>
                                     {p.status === 'waitlist' ? (
                                         <Badge colorPalette="orange">Venteliste</Badge>
@@ -622,6 +717,31 @@ export default function AdminParticipantsPage() {
                                         </NativeSelect.Field>
                                         <NativeSelect.Indicator />
                                     </NativeSelect.Root>
+                                    {p.attended === true && (
+                                        <HStack mt={1} gap={2} flexWrap="wrap">
+                                            {certificateEnabled && (
+                                                <Button
+                                                    size="2xs"
+                                                    variant="ghost"
+                                                    px={1}
+                                                    loading={openingCertificateId === p.id}
+                                                    onClick={() => handleOpenCertificate(p.id)}
+                                                >
+                                                    Kursbevis ↗
+                                                </Button>
+                                            )}
+                                            {p.followup_sent_at && (
+                                                <Text
+                                                    fontSize="xs"
+                                                    color="gray.500"
+                                                    title={new Date(p.followup_sent_at).toLocaleString('nb-NO')}
+                                                >
+                                                    E-post sendt{' '}
+                                                    {new Date(p.followup_sent_at).toLocaleDateString('nb-NO')}
+                                                </Text>
+                                            )}
+                                        </HStack>
+                                    )}
                                 </Table.Cell>
                                 <Table.Cell color="gray.500" fontSize="sm">
                                     {new Date(p.created_at).toLocaleString('nb-NO')}
@@ -715,7 +835,7 @@ export default function AdminParticipantsPage() {
                 open={exportDialogOpen}
                 onClose={() => setExportDialogOpen(false)}
                 participants={participants}
-                eventCustomQuestion={eventCustomQuestion}
+                eventSignupQuestions={eventSignupQuestions}
                 includePhone={showPhone}
                 slug={slug}
             />

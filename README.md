@@ -108,10 +108,37 @@ npm run typegen
 
 This extracts the Sanity schema, generates `types/sanity.types.ts`, and then runs `npm run typegen:supabase` to generate `types/supabase.ts`. Don't edit these files by hand. Generating Supabase types requires being logged in with the Supabase CLI (`npx supabase login`) with access to the project.
 
+## 🗄️ Database Migrations
+
+Schema changes live as SQL files in `supabase/migrations/`, named `YYYYMMDDHHMMSS_description.sql`. Don't change the database by hand in the dashboard.
+
+Migrations are applied automatically by the Vercel build (`scripts/vercel-migrate.sh`, run from `vercel.json`) before `next build`:
+
+- **Production** deployments (merges to `master`) push pending migrations to the production database. If a migration fails, the build fails and the current deployment stays live.
+- **Preview** deployments of `dev` push to the staging database, if configured.
+- Other previews don't touch any database.
+
+Pull requests into `master` that change migrations get a dry run (`.github/workflows/migrations-dry-run.yml`) listing what will be applied to production, shown in the workflow summary.
+
+Write migrations so the currently deployed code keeps working (for example, add a column in one release and drop the old one in a later release), since the database changes a few minutes before the new code goes live.
+
+**Setup:**
+
+| Where | Name | Value |
+| --- | --- | --- |
+| Vercel env, Production | `SUPABASE_DB_URL` | Production session pooler connection string |
+| Vercel env, Preview (branch `dev`) | `SUPABASE_DB_URL` | Staging session pooler connection string (optional) |
+| GitHub Actions secret | `PRODUCTION_SUPABASE_DB_URL` | Production session pooler connection string |
+
+Connection strings are under **Connect** in the Supabase dashboard; percent-encode special characters in the password.
+
+To apply migrations manually, run `npx supabase db push --db-url "<connection string>" --include-all`, with `--dry-run` first.
+
 ## 📧 Emails & Scheduled Jobs
 
 - All emails are sent through Resend from `web@trams.no`. See [EMAILS.md](EMAILS.md) for the full list.
 - A Vercel Cron job (`vercel.json`) calls `/api/cron/event-reminders` every day at 07:00 UTC and emails confirmed participants two days before their event.
+- Another calls `/api/cron/event-followups` every day at 18:00 UTC and sends the post-event email (feedback form and certificate) to participants marked «Møtt» who haven't had it yet.
 - A GitHub Actions workflow (`.github/workflows/supabase-keepalive.yml`) pings Supabase daily to stop the project from being paused.
 
 ## 📜 Scripts

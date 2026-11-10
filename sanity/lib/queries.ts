@@ -224,3 +224,9 @@ export const BOARD_ROLE_SLUGS_QUERY = defineQuery(`*[_type == "boardRole" && def
   "slug": lower(role),
   _updatedAt
 }`)
+
+export const CERTIFICATE_SETTINGS_QUERY = defineQuery(`*[_type == "certificateSettings"][0] {
+  signerName,
+  signerTitle,
+  "signatureUrl": signature.asset->url
+}`)
