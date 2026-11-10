@@ -294,6 +294,33 @@ export type Database = {
           },
         ]
       }
+      FeedbackTemplates: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: number
+          name: string
+          questions: Json
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: never
+          name: string
+          questions?: Json
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: never
+          name?: string
+          questions?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
       ParticipantComments: {
         Row: {
           author_id: string | null

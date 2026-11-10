@@ -28,6 +28,7 @@ import {
     draftToQuestion,
 } from '@/components/admin/SignupQuestionsEditor'
 import type { FeedbackQuestion } from '@/lib/eventFeedback'
+import { FeedbackTemplatePicker } from '@/components/admin/FeedbackTemplatePicker'
 import {
     FeedbackQuestionsEditor,
     newFeedbackQuestion,
@@ -833,10 +834,16 @@ export function EventForm({
                         </Field.Root>
 
                         {hasFeedbackForm && (
-                            <FeedbackQuestionsEditor
-                                value={feedbackQuestions}
-                                onChange={setFeedbackQuestions}
-                            />
+                            <>
+                                <FeedbackTemplatePicker
+                                    currentQuestions={feedbackQuestions}
+                                    onApply={setFeedbackQuestions}
+                                />
+                                <FeedbackQuestionsEditor
+                                    value={feedbackQuestions}
+                                    onChange={setFeedbackQuestions}
+                                />
+                            </>
                         )}
 
                         <Field.Root>
