@@ -49,7 +49,10 @@ export function getEventSortTime(event: Tables<'Events'>): number | null {
     return null
 }
 
-export function isEventPast(event: Tables<'Events'>, now = new Date()): boolean {
+export function isEventPast(
+    event: EventDateFields & Pick<Tables<'Events'>, 'end_datetime'>,
+    now = new Date()
+): boolean {
     if (isDateUnspecifiedEvent(event) && event.planned_month) {
         const [year, month] = event.planned_month.split('-').map(Number)
         if (!year || !month) return false

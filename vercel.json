@@ -1,6 +1,8 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "sh scripts/vercel-migrate.sh && npm run build",
   "crons": [
-    { "path": "/api/cron/event-reminders", "schedule": "0 7 * * *" }
+    { "path": "/api/cron/event-reminders", "schedule": "0 7 * * *" },
+    { "path": "/api/cron/event-followups", "schedule": "0 18 * * *" }
   ]
 }

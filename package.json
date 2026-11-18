@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "typegen": "sanity schema extract --enforce-required-fields --path=sanity/extract.json && sanity typegen generate && npm run typegen:supabase",
+    "typegen": "sanity schema extract --enforce-required-fields --path=sanity/extract.json --force && sanity typegen generate && npm run typegen:supabase",
     "typegen:supabase": "npx supabase gen types typescript --project-id xbelxtmgtotwbikjfrth > types/supabase.ts"
   },
   "dependencies": {

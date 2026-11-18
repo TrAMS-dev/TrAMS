@@ -1,0 +1,38 @@
+name: Migrations dry run
+
+# Shows which Supabase migrations a merge to master will apply to production.
+# The migrations themselves run in the Vercel production build (scripts/vercel-migrate.sh).
+on:
+  pull_request:
+    branches: [master]
+    paths:
+      - 'supabase/migrations/**'
+
+permissions:
+  contents: read
+
+jobs:
+  dry-run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.116.0
+
+      - name: List migrations that would be applied to production
+        env:
+          SUPABASE_DB_URL: ${{ secrets.PRODUCTION_SUPABASE_DB_URL }}
+        run: |
+          if [ -z "$SUPABASE_DB_URL" ]; then
+            echo "PRODUCTION_SUPABASE_DB_URL secret is not available, skipping" | tee -a "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          supabase db push --dry-run --include-all --db-url "$SUPABASE_DB_URL" 2>&1 | tee output.txt
+          {
+            echo "### Migrations that will run on production when this is merged"
+            echo '```'
+            grep -v "Connecting to remote database" output.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
