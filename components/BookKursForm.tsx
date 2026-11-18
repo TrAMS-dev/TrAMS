@@ -124,11 +124,15 @@ export default function BookKursForm() {
 
             // 2. Save to Supabase
             try {
-                await fetch("/api/supabase", {
+                const supabaseResponse = await fetch("/api/supabase", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(payload),
                 });
+                if (!supabaseResponse.ok) {
+                    const errData = await supabaseResponse.json().catch(() => ({}));
+                    console.error("Supabase save failed:", errData);
+                }
             } catch (supabaseError) {
                 // Log Supabase error but don't fail the submission
                 console.error("Supabase save failed:", supabaseError);

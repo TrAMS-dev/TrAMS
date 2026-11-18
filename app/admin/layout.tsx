@@ -66,6 +66,13 @@ export default function AdminLayout({
                                                         >
                                                             Brukere
                                                         </Link>
+                                                        <Link
+                                                            href="/admin/kursbestillinger"
+                                                            fontWeight="medium"
+                                                            _hover={{ color: 'var(--color-primary)' }}
+                                                        >
+                                                            Kursbestillinger
+                                                        </Link>
                                                     </>
                                                 )}
                                                 <Link
