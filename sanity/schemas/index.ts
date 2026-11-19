@@ -16,6 +16,7 @@ import { instruktorPageType } from './instruktorPageType'
 import { aboutPageType } from './aboutPageType'
 import { siteSettingsType } from './siteSettingsType'
 import { certificateSettingsType } from './certificateSettingsType'
+import { emailSettingsType, emailTypes } from './emailTypes'
 
 export const schemaTypes = [
     boardMemberType,
@@ -36,6 +37,8 @@ export const schemaTypes = [
     aboutPageType,
     siteSettingsType,
     certificateSettingsType,
+    emailSettingsType,
+    ...emailTypes,
 ]
 
 export const SingletonTypes = [

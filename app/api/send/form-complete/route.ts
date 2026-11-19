@@ -1,4 +1,4 @@
-import { getCustomerConfirmationHtml, getAdminNotificationHtml, BookingData } from '@/components/CourseEmailTemplate';
+import { getCustomerConfirmationEmail, getAdminNotificationEmail, type BookingData } from '@/lib/courseBookingEmail';
 import { Resend } from 'resend';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -21,7 +21,10 @@ export async function POST(request: Request) {
 
     const ADMIN_EMAIL = booking.kursby === 'levanger' ? ADMIN_EMAIL_LEVANGER : ADMIN_EMAIL_TRONDHEIM;
 
-    const kursNavn = booking.kursType === 'Annet' ? booking.kursTypeAnnet : booking.kursType;
+    const [customerEmail, adminEmail] = await Promise.all([
+      getCustomerConfirmationEmail(booking),
+      getAdminNotificationEmail(booking),
+    ]);
 
     // Send both emails in parallel
     const [customerResult, adminResult] = await Promise.all([
@@ -29,8 +32,8 @@ export async function POST(request: Request) {
       resend.emails.send({
         from: 'TrAMS <web@trams.no>',
         to: [booking.kontaktpersonEpost],
-        subject: 'Bekreftelse på kursbestilling - TrAMS',
-        html: getCustomerConfirmationHtml(booking),
+        subject: customerEmail.subject,
+        html: customerEmail.html,
       }),
 
       // 2. Send notification email to admin
@@ -38,8 +41,8 @@ export async function POST(request: Request) {
         from: 'TrAMS Kursbestilling <web@trams.no>',
         to: [ADMIN_EMAIL],
         replyTo: booking.kontaktpersonEpost,
-        subject: `Ny kursbestilling: ${kursNavn} - ${booking.kontaktpersonNavn}`,
-        html: getAdminNotificationHtml(booking),
+        subject: adminEmail.subject,
+        html: adminEmail.html,
       }),
     ]);
 
