@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "typegen": "sanity schema extract --enforce-required-fields --path=sanity/extract.json --force && sanity typegen generate && npm run typegen:supabase",
-    "typegen:supabase": "npx supabase gen types typescript --project-id xbelxtmgtotwbikjfrth > types/supabase.ts"
+    "typegen:supabase": "npx supabase gen types typescript --project-id xbelxtmgtotwbikjfrth > types/supabase.ts.tmp && test -s types/supabase.ts.tmp && mv types/supabase.ts.tmp types/supabase.ts || { rm -f types/supabase.ts.tmp; exit 1; }"
   },
   "dependencies": {
     "@ark-ui/react": "^5.29.1",
