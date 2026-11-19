@@ -2,7 +2,19 @@
 
 All emails are sent through [Resend](https://resend.com) from `web@trams.no` and require `RESEND_API_KEY`. If the key is missing, the email is skipped and a warning is logged.
 
+## Editing the text (Sanity)
+
+The text of every email (subject, paragraphs, headings, button labels, sign-off) is edited in Sanity Studio under **E-poster**, one document per email plus **Felles for alle e-poster** (sign-off and the text under buttons). Changes apply to the next email sent after the document is published.
+
+- Placeholders like `{navn}`, `{tittel}`, `{arrangement}`, `{lenke}` and `{kontakt}` are filled in when the email is sent. Each field's description in the Studio lists the ones it supports. A paragraph whose placeholder has no value is left out (for example «Du har plass nummer {plass}» when the queue position is unknown). In «Etter arrangementet», `{tilbakemelding}` and `{kursbevis}` must stay on their own line; they are replaced by the text and button for the feedback form and certificate, or left out.
+- `{kontakt}` is the event's `contact_email`, or `web@trams.no` when it is not set.
+- Data blocks stay in code: the booking summary and booking details tables, the new-user and website-feedback tables, the event date format, and the sender name.
+- Default text lives in [lib/email/defaults.ts](lib/email/defaults.ts). It is the starting value when a document is first opened in the Studio, and the fallback for empty fields, unpublished documents, or when Sanity can't be reached.
+- Code: schema in [sanity/schemas/emailTypes.ts](sanity/schemas/emailTypes.ts), fetching in [lib/email/content.ts](lib/email/content.ts), Portable Text and placeholder rendering in [lib/email/portableText.ts](lib/email/portableText.ts).
+
 ## Overview
+
+Subjects and content below describe the default text; the live wording may have been changed in Sanity.
 
 | # | Email | Subject | Recipient | Trigger |
 |---|-------|---------|-----------|---------|
@@ -86,7 +98,7 @@ Code: [lib/eventSignupEmail.ts](lib/eventSignupEmail.ts)
 
 ## Course booking emails
 
-Code: [app/api/send/form-complete/route.ts](app/api/send/form-complete/route.ts), templates in [components/CourseEmailTemplate.tsx](components/CourseEmailTemplate.tsx). Called by [components/BookKursForm.tsx](components/BookKursForm.tsx).
+Code: [app/api/send/form-complete/route.ts](app/api/send/form-complete/route.ts), templates in [lib/courseBookingEmail.ts](lib/courseBookingEmail.ts). Called by [components/BookKursForm.tsx](components/BookKursForm.tsx).
 
 ### 9. Customer confirmation
 - **When:** Someone submits the course booking form.
