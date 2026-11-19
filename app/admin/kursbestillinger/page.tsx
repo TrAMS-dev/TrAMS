@@ -17,7 +17,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { useRouter } from 'next/navigation'
 
 export default function AdminKursbestillingerPage() {
-    const { isAdmin, isAuthenticated, isLoading: authLoading } = useAuth()
+    const { canViewBookings, isAuthenticated, isLoading: authLoading } = useAuth()
     const router = useRouter()
     const [submissions, setSubmissions] = useState<Tables<'CourseSubmissions'>[]>([])
     const [isLoading, setIsLoading] = useState(true)
@@ -25,14 +25,14 @@ export default function AdminKursbestillingerPage() {
     const supabase = createClient()
 
     useEffect(() => {
-        if (!authLoading && (!isAuthenticated || !isAdmin)) {
+        if (!authLoading && (!isAuthenticated || !canViewBookings)) {
             router.push('/admin')
             router.refresh()
         }
-    }, [authLoading, isAuthenticated, isAdmin, router])
+    }, [authLoading, isAuthenticated, canViewBookings, router])
 
     useEffect(() => {
-        if (!isAdmin) return
+        if (!canViewBookings) return
 
         const fetchSubmissions = async () => {
             try {
@@ -51,7 +51,7 @@ export default function AdminKursbestillingerPage() {
             }
         }
         void fetchSubmissions()
-    }, [isAdmin, supabase])
+    }, [canViewBookings, supabase])
 
     if (isLoading || authLoading) {
         return (
@@ -61,7 +61,7 @@ export default function AdminKursbestillingerPage() {
         )
     }
 
-    if (!isAuthenticated || !isAdmin) {
+    if (!isAuthenticated || !canViewBookings) {
         return null
     }
 

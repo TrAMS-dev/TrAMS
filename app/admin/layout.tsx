@@ -11,7 +11,7 @@ export default function AdminLayout({
 }: {
     children: React.ReactNode
 }) {
-    const { isAdmin, userName, isAuthenticated, isLoading } = useAuth()
+    const { isAdmin, canViewBookings, userName, isAuthenticated, isLoading } = useAuth()
     const pathname = usePathname()
     const isAuthPage = pathname?.startsWith('/admin/login') || pathname?.startsWith('/admin/register')
 
@@ -73,14 +73,16 @@ export default function AdminLayout({
                                                         >
                                                             Brukere
                                                         </Link>
-                                                        <Link
-                                                            href="/admin/kursbestillinger"
-                                                            fontWeight="medium"
-                                                            _hover={{ color: 'var(--color-primary)' }}
-                                                        >
-                                                            Kursbestillinger
-                                                        </Link>
                                                     </>
+                                                )}
+                                                {canViewBookings && (
+                                                    <Link
+                                                        href="/admin/kursbestillinger"
+                                                        fontWeight="medium"
+                                                        _hover={{ color: 'var(--color-primary)' }}
+                                                    >
+                                                        Kursbestillinger
+                                                    </Link>
                                                 )}
                                                 <Link
                                                     href="/"

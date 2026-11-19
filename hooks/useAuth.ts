@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import { User } from '@supabase/supabase-js'
+import { canViewCourseBookings } from '@/lib/courseBookingAccess'
 
 interface Profile {
     full_name: string | null
@@ -115,6 +116,7 @@ export function useAuth() {
         isLoading,
         isAdmin,
         isApproved,
+        canViewBookings: canViewCourseBookings(isAdmin, user?.email),
         logout,
         refresh: checkUser,
     }
