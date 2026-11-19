@@ -66,10 +66,11 @@ export async function POST(req: Request) {
     };
 
     try {
-        const { data, error } = await supabase
+        // No .select() here: anon can insert but not read CourseSubmissions,
+        // and asking for the row back makes the whole insert fail.
+        const { error } = await supabase
             .from('CourseSubmissions')
-            .insert([submissionData])
-            .select();
+            .insert([submissionData]);
 
         if (error) {
             console.error("Supabase insert error:", error);
@@ -79,8 +80,8 @@ export async function POST(req: Request) {
             );
         }
 
-        console.log("Successfully inserted submission:", data);
-        return Response.json({ ok: true, data });
+        console.log("Successfully inserted submission");
+        return Response.json({ ok: true });
     } catch (error: unknown) {
         console.error("Unexpected error:", error);
         const errorMessage = error instanceof Error ? error.message : "Failed to save submission";
