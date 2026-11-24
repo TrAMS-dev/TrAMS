@@ -44,7 +44,7 @@ export async function GET(request: Request) {
 
     const { data: events, error: eventsError } = await admin
         .from('Events')
-        .select('id, title, slug, start_datetime, location, contact_email')
+        .select('id, title, slug, start_datetime, location, contact_email, reg_deadline')
         .eq('date_unspecified', false)
         .is('reminder_sent_at', null)
         .gt('start_datetime', windowStart.toISOString())
@@ -90,6 +90,7 @@ export async function GET(request: Request) {
                     startDatetime: event.start_datetime,
                     location: event.location,
                     contactEmail: event.contact_email,
+                    regDeadline: event.reg_deadline,
                 },
                 (participants ?? [])
                     .filter((p) => p.email)

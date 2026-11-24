@@ -103,6 +103,11 @@ function queuePositionToken(position: number | null | undefined): string | null 
     return position ? `<strong>${position}</strong>` : null
 }
 
+/** {avbud} vises ikke, men avsnittet om å melde avbud utelates for arrangementer uten påmeldingsfrist. */
+function cancellationToken(regDeadline: string | null): string | null {
+    return regDeadline ? '' : null
+}
+
 /** Bygger emne og HTML for én e-post om et arrangement, med tekst fra Sanity. */
 async function buildEventEmail(
     type: EventEmailDocType,
@@ -161,7 +166,9 @@ export async function sendEventSignupEmail(
     ctx: EventSignupEmailContext
 ): Promise<void> {
     if (kind === 'confirmed') {
-        await sendSingleEventEmail('sendEventSignupEmail', 'emailSignupConfirmed', ctx)
+        await sendSingleEventEmail('sendEventSignupEmail', 'emailSignupConfirmed', ctx, {
+            extraTokens: { avbud: cancellationToken(ctx.regDeadline) },
+        })
     } else {
         await sendSingleEventEmail('sendEventSignupEmail', 'emailSignupWaitlist', ctx, {
             extraTokens: { plass: queuePositionToken(ctx.waitlistQueuePosition) },
@@ -198,6 +205,7 @@ export interface EventSignupBatchContext {
     startDatetime: string | null
     location: string | null
     contactEmail: string | null
+    regDeadline: string | null
 }
 
 export interface EventSignupBatchRecipient {
@@ -240,6 +248,7 @@ export async function sendBulkEventSignupEmails(
                     renderEmailText(content.body, {
                         tokens: eventTokens(ctx, r.name, {
                             plass: queuePositionToken(r.waitlistQueuePosition),
+                            avbud: cancellationToken(ctx.regDeadline),
                         }),
                         paragraphStyle: P_STYLE,
                     }),
@@ -272,6 +281,7 @@ export interface EventReminderContext {
     startDatetime: string | null
     location: string | null
     contactEmail: string | null
+    regDeadline: string | null
 }
 
 /** Fjerner ugyldige og dupliserte adresser. Adressene returneres i små bokstaver. */
@@ -314,7 +324,10 @@ export async function sendEventReminderEmails(
                 to: [r.email],
                 subject,
                 html: emailShell(
-                    renderEmailText(content.body, { tokens: eventTokens(ctx, r.name), paragraphStyle: P_STYLE }),
+                    renderEmailText(content.body, {
+                        tokens: eventTokens(ctx, r.name, { avbud: cancellationToken(ctx.regDeadline) }),
+                        paragraphStyle: P_STYLE,
+                    }),
                     settings
                 ),
                 ...(replyTo ? { replyTo } : {}),

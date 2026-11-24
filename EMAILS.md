@@ -43,7 +43,7 @@ All four of these (1–4) are gated by the event's `confirmation_email_timing` (
 ### 1. Signup – confirmed spot
 - **Sent from:** [app/api/events/signup/route.ts](app/api/events/signup/route.ts)
 - **When:** A user signs up and there is room. Also when someone first in the waitlist signs up again after a spot has opened.
-- **Content:** Confirms the spot with event title, date, location and link. Asks them to reply as soon as possible if they can't come, and warns that cancelling less than 24 hours before the event gives them lower priority for future TrAMS courses.
+- **Content:** Confirms the spot with event title, date, location and link. Asks them to reply as soon as possible if they can't come, and warns that cancelling less than 24 hours before the event gives them lower priority for future TrAMS courses. That last paragraph contains the invisible `{avbud}` placeholder and is left out for events without a registration deadline (same as email 6). If the text is rewritten in Sanity, `{avbud}` must stay in that paragraph.
 
 ### 2. Signup – waitlist
 - **Sent from:** [app/api/events/signup/route.ts](app/api/events/signup/route.ts)
@@ -71,7 +71,7 @@ All four of these (1–4) are gated by the event's `confirmation_email_timing` (
 - **Sent from:** [app/api/cron/event-reminders/route.ts](app/api/cron/event-reminders/route.ts) (Vercel Cron, daily at 07:00 UTC, see [vercel.json](vercel.json))
 - **When:** For events starting two calendar days later (Oslo time). Events that were missed are caught up as long as they start more than 24 hours later. Each event is reminded once (`Events.reminder_sent_at`). Events without a set date are skipped.
 - **Recipients:** Everyone with `status = 'confirmed'` on the event.
-- **Content:** Reminds them of their spot with event details and link. If they can't come, they must email the event's contact address (or reply) at least 24 hours before the event starts.
+- **Content:** Reminds them of their spot with event details and link. If they can't come, they must email the event's contact address (or reply) at least 24 hours before the event starts. That last paragraph contains the invisible `{avbud}` placeholder and is left out for events without a registration deadline, matching the event page, which hides «Hvis du ikke møter» for those events. If the text is rewritten in Sanity, `{avbud}` must stay in that paragraph.
 - **Requires:** `CRON_SECRET` and `SUPABASE_SERVICE_ROLE_KEY`.
 
 ### 13. Event signup confirmations (deferred)

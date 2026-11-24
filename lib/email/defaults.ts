@@ -122,7 +122,7 @@ export const EMAIL_DEFAULTS: EmailContentMap = {
             EVENT_LINK,
             p('Vi gleder oss til å se dere på kurs!'),
             p(
-                'Dersom du ikke kan komme på kurset ønsker vi at du gir beskjed på denne mailen så fort som mulig for å kunne gi plass til de som står på evt. venteliste, og informerer om at du vil bli nedprioritert på fremtidige TrAMS kurs dersom du gir beskjed senere enn et døgn før kurset.'
+                'Dersom du ikke kan komme på kurset ønsker vi at du gir beskjed på denne mailen så fort som mulig for å kunne gi plass til de som står på evt. venteliste, og informerer om at du vil bli nedprioritert på fremtidige TrAMS kurs dersom du gir beskjed senere enn et døgn før kurset.{avbud}'
             ),
         ],
     },
@@ -188,7 +188,7 @@ export const EMAIL_DEFAULTS: EmailContentMap = {
                 b('Dersom du ikke har mulighet til å møte'),
                 ', må du sende en e-post til {kontakt} (eller svare på denne e-posten) ',
                 b('senest 24 timer før arrangementet starter'),
-                ', slik at plassen kan gå til noen andre.'
+                ', slik at plassen kan gå til noen andre.{avbud}'
             ),
         ],
     },

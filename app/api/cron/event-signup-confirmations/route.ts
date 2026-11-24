@@ -29,7 +29,7 @@ export async function GET(request: Request) {
 
     const { data: events, error: eventsError } = await admin
         .from('Events')
-        .select('id, title, slug, start_datetime, location, contact_email')
+        .select('id, title, slug, start_datetime, location, contact_email, reg_deadline')
         .is('confirmation_emails_sent_at', null)
         .or(
             `and(confirmation_email_timing.eq.on_deadline,reg_deadline.lte.${nowIso}),` +
@@ -75,6 +75,7 @@ export async function GET(request: Request) {
                 startDatetime: event.start_datetime,
                 location: event.location,
                 contactEmail: event.contact_email,
+                regDeadline: event.reg_deadline,
             }
 
             const confirmed = (participants ?? []).filter((p) => p.status !== 'waitlist' && p.email)
