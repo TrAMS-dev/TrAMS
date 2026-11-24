@@ -18,6 +18,7 @@ import { parseKullPools } from '@/lib/kullPools'
 import { parseSignupQuestions } from '@/lib/signupQuestions'
 import { questionToDraft } from '@/components/admin/SignupQuestionsEditor'
 import { parseFeedbackQuestions } from '@/lib/eventFeedback'
+import { isConfirmationEmailTiming } from '@/lib/confirmationEmailTiming'
 import type { Json } from '@/types/supabase'
 
 export default function AdminEditEventPage() {
@@ -74,6 +75,10 @@ export default function AdminEditEventPage() {
                 max_attendees: data.max_attendees?.toString() || '',
                 reg_opens: utcIsoToDatetimeLocalValue(data.reg_opens),
                 reg_deadline: utcIsoToDatetimeLocalValue(data.reg_deadline),
+                confirmation_email_timing: isConfirmationEmailTiming(data.confirmation_email_timing)
+                    ? data.confirmation_email_timing
+                    : 'immediate',
+                confirmation_email_send_at: utcIsoToDatetimeLocalValue(data.confirmation_email_send_at),
                 author: data.author || '',
                 planned_month: data.planned_month || '',
                 has_food: Boolean(data.has_food),
@@ -112,6 +117,8 @@ export default function AdminEditEventPage() {
                     max_attendees: payload.max_attendees,
                     reg_opens: payload.reg_opens,
                     reg_deadline: payload.reg_deadline,
+                    confirmation_email_timing: payload.confirmation_email_timing,
+                    confirmation_email_send_at: payload.confirmation_email_send_at,
                     author: payload.author,
                     date_unspecified: payload.date_unspecified,
                     signup_undecided: payload.signup_undecided,

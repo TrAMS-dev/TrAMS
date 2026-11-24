@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { sendMovedToWaitlistEmail, sendWaitlistPromotedEmail } from '@/lib/eventSignupEmail'
+import { shouldSendConfirmationEmailNow } from '@/lib/confirmationEmailTiming'
 import type { Database } from '@/types/supabase'
 
 type DbClient = SupabaseClient<Database>
@@ -33,7 +34,9 @@ export async function promoteWaitlistParticipants(
 
     const { data: event, error: eventError } = await supabase
         .from('Events')
-        .select('title, slug, start_datetime, location, reg_deadline, contact_email')
+        .select(
+            'title, slug, start_datetime, location, reg_deadline, contact_email, confirmation_email_timing, confirmation_emails_sent_at'
+        )
         .eq('id', params.eventId)
         .single()
 
@@ -78,18 +81,20 @@ export async function promoteWaitlistParticipants(
         contactEmail: event.contact_email,
     }
 
-    for (const w of waiters) {
-        if (!updatedIds.has(w.id)) continue
-        const em = w.email?.trim()
-        if (!em) continue
-        try {
-            await sendWaitlistPromotedEmail({
-                ...ctxBase,
-                recipientName: (w.name ?? '').trim(),
-                recipientEmail: em,
-            })
-        } catch (e) {
-            console.error('Waitlist promotion email failed:', e)
+    if (shouldSendConfirmationEmailNow(event.confirmation_email_timing, event.confirmation_emails_sent_at)) {
+        for (const w of waiters) {
+            if (!updatedIds.has(w.id)) continue
+            const em = w.email?.trim()
+            if (!em) continue
+            try {
+                await sendWaitlistPromotedEmail({
+                    ...ctxBase,
+                    recipientName: (w.name ?? '').trim(),
+                    recipientEmail: em,
+                })
+            } catch (e) {
+                console.error('Waitlist promotion email failed:', e)
+            }
         }
     }
 
@@ -156,7 +161,9 @@ export async function moveParticipantsToWaitlist(
 
     const { data: event, error: eventError } = await supabase
         .from('Events')
-        .select('title, slug, start_datetime, location, reg_deadline, contact_email')
+        .select(
+            'title, slug, start_datetime, location, reg_deadline, contact_email, confirmation_email_timing, confirmation_emails_sent_at'
+        )
         .eq('id', params.eventId)
         .single()
 
@@ -199,19 +206,21 @@ export async function moveParticipantsToWaitlist(
         contactEmail: event.contact_email,
     }
 
-    for (const p of updated) {
-        const em = p.email?.trim()
-        if (!em) continue
-        const position = queueIds.indexOf(p.id)
-        try {
-            await sendMovedToWaitlistEmail({
-                ...ctxBase,
-                recipientName: (p.name ?? '').trim(),
-                recipientEmail: em,
-                waitlistQueuePosition: position >= 0 ? position + 1 : null,
-            })
-        } catch (e) {
-            console.error('Moved-to-waitlist email failed:', e)
+    if (shouldSendConfirmationEmailNow(event.confirmation_email_timing, event.confirmation_emails_sent_at)) {
+        for (const p of updated) {
+            const em = p.email?.trim()
+            if (!em) continue
+            const position = queueIds.indexOf(p.id)
+            try {
+                await sendMovedToWaitlistEmail({
+                    ...ctxBase,
+                    recipientName: (p.name ?? '').trim(),
+                    recipientEmail: em,
+                    waitlistQueuePosition: position >= 0 ? position + 1 : null,
+                })
+            } catch (e) {
+                console.error('Moved-to-waitlist email failed:', e)
+            }
         }
     }
 

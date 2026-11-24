@@ -7,6 +7,7 @@ import { NextResponse } from 'next/server'
 import { isKullAllowed } from '@/utils/functions/activeYears'
 import { hasFreeSpotForKull, parseKullPools } from '@/lib/kullPools'
 import { parseSignupQuestions, validateSignupAnswers } from '@/lib/signupQuestions'
+import { shouldSendConfirmationEmailNow } from '@/lib/confirmationEmailTiming'
 
 /** Kull of rows that count toward max_attendees (excludes waitlist). */
 async function confirmedParticipantKull(
@@ -245,25 +246,28 @@ export async function POST(request: Request) {
                 )
             }
 
-            try {
-                await sendEventSignupEmail('confirmed', {
-                    recipientName: nameStr,
-                    recipientEmail: emailStr,
-                    eventTitle: event.title || 'Arrangement',
-                    eventSlug: event.slug,
-                    startDatetime: event.start_datetime,
-                    location: event.location,
-                    regDeadline: event.reg_deadline,
-                    contactEmail: event.contact_email,
-                })
-            } catch (mailErr) {
-                console.error('Event signup confirmation email failed:', mailErr)
+            if (shouldSendConfirmationEmailNow(event.confirmation_email_timing, event.confirmation_emails_sent_at)) {
+                try {
+                    await sendEventSignupEmail('confirmed', {
+                        recipientName: nameStr,
+                        recipientEmail: emailStr,
+                        eventTitle: event.title || 'Arrangement',
+                        eventSlug: event.slug,
+                        startDatetime: event.start_datetime,
+                        location: event.location,
+                        regDeadline: event.reg_deadline,
+                        contactEmail: event.contact_email,
+                    })
+                } catch (mailErr) {
+                    console.error('Event signup confirmation email failed:', mailErr)
+                }
             }
 
             return NextResponse.json({
                 success: true,
                 participant,
                 registrationStatus: 'confirmed' as const,
+                confirmationEmailTiming: event.confirmation_email_timing,
             })
         }
 
@@ -328,26 +332,29 @@ export async function POST(request: Request) {
             }
         }
 
-        try {
-            await sendEventSignupEmail(status, {
-                recipientName: nameStr,
-                recipientEmail: emailStr,
-                eventTitle: event.title || 'Arrangement',
-                eventSlug: event.slug,
-                startDatetime: event.start_datetime,
-                location: event.location,
-                regDeadline: event.reg_deadline,
-                contactEmail: event.contact_email,
-                waitlistQueuePosition,
-            })
-        } catch (mailErr) {
-            console.error('Event signup confirmation email failed:', mailErr)
+        if (shouldSendConfirmationEmailNow(event.confirmation_email_timing, event.confirmation_emails_sent_at)) {
+            try {
+                await sendEventSignupEmail(status, {
+                    recipientName: nameStr,
+                    recipientEmail: emailStr,
+                    eventTitle: event.title || 'Arrangement',
+                    eventSlug: event.slug,
+                    startDatetime: event.start_datetime,
+                    location: event.location,
+                    regDeadline: event.reg_deadline,
+                    contactEmail: event.contact_email,
+                    waitlistQueuePosition,
+                })
+            } catch (mailErr) {
+                console.error('Event signup confirmation email failed:', mailErr)
+            }
         }
 
         return NextResponse.json({
             success: true,
             participant,
             registrationStatus: status,
+            confirmationEmailTiming: event.confirmation_email_timing,
         })
     } catch (error) {
         console.error('Error in signup API:', error)

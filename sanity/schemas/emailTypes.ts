@@ -16,6 +16,7 @@ const TOKEN_HELP: Record<string, string> = {
     lenke: 'lenke til arrangementssiden',
     kontakt: 'e-postadressen man kan kontakte, som lenke',
     plass: 'plassen i ventelisten. Avsnittet utelates hvis plassen er ukjent',
+    avbud: 'vises ikke i e-posten, men avsnittet den står i utelates for arrangementer uten påmeldingsfrist. Brukes på avsnittet om å melde avbud',
     tilbakemelding: 'teksten og knappen for tilbakemeldingsskjemaet (eget avsnitt). Utelates hvis arrangementet ikke har tilbakemeldingsspørsmål',
     kursbevis: 'teksten og knappen for kursbeviset (eget avsnitt). Utelates hvis arrangementet ikke sender kursbevis',
     innloggingslenke: 'lenke til innloggingssiden',
@@ -87,7 +88,7 @@ const EMAILS: EmailSpec[] = [
         name: 'emailSignupConfirmed',
         title: 'Påmelding – fått plass',
         sentWhen: 'Sendes til deltakeren når hen melder seg på og får plass.',
-        fields: [subject(), body()],
+        fields: [subject(), body([...EVENT_TOKENS, 'avbud'])],
     },
     {
         name: 'emailSignupWaitlist',
@@ -121,7 +122,7 @@ const EMAILS: EmailSpec[] = [
         name: 'emailEventReminder',
         title: 'Påminnelse før arrangement',
         sentWhen: 'Sendes automatisk til alle med bekreftet plass to dager før arrangementet.',
-        fields: [subject(), body()],
+        fields: [subject(), body([...EVENT_TOKENS, 'avbud'])],
     },
     {
         name: 'emailEventFollowup',

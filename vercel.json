@@ -1,8 +1,29 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "buildCommand": "sh scripts/vercel-migrate.sh && npm run build",
-  "crons": [
-    { "path": "/api/cron/event-reminders", "schedule": "0 7 * * *" },
-    { "path": "/api/cron/event-followups", "schedule": "0 18 * * *" }
-  ]
+  "functions": {
+    "app/api/cron/event-reminders/route.ts": {
+      "experimentalTriggers": [{ "type": "schedule/v1beta" }]
+    },
+    "app/api/cron/event-followups/route.ts": {
+      "experimentalTriggers": [{ "type": "schedule/v1beta" }]
+    },
+    "app/api/cron/event-signup-confirmations/route.ts": {
+      "experimentalTriggers": [{ "type": "schedule/v1beta" }]
+    }
+  },
+  "schedules": {
+    "event-reminders": {
+      "schedule": "0 7 * * *",
+      "function": "api/cron/event-reminders"
+    },
+    "event-followups": {
+      "schedule": "0 18 * * *",
+      "function": "api/cron/event-followups"
+    },
+    "event-signup-confirmations": {
+      "schedule": "*/15 * * * *",
+      "function": "api/cron/event-signup-confirmations"
+    }
+  }
 }

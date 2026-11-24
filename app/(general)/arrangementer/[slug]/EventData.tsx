@@ -178,6 +178,7 @@ export default function EventArrangementDetailClient({
 
     const isDateUnspecified = isDateUnspecifiedEvent(event)
     const isSignupUndecided = event.signup_undecided
+    const showNoShowInfo = !isSignupUndecided && !!event.reg_deadline
     const startDate = event.start_datetime ? new Date(event.start_datetime) : null
     const endDate = event.end_datetime ? new Date(event.end_datetime) : null
     const regOpens = event.reg_opens ? new Date(event.reg_opens) : null
@@ -349,42 +350,44 @@ export default function EventArrangementDetailClient({
                         gap={{ base: 6, lg: 8 }}
                         align={{ lg: 'flex-start' }}
                     >
-                        <Box
-                            flex="1"
-                            minW={0}
-                            p={{ base: 6, md: 8 }}
-                            {...cardStyles}
-                        >
-                            <Stack gap={6}>
-                                {event.description && (
-                                    <Box>
-                                        <SubsectionHeading as="h2" fontSize="1.4rem" mb={4}>
-                                            Om arrangementet
-                                        </SubsectionHeading>
-                                        <BodyText whiteSpace="pre-wrap" mb={0}>
-                                            <LinkifiedText text={event.description} />
-                                        </BodyText>
-                                    </Box>
-                                )}
-                                {!isSignupUndecided && (
-                                    <Box
-                                        borderTopWidth={event.description ? '1px' : undefined}
-                                        borderColor="gray.100"
-                                        pt={event.description ? 6 : 0}
-                                    >
-                                        <SubsectionHeading as="h2" fontSize="1.4rem" mb={4}>
-                                            Hvis du ikke møter
-                                        </SubsectionHeading>
-                                        <BodyText mb={0}>
-                                            Dersom du ikke har mulighet til å møte opp på arrangementet, ta kontakt
-                                            med arrangøren. Dette må gjøres innen 24 timer før arrangementet starter.
-                                            Dersom du ikke gjør dette, vil du bli nedprioritert på senere
-                                            TrAMS-arrangementer.
-                                        </BodyText>
-                                    </Box>
-                                )}
-                            </Stack>
-                        </Box>
+                        {(event.description || showNoShowInfo) && (
+                            <Box
+                                flex="1"
+                                minW={0}
+                                p={{ base: 6, md: 8 }}
+                                {...cardStyles}
+                            >
+                                <Stack gap={6}>
+                                    {event.description && (
+                                        <Box>
+                                            <SubsectionHeading as="h2" fontSize="1.4rem" mb={4}>
+                                                Om arrangementet
+                                            </SubsectionHeading>
+                                            <BodyText whiteSpace="pre-wrap" mb={0}>
+                                                <LinkifiedText text={event.description} />
+                                            </BodyText>
+                                        </Box>
+                                    )}
+                                    {showNoShowInfo && (
+                                        <Box
+                                            borderTopWidth={event.description ? '1px' : undefined}
+                                            borderColor="gray.100"
+                                            pt={event.description ? 6 : 0}
+                                        >
+                                            <SubsectionHeading as="h2" fontSize="1.4rem" mb={4}>
+                                                Hvis du ikke møter
+                                            </SubsectionHeading>
+                                            <BodyText mb={0}>
+                                                Dersom du ikke har mulighet til å møte opp på arrangementet, ta kontakt
+                                                med arrangøren. Dette må gjøres innen 24 timer før arrangementet starter.
+                                                Dersom du ikke gjør dette, vil du bli nedprioritert på senere
+                                                TrAMS-arrangementer.
+                                            </BodyText>
+                                        </Box>
+                                    )}
+                                </Stack>
+                            </Box>
+                        )}
 
                         {!isSignupUndecided && (
                             <Box

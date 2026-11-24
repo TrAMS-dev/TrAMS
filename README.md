@@ -13,7 +13,7 @@ The official website for **Trondheim Akuttmedisinske Studentforening (TrAMS)**: 
 - **Styling:** [Tailwind CSS v4](https://tailwindcss.com/)
 - **UI Components:** [Chakra UI v3](https://chakra-ui.com/), [Ark UI](https://ark-ui.com/), [FullCalendar](https://fullcalendar.io/)
 - **Icons:** [Lucide React](https://lucide.dev/)
-- **Hosting:** [Vercel](https://vercel.com/) (incl. Analytics, Speed Insights and Cron Jobs)
+- **Hosting:** [Vercel](https://vercel.com/) (incl. Analytics, Speed Insights and Schedules)
 
 ## 🚀 Getting Started
 
@@ -54,9 +54,6 @@ GOOGLE_PRIVATE_KEY=
 # Email (Resend). If missing, emails are skipped with a warning.
 RESEND_API_KEY=
 
-# Vercel Cron sends this as a Bearer token to /api/cron/*
-CRON_SECRET=
-
 # Optional overrides
 NEXT_PUBLIC_SITE_URL=             # Default: https://www.trams.no (used in email links)
 WEB_NOTIFY_EMAIL=                 # Default: web@trams.no
@@ -77,7 +74,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 - **`/app`**: Next.js App Router.
   - **`/(general)`**: Public pages (om oss, arrangementer, førstehjelpskurs, for medisinstudenter, instruktører).
   - **`/admin`**: Admin area behind Supabase auth: events (`arrangement`), attendance (`oppmote`), user approval (`users`), login/registration, and the Sanity Studio (`studio`).
-  - **`/api`**: Route handlers for event signup, admin actions, course bookings (`gcloud`, `supabase`), emails (`send`), Sanity revalidation and cron jobs.
+  - **`/api`**: Route handlers for event signup, admin actions, course bookings (`gcloud`, `supabase`), emails (`send`), Sanity revalidation and scheduled jobs (`cron`).
 - **`/components`**: React components (`/admin` for admin UI, `/ui` for shared primitives).
 - **`/lib`**: Server logic such as email templates, waitlist promotion and date helpers.
 - **`/hooks`**: Client hooks (e.g. `useAuth`).
@@ -137,8 +134,11 @@ To apply migrations manually, run `npx supabase db push --db-url "<connection st
 ## 📧 Emails & Scheduled Jobs
 
 - All emails are sent through Resend from `web@trams.no`. See [EMAILS.md](EMAILS.md) for the full list.
-- A Vercel Cron job (`vercel.json`) calls `/api/cron/event-reminders` every day at 07:00 UTC and emails confirmed participants two days before their event.
-- Another calls `/api/cron/event-followups` every day at 18:00 UTC and sends the post-event email (feedback form and certificate) to participants marked «Møtt» who haven't had it yet.
+- Scheduled jobs run on [Vercel Schedules](https://vercel.com/docs/schedules), declared under `schedules` in `vercel.json`. Each targets a private function (the route file has a `schedule/v1beta` trigger and is wrapped in `handleSchedule` from `@vercel/schedules`), so the routes have no public URL and need no secret. On the Hobby plan each run can start up to 15 minutes after its time. Times are UTC.
+  - `event-reminders` (`app/api/cron/event-reminders`) runs every day at 07:00 and emails confirmed participants two days before their event.
+  - `event-followups` (`app/api/cron/event-followups`) runs every day at 18:00 and sends the post-event email (feedback form and certificate) to participants marked «Møtt» who haven't had it yet.
+  - `event-signup-confirmations` (`app/api/cron/event-signup-confirmations`) runs every 15 minutes and sends deferred signup confirmations once an event's registration deadline or chosen send time has passed.
+- New schedules start active in production and inactive in Preview. See and run them under **Schedules** in the Vercel project, or with `vercel schedules list` / `vercel schedules invoke <name>`. Invoking runs the real job, which sends real emails.
 - A GitHub Actions workflow (`.github/workflows/supabase-keepalive.yml`) pings Supabase daily to stop the project from being paused.
 
 ## 📜 Scripts
