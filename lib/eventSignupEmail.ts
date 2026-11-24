@@ -191,6 +191,75 @@ export async function sendParticipantRemovedEmail(
     })
 }
 
+export interface EventSignupBatchContext {
+    eventId: number
+    eventTitle: string
+    eventSlug: string | null
+    startDatetime: string | null
+    location: string | null
+    contactEmail: string | null
+}
+
+export interface EventSignupBatchRecipient {
+    name: string
+    email: string
+    waitlistQueuePosition?: number | null
+}
+
+/**
+ * Sender bekreftet- eller venteliste-e-post til mange mottakere samtidig, brukt av
+ * cron-jobben som sender utsatte påmeldingsbekreftelser (`confirmation_email_timing`
+ * `on_deadline`) etter at påmeldingsfristen har gått ut. Returnerer antall e-poster
+ * Resend tok imot. Kaster ved feil fra Resend.
+ */
+export async function sendBulkEventSignupEmails(
+    kind: EventSignupEmailKind,
+    ctx: EventSignupBatchContext,
+    recipients: EventSignupBatchRecipient[]
+): Promise<number> {
+    if (!process.env.RESEND_API_KEY) {
+        console.warn('sendBulkEventSignupEmails: RESEND_API_KEY missing, skipping')
+        return 0
+    }
+
+    const valid = uniqueValidRecipients(recipients)
+    const replyTo = replyToFor(ctx.contactEmail)
+    const type: EventEmailDocType = kind === 'confirmed' ? 'emailSignupConfirmed' : 'emailSignupWaitlist'
+    const { content, settings } = await getEmailContent(type)
+    const subject = renderPlainText(content.subject, { tittel: ctx.eventTitle.trim() })
+    let sent = 0
+
+    for (let i = 0; i < valid.length; i += RESEND_BATCH_LIMIT) {
+        const chunk = valid.slice(i, i + RESEND_BATCH_LIMIT)
+        const result = await resend.batch.send(
+            chunk.map((r) => ({
+                from: FROM,
+                to: [r.email],
+                subject,
+                html: emailShell(
+                    renderEmailText(content.body, {
+                        tokens: eventTokens(ctx, r.name, {
+                            plass: queuePositionToken(r.waitlistQueuePosition),
+                        }),
+                        paragraphStyle: P_STYLE,
+                    }),
+                    settings
+                ),
+                ...(replyTo ? { replyTo } : {}),
+            })),
+            // Hindrer dobbel utsending hvis samme batch blir sendt på nytt
+            { idempotencyKey: `event-signup-${kind}-${ctx.eventId}-${i / RESEND_BATCH_LIMIT}` }
+        )
+
+        if (result.error) {
+            throw new Error(`Resend batch error: ${result.error.message}`)
+        }
+        sent += chunk.length
+    }
+
+    return sent
+}
+
 export interface EventReminderRecipient {
     name: string
     email: string

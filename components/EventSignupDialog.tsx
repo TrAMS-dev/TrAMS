@@ -147,13 +147,19 @@ export default function EventSignupDialog({
             }
 
             const onWaitlist = data.registrationStatus === 'waitlist'
+            const confirmationNote =
+                data.confirmationEmailTiming === 'never'
+                    ? ''
+                    : data.confirmationEmailTiming === 'on_deadline'
+                      ? ' Du får e-post om dette når påmeldingsfristen går ut.'
+                      : ' Du får en bekreftelse på e-post.'
 
             toaster.create({
                 title: onWaitlist ? 'Du står på venteliste' : 'Påmelding vellykket!',
                 type: 'success',
                 description: onWaitlist
-                    ? `Det er ingen ledige plasser for kullet ditt. Du er satt på venteliste for ${eventTitle}. Du får en bekreftelse på e-post.`
-                    : `Du er påmeldt ${eventTitle}. Du får en bekreftelse på e-post.`,
+                    ? `Det er ingen ledige plasser for kullet ditt. Du er satt på venteliste for ${eventTitle}.${confirmationNote}`
+                    : `Du er påmeldt ${eventTitle}.${confirmationNote}`,
                 duration: 6000,
             })
 

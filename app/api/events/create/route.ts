@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server'
 import { parseKullPools, validateKullPools } from '@/lib/kullPools'
 import { parseSignupQuestions, validateSignupQuestions } from '@/lib/signupQuestions'
 import { parseFeedbackQuestions } from '@/lib/eventFeedback'
+import { isConfirmationEmailTiming } from '@/lib/confirmationEmailTiming'
 import type { Json } from '@/types/supabase'
 
 function generateSlug(title: string): string {
@@ -28,6 +29,7 @@ export async function POST(request: Request) {
             max_attendees,
             reg_deadline,
             reg_opens,
+            confirmation_email_timing,
             author,
             contact_email,
             date_unspecified,
@@ -77,6 +79,19 @@ export async function POST(request: Request) {
             !isSignupUndecided && Array.isArray(allowed_kull)
                 ? allowed_kull.filter((k: unknown): k is number => Number.isInteger(k))
                 : []
+
+        const confirmationEmailTiming = isConfirmationEmailTiming(confirmation_email_timing)
+            ? confirmation_email_timing
+            : 'immediate'
+        if (!hideSignup && confirmationEmailTiming === 'on_deadline' && !reg_deadline) {
+            return NextResponse.json(
+                {
+                    error:
+                        'Du må sette en påmeldingsfrist for å vente med å sende bekreftelse til fristen går ut',
+                },
+                { status: 400 }
+            )
+        }
 
         const maxAttendees = hideSignup ? null : (max_attendees || null)
         const kullPools = hideSignup ? [] : parseKullPools(kull_pools)
@@ -130,6 +145,7 @@ export async function POST(request: Request) {
                 max_attendees: maxAttendees,
                 reg_deadline: hideSignup ? null : (reg_deadline || null),
                 reg_opens: hideSignup ? null : (reg_opens || null),
+                confirmation_email_timing: hideSignup ? 'immediate' : confirmationEmailTiming,
                 author: author || null,
                 contact_email: contact_email?.trim() || null,
                 date_unspecified: isDateUnspecified,
