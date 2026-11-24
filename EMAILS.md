@@ -23,13 +23,13 @@ Subjects and content below describe the default text; the live wording may have 
 | 3 | Promoted from waitlist (by admin) | `Du har fått plass: <title>` | Participant | Admin moves them from waitlist to confirmed |
 | 4 | Moved to waitlist (by admin) | `Flyttet til venteliste: <title>` | Participant | Admin moves them from confirmed to waitlist |
 | 5 | Removed from event (by admin) | `Fjernet fra påmelding: <title>` | Participant | Admin removes them (confirmed or waitlist) |
-| 6 | Event reminder | `Påminnelse: <title>` | All confirmed participants | Daily cron, 2 days before the event |
+| 6 | Event reminder | `Påminnelse: <title>` | All confirmed participants | Daily scheduled job, 2 days before the event |
 | 7 | New user registration | `Ny brukerregistrering: <name>` | `WEB_NOTIFY_EMAIL` (default `web@trams.no`) | Someone registers an admin account |
 | 8 | Account approved | `Kontoen din er godkjent – TrAMS` | The approved user | Admin approves a pending user |
 | 9 | Course booking – customer confirmation | `Bekreftelse på kursbestilling - TrAMS` | The booking contact person | Course booking form submitted |
 | 10 | Course booking – admin notification | `Ny kursbestilling: <course> - <name>` | `ADMIN_EMAIL` (default `ekstern@trams.no`) or `ADMIN_EMAIL_LEVANGER` (default `levanger@trams.no`) | Course booking form submitted |
 | 11 | Website feedback | `Tilbakemelding på nettsiden` | `WEB_NOTIFY_EMAIL` (default `web@trams.no`) | Someone sends feedback from the footer |
-| 12 | After the event | `Takk for at du deltok: <title>` | Participants marked «Møtt» | Automatically when marked «Møtt» after the event (or daily cron if marked before it ended); admins can also send manually |
+| 12 | After the event | `Takk for at du deltok: <title>` | Participants marked «Møtt» | Automatically when marked «Møtt» after the event (or the daily scheduled job if marked before it ended); admins can also send manually |
 | 13 | Event signup confirmations (deferred) | `Plass på kurs: <title>` / `Venteliste: <title>` | All participants (confirmed and waitlisted) | Scheduled job every 15 min, once the registration deadline or the admin-chosen time passes, for events set to defer confirmation |
 
 Reply-To: emails 1–6, 12 and 13 use the event's `contact_email` when it is set; otherwise replies go to `web@trams.no`. Email 7 replies to the new user; email 10 replies to the booking contact person; email 11 replies to the sender if they gave an email address.
@@ -68,14 +68,14 @@ All four of these (1–4) are gated by the event's `confirmation_email_timing` (
 - **Content:** Tells them they have been removed from the signup (or the waitlist) and no longer have a spot, with event details and who to contact with questions.
 
 ### 6. Event reminder
-- **Sent from:** [app/api/cron/event-reminders/route.ts](app/api/cron/event-reminders/route.ts) (Vercel Cron, daily at 07:00 UTC, see [vercel.json](vercel.json))
+- **Sent from:** [app/api/cron/event-reminders/route.ts](app/api/cron/event-reminders/route.ts) (Vercel Schedules, `event-reminders`, daily at 07:00 UTC, see [vercel.json](vercel.json); on the Hobby plan each run can start up to 15 minutes late)
 - **When:** For events starting two calendar days later (Oslo time). Events that were missed are caught up as long as they start more than 24 hours later. Each event is reminded once (`Events.reminder_sent_at`). Events without a set date are skipped.
 - **Recipients:** Everyone with `status = 'confirmed'` on the event.
 - **Content:** Reminds them of their spot with event details and link. If they can't come, they must email the event's contact address (or reply) at least 24 hours before the event starts. That last paragraph contains the invisible `{avbud}` placeholder and is left out for events without a registration deadline, matching the event page, which hides «Hvis du ikke møter» for those events. If the text is rewritten in Sanity, `{avbud}` must stay in that paragraph.
-- **Requires:** `CRON_SECRET` and `SUPABASE_SERVICE_ROLE_KEY`.
+- **Requires:** `SUPABASE_SERVICE_ROLE_KEY`.
 
 ### 13. Event signup confirmations (deferred)
-- **Sent from:** [app/api/cron/event-signup-confirmations/route.ts](app/api/cron/event-signup-confirmations/route.ts) (Vercel Schedules, every 15 minutes, see `schedules` in [vercel.json](vercel.json); on the Hobby plan each run can start up to 15 minutes late), using [lib/eventSignupEmail.ts](lib/eventSignupEmail.ts)'s `sendBulkEventSignupEmails`
+- **Sent from:** [app/api/cron/event-signup-confirmations/route.ts](app/api/cron/event-signup-confirmations/route.ts) (Vercel Schedules, `event-signup-confirmations`, every 15 minutes, see [vercel.json](vercel.json); on the Hobby plan each run can start up to 15 minutes late), using [lib/eventSignupEmail.ts](lib/eventSignupEmail.ts)'s `sendBulkEventSignupEmails`
 - **When:** Once per event (`Events.confirmation_emails_sent_at`), the first run after:
   - `reg_deadline`, for events with `confirmation_email_timing = 'on_deadline'` ("Send når påmeldingsfristen går ut")
   - `confirmation_email_send_at`, for events with `confirmation_email_timing = 'scheduled'` ("Velg tidspunkt selv", with a date and time field next to the selector)
@@ -83,14 +83,14 @@ All four of these (1–4) are gated by the event's `confirmation_email_timing` (
   This lets admins finish moving people between confirmed and waitlist (e.g. to prioritize older kull) before anyone is told their status, instead of emails 1–4 going out as people sign up or get moved.
 - **Recipients:** Everyone on the event, confirmed and waitlisted alike, in one batch — confirmed participants get email 1's content, waitlisted participants get email 2's content with their final queue position.
 - **Content:** Same templates as emails 1 and 2.
-- **Requires:** `CRON_SECRET` and `SUPABASE_SERVICE_ROLE_KEY`.
+- **Requires:** `SUPABASE_SERVICE_ROLE_KEY`.
 
 ### 12. After the event (feedback form and certificate)
 - **Sent from:** [app/api/admin/event-participants/followup/route.ts](app/api/admin/event-participants/followup/route.ts), called by [components/admin/EventFollowupPanel.tsx](components/admin/EventFollowupPanel.tsx)
-- **Also sent from:** [app/api/admin/event-participants/attendance/route.ts](app/api/admin/event-participants/attendance/route.ts) and [app/api/cron/event-followups/route.ts](app/api/cron/event-followups/route.ts) (Vercel Cron, daily at 18:00 UTC), both through [lib/eventFollowup.ts](lib/eventFollowup.ts)
+- **Also sent from:** [app/api/admin/event-participants/attendance/route.ts](app/api/admin/event-participants/attendance/route.ts) and [app/api/cron/event-followups/route.ts](app/api/cron/event-followups/route.ts) (Vercel Schedules, `event-followups`, daily at 18:00 UTC), both through [lib/eventFollowup.ts](lib/eventFollowup.ts)
 - **When:** Automatically, once per participant (`EventParticipants.followup_sent_at`), for events that ended within the last 14 days:
   - right away when an admin sets a participant to «Møtt» after the event has ended
-  - by the daily cron for participants set to «Møtt» before the event ended
+  - by the daily scheduled job for participants set to «Møtt» before the event ended
   - The automatic email includes the certificate if the event has «Send kursbevis» on (`Events.certificate_enabled`), and the feedback link if the event has feedback questions. If it has neither, nothing is sent.
   - Admins can also send it manually from the participants page, choosing the content, or resend it to everyone who attended.
 - **Recipients:** Everyone with `attended = true` on the event.

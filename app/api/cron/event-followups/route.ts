@@ -1,5 +1,5 @@
 import { createAdminClient } from '@/utils/supabase/admin'
-import { NextResponse } from 'next/server'
+import { handleSchedule } from '@vercel/schedules'
 import {
     AUTO_FOLLOWUP_WINDOW_DAYS,
     FOLLOWUP_EVENT_COLUMNS,
@@ -9,22 +9,17 @@ import {
 } from '@/lib/eventFollowup'
 
 /**
- * Kjøres daglig av Vercel Cron (se vercel.json). Sender e-posten etter arrangementet
+ * Kjøres daglig av Vercel Schedules (se vercel.json). Sender e-posten etter arrangementet
  * (tilbakemeldingsskjema og kursbevis) til deltakere som er registrert som «Møtt», men
  * ikke har fått den ennå. Dekker de som ble registrert før arrangementet var ferdig;
  * de som registreres etterpå får e-posten med en gang (se attendance-ruten).
  * Bare arrangementer som sluttet de siste AUTO_FOLLOWUP_WINDOW_DAYS dagene tas med.
+ * `followup_sent_at` hindrer dobbel utsending hvis samme kjøring leveres flere ganger.
  */
-export async function GET(request: Request) {
-    const secret = process.env.CRON_SECRET
-    if (!secret || request.headers.get('authorization') !== `Bearer ${secret}`) {
-        return NextResponse.json({ error: 'Ingen tilgang' }, { status: 401 })
-    }
-
+export const POST = handleSchedule(async () => {
     const admin = createAdminClient()
     if (!admin) {
-        console.error('Event followups: SUPABASE_SERVICE_ROLE_KEY is not set')
-        return NextResponse.json({ error: 'Ikke konfigurert' }, { status: 500 })
+        throw new Error('Event followups: SUPABASE_SERVICE_ROLE_KEY is not set')
     }
 
     const now = new Date()
@@ -38,8 +33,7 @@ export async function GET(request: Request) {
         .lt('end_datetime', now.toISOString())
 
     if (eventsError) {
-        console.error('Event followups: fetch events', eventsError)
-        return NextResponse.json({ error: 'Kunne ikke hente arrangementer' }, { status: 500 })
+        throw new Error(`Event followups: fetch events: ${eventsError.message}`)
     }
 
     const results: { eventId: number; sent: number; error?: string }[] = []
@@ -73,5 +67,12 @@ export async function GET(request: Request) {
         }
     }
 
-    return NextResponse.json({ results })
-}
+    console.log('Event followups:', JSON.stringify(results))
+    const failed = results.filter((r) => r.error)
+    if (failed.length > 0) {
+        // Shows the run as failed in the schedule's execution history
+        throw new Error(
+            `Event followups: failed for ${failed.map((r) => `${r.eventId} (${r.error})`).join(', ')}`
+        )
+    }
+})

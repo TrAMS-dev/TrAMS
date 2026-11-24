@@ -1,7 +1,7 @@
 import { createAdminClient } from '@/utils/supabase/admin'
 import { sendEventReminderEmails } from '@/lib/eventSignupEmail'
 import { datetimeLocalToUtcIso, utcIsoToDatetimeLocalValue } from '@/lib/datetimeLocal'
-import { NextResponse } from 'next/server'
+import { handleSchedule } from '@vercel/schedules'
 
 /** Påminnelsen sendes for arrangementer som starter om to kalenderdager (Oslo-tid). */
 const REMINDER_DAYS_BEFORE = 2
@@ -18,28 +18,23 @@ function osloMidnightInDays(now: Date, days: number): string | null {
 }
 
 /**
- * Kjøres daglig av Vercel Cron (se vercel.json). Sender påminnelse til alle med
+ * Kjøres daglig av Vercel Schedules (se vercel.json). Sender påminnelse til alle med
  * bekreftet plass på arrangementer som starter om to dager. Arrangementer som ble
  * opprettet sent eller ble hoppet over tas også med, så lenge det er mer enn 24 t
- * til start. `reminder_sent_at` sørger for at hvert arrangement bare får én påminnelse.
+ * til start. `reminder_sent_at` sørger for at hvert arrangement bare får én påminnelse,
+ * også hvis samme kjøring leveres flere ganger.
  */
-export async function GET(request: Request) {
-    const secret = process.env.CRON_SECRET
-    if (!secret || request.headers.get('authorization') !== `Bearer ${secret}`) {
-        return NextResponse.json({ error: 'Ingen tilgang' }, { status: 401 })
-    }
-
+export const POST = handleSchedule(async () => {
     const admin = createAdminClient()
     if (!admin) {
-        console.error('Event reminders: SUPABASE_SERVICE_ROLE_KEY is not set')
-        return NextResponse.json({ error: 'Ikke konfigurert' }, { status: 500 })
+        throw new Error('Event reminders: SUPABASE_SERVICE_ROLE_KEY is not set')
     }
 
     const now = new Date()
     const windowStart = new Date(now.getTime() + MIN_HOURS_BEFORE_START * 60 * 60 * 1000)
     const windowEnd = osloMidnightInDays(now, REMINDER_DAYS_BEFORE + 1)
     if (!windowEnd) {
-        return NextResponse.json({ error: 'Kunne ikke beregne tidsvindu' }, { status: 500 })
+        throw new Error('Event reminders: could not compute time window')
     }
 
     const { data: events, error: eventsError } = await admin
@@ -51,8 +46,7 @@ export async function GET(request: Request) {
         .lt('start_datetime', windowEnd)
 
     if (eventsError) {
-        console.error('Event reminders: fetch events', eventsError)
-        return NextResponse.json({ error: 'Kunne ikke hente arrangementer' }, { status: 500 })
+        throw new Error(`Event reminders: fetch events: ${eventsError.message}`)
     }
 
     const results: { eventId: number; sent: number; error?: string }[] = []
@@ -105,5 +99,12 @@ export async function GET(request: Request) {
         }
     }
 
-    return NextResponse.json({ results })
-}
+    console.log('Event reminders:', JSON.stringify(results))
+    const failed = results.filter((r) => r.error)
+    if (failed.length > 0) {
+        // Shows the run as failed in the schedule's execution history
+        throw new Error(
+            `Event reminders: failed for ${failed.map((r) => `${r.eventId} (${r.error})`).join(', ')}`
+        )
+    }
+})

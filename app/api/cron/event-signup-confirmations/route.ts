@@ -1,6 +1,6 @@
 import { createAdminClient } from '@/utils/supabase/admin'
 import { sendBulkEventSignupEmails } from '@/lib/eventSignupEmail'
-import { NextResponse } from 'next/server'
+import { handleSchedule } from '@vercel/schedules'
 
 /**
  * Kjøres hvert kvarter av Vercel Schedules (se vercel.json). Sender bekreftet- eller
@@ -10,18 +10,12 @@ import { NextResponse } from 'next/server'
  * `confirmation_email_send_at`). Dette gir admin tid til å flytte deltakere mellom
  * bekreftet og venteliste (f.eks. for å prioritere eldre kull) før noen får beskjed.
  * `confirmation_emails_sent_at` sørger for at hvert arrangement bare får denne
- * utsendingen én gang.
+ * utsendingen én gang, også hvis samme kjøring leveres flere ganger.
  */
-export async function GET(request: Request) {
-    const secret = process.env.CRON_SECRET
-    if (!secret || request.headers.get('authorization') !== `Bearer ${secret}`) {
-        return NextResponse.json({ error: 'Ingen tilgang' }, { status: 401 })
-    }
-
+export const POST = handleSchedule(async () => {
     const admin = createAdminClient()
     if (!admin) {
-        console.error('Event signup confirmations: SUPABASE_SERVICE_ROLE_KEY is not set')
-        return NextResponse.json({ error: 'Ikke konfigurert' }, { status: 500 })
+        throw new Error('Event signup confirmations: SUPABASE_SERVICE_ROLE_KEY is not set')
     }
 
     const now = new Date()
@@ -37,8 +31,7 @@ export async function GET(request: Request) {
         )
 
     if (eventsError) {
-        console.error('Event signup confirmations: fetch events', eventsError)
-        return NextResponse.json({ error: 'Kunne ikke hente arrangementer' }, { status: 500 })
+        throw new Error(`Event signup confirmations: fetch events: ${eventsError.message}`)
     }
 
     const results: { eventId: number; sent: number; error?: string }[] = []
@@ -105,5 +98,12 @@ export async function GET(request: Request) {
         }
     }
 
-    return NextResponse.json({ results })
-}
+    console.log('Event signup confirmations:', JSON.stringify(results))
+    const failed = results.filter((r) => r.error)
+    if (failed.length > 0) {
+        // Shows the run as failed in the schedule's execution history
+        throw new Error(
+            `Event signup confirmations: failed for ${failed.map((r) => `${r.eventId} (${r.error})`).join(', ')}`
+        )
+    }
+})
