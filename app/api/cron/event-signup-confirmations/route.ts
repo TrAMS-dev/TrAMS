@@ -3,13 +3,14 @@ import { sendBulkEventSignupEmails } from '@/lib/eventSignupEmail'
 import { NextResponse } from 'next/server'
 
 /**
- * Kjøres daglig av Vercel Cron (se vercel.json). Sender bekreftet- eller
- * venteliste-e-post til alle deltakere på arrangementer der admin har valgt å
- * vente med bekreftelse til påmeldingsfristen går ut
- * (`Events.confirmation_email_timing = 'on_deadline'`). Dette gir admin tid til
- * å flytte deltakere mellom bekreftet og venteliste (f.eks. for å prioritere
- * eldre kull) før noen får beskjed. `confirmation_emails_sent_at` sørger for at
- * hvert arrangement bare får denne utsendingen én gang.
+ * Kjøres hvert kvarter av Vercel Schedules (se vercel.json). Sender bekreftet- eller
+ * venteliste-e-post til alle deltakere på arrangementer der admin har valgt å vente
+ * med bekreftelse til påmeldingsfristen går ut (`confirmation_email_timing =
+ * 'on_deadline'`) eller til et valgt tidspunkt (`'scheduled'`,
+ * `confirmation_email_send_at`). Dette gir admin tid til å flytte deltakere mellom
+ * bekreftet og venteliste (f.eks. for å prioritere eldre kull) før noen får beskjed.
+ * `confirmation_emails_sent_at` sørger for at hvert arrangement bare får denne
+ * utsendingen én gang.
  */
 export async function GET(request: Request) {
     const secret = process.env.CRON_SECRET
@@ -24,14 +25,16 @@ export async function GET(request: Request) {
     }
 
     const now = new Date()
+    const nowIso = now.toISOString()
 
     const { data: events, error: eventsError } = await admin
         .from('Events')
         .select('id, title, slug, start_datetime, location, contact_email')
-        .eq('confirmation_email_timing', 'on_deadline')
         .is('confirmation_emails_sent_at', null)
-        .not('reg_deadline', 'is', null)
-        .lte('reg_deadline', now.toISOString())
+        .or(
+            `and(confirmation_email_timing.eq.on_deadline,reg_deadline.lte.${nowIso}),` +
+                `and(confirmation_email_timing.eq.scheduled,confirmation_email_send_at.lte.${nowIso})`
+        )
 
     if (eventsError) {
         console.error('Event signup confirmations: fetch events', eventsError)
@@ -44,7 +47,7 @@ export async function GET(request: Request) {
         // Reserver arrangementet før utsending så overlappende kjøringer ikke sender dobbelt
         const { data: claimed, error: claimError } = await admin
             .from('Events')
-            .update({ confirmation_emails_sent_at: now.toISOString() })
+            .update({ confirmation_emails_sent_at: nowIso })
             .eq('id', event.id)
             .is('confirmation_emails_sent_at', null)
             .select('id')

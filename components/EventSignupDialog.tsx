@@ -152,7 +152,9 @@ export default function EventSignupDialog({
                     ? ''
                     : data.confirmationEmailTiming === 'on_deadline'
                       ? ' Du får e-post om dette når påmeldingsfristen går ut.'
-                      : ' Du får en bekreftelse på e-post.'
+                      : data.confirmationEmailTiming === 'scheduled'
+                        ? ' Du får e-post om dette senere.'
+                        : ' Du får en bekreftelse på e-post.'
 
             toaster.create({
                 title: onWaitlist ? 'Du står på venteliste' : 'Påmelding vellykket!',

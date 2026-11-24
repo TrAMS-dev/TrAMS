@@ -30,6 +30,7 @@ export async function POST(request: Request) {
             reg_deadline,
             reg_opens,
             confirmation_email_timing,
+            confirmation_email_send_at,
             author,
             contact_email,
             date_unspecified,
@@ -92,6 +93,17 @@ export async function POST(request: Request) {
                 { status: 400 }
             )
         }
+        const sendAt =
+            typeof confirmation_email_send_at === 'string' &&
+            !Number.isNaN(new Date(confirmation_email_send_at).getTime())
+                ? confirmation_email_send_at
+                : null
+        if (!hideSignup && confirmationEmailTiming === 'scheduled' && !sendAt) {
+            return NextResponse.json(
+                { error: 'Oppgi når bekreftelses-e-posten skal sendes ut' },
+                { status: 400 }
+            )
+        }
 
         const maxAttendees = hideSignup ? null : (max_attendees || null)
         const kullPools = hideSignup ? [] : parseKullPools(kull_pools)
@@ -146,6 +158,8 @@ export async function POST(request: Request) {
                 reg_deadline: hideSignup ? null : (reg_deadline || null),
                 reg_opens: hideSignup ? null : (reg_opens || null),
                 confirmation_email_timing: hideSignup ? 'immediate' : confirmationEmailTiming,
+                confirmation_email_send_at:
+                    !hideSignup && confirmationEmailTiming === 'scheduled' ? sendAt : null,
                 author: author || null,
                 contact_email: contact_email?.trim() || null,
                 date_unspecified: isDateUnspecified,

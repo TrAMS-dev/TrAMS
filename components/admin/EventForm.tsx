@@ -73,6 +73,7 @@ export interface EventFormValues {
     reg_opens: string
     reg_deadline: string
     confirmation_email_timing: ConfirmationEmailTiming
+    confirmation_email_send_at: string
     author: string
     planned_month: string
     has_food: boolean
@@ -99,6 +100,7 @@ export interface EventFormPayload {
     reg_opens: string | null
     reg_deadline: string | null
     confirmation_email_timing: ConfirmationEmailTiming
+    confirmation_email_send_at: string | null
     author: string | null
     planned_month: string | null
     date_unspecified: boolean
@@ -125,6 +127,7 @@ export const emptyEventFormValues: EventFormValues = {
     reg_opens: '',
     reg_deadline: '',
     confirmation_email_timing: 'immediate',
+    confirmation_email_send_at: '',
     author: '',
     planned_month: '',
     has_food: false,
@@ -369,6 +372,20 @@ export function EventForm({
             return
         }
 
+        const sendAtUtc = formData.confirmation_email_send_at.trim()
+            ? datetimeLocalToUtcIso(formData.confirmation_email_send_at)
+            : null
+        if (!signupUndecided && formData.confirmation_email_timing === 'scheduled' && !sendAtUtc) {
+            toaster.create({
+                title: 'Velg når bekreftelsene skal sendes',
+                description: 'Oppgi dato og klokkeslett for når bekreftelses-e-posten skal sendes ut.',
+                type: 'error',
+                duration: 5000,
+            })
+            setIsSubmitting(false)
+            return
+        }
+
         const hideSignup = signupUndecided
 
         const allowedKull =
@@ -422,6 +439,8 @@ export function EventForm({
             reg_opens: hideSignup ? null : regOpensUtc,
             reg_deadline: hideSignup ? null : regDeadlineUtc,
             confirmation_email_timing: hideSignup ? 'immediate' : formData.confirmation_email_timing,
+            confirmation_email_send_at:
+                !hideSignup && formData.confirmation_email_timing === 'scheduled' ? sendAtUtc : null,
             author: formData.author || null,
             planned_month: dateUnspecified ? formData.planned_month.trim() : null,
             date_unspecified: dateUnspecified,
@@ -622,35 +641,60 @@ export function EventForm({
                                     </Field.Root>
                                 </Box>
 
-                                <Field.Root maxW={{ md: 'calc(50% - 0.5rem)' }}>
-                                    <Field.Label>Bekreftelses-e-post</Field.Label>
-                                    <NativeSelect.Root>
-                                        <NativeSelect.Field
-                                            value={formData.confirmation_email_timing}
-                                            onChange={(e) =>
-                                                setFormData((prev) => ({
-                                                    ...prev,
-                                                    confirmation_email_timing: e.target
-                                                        .value as ConfirmationEmailTiming,
-                                                }))
-                                            }
-                                        >
-                                            <option value="immediate">Send med én gang</option>
-                                            <option value="on_deadline">
-                                                Send når påmeldingsfristen går ut
-                                            </option>
-                                            <option value="never">Send ikke bekreftelse</option>
-                                        </NativeSelect.Field>
-                                        <NativeSelect.Indicator />
-                                    </NativeSelect.Root>
-                                    <Field.HelperText>
-                                        {formData.confirmation_email_timing === 'on_deadline'
-                                            ? 'Alle som er bekreftet eller står på venteliste når fristen går ut, får e-post da. Krever påmeldingsfrist.'
-                                            : formData.confirmation_email_timing === 'never'
-                                              ? 'Ingen får bekreftelses- eller venteliste-e-post.'
-                                              : 'Deltakere får bekreftelse eller venteliste-e-post rett etter påmelding, som i dag.'}
-                                    </Field.HelperText>
-                                </Field.Root>
+                                <Box
+                                    display="grid"
+                                    gridTemplateColumns={{ base: '1fr', md: '1fr 1fr' }}
+                                    gap={4}
+                                >
+                                    <Field.Root>
+                                        <Field.Label>Bekreftelses-e-post</Field.Label>
+                                        <NativeSelect.Root>
+                                            <NativeSelect.Field
+                                                value={formData.confirmation_email_timing}
+                                                onChange={(e) =>
+                                                    setFormData((prev) => ({
+                                                        ...prev,
+                                                        confirmation_email_timing: e.target
+                                                            .value as ConfirmationEmailTiming,
+                                                    }))
+                                                }
+                                            >
+                                                <option value="immediate">Send med én gang</option>
+                                                <option value="on_deadline">
+                                                    Send når påmeldingsfristen går ut
+                                                </option>
+                                                <option value="scheduled">Velg tidspunkt selv</option>
+                                                <option value="never">Send ikke bekreftelse</option>
+                                            </NativeSelect.Field>
+                                            <NativeSelect.Indicator />
+                                        </NativeSelect.Root>
+                                        <Field.HelperText>
+                                            {formData.confirmation_email_timing === 'on_deadline'
+                                                ? 'Alle som er bekreftet eller står på venteliste når fristen går ut, får e-post innen ca. en halvtime. Krever påmeldingsfrist.'
+                                                : formData.confirmation_email_timing === 'scheduled'
+                                                  ? 'Alle som er bekreftet eller står på venteliste på valgt tidspunkt, får e-post innen ca. en halvtime.'
+                                                  : formData.confirmation_email_timing === 'never'
+                                                    ? 'Ingen får bekreftelses- eller venteliste-e-post.'
+                                                    : 'Deltakere får bekreftelse eller venteliste-e-post rett etter påmelding.'}
+                                        </Field.HelperText>
+                                    </Field.Root>
+
+                                    {formData.confirmation_email_timing === 'scheduled' && (
+                                        <Field.Root required>
+                                            <Field.Label>Send bekreftelser *</Field.Label>
+                                            <Input
+                                                name="confirmation_email_send_at"
+                                                type="datetime-local"
+                                                value={formData.confirmation_email_send_at}
+                                                onChange={handleChange}
+                                            />
+                                            <Field.HelperText>
+                                                Til da får ingen e-post om påmeldingen. Endringer etter
+                                                utsendingen varsles med én gang.
+                                            </Field.HelperText>
+                                        </Field.Root>
+                                    )}
+                                </Box>
 
                                 <Field.Root maxW={{ md: 'calc(50% - 0.5rem)' }}>
                                     <Field.Label>Maks antall deltakere</Field.Label>

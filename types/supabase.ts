@@ -202,6 +202,7 @@ export type Database = {
           author: string | null
           certificate_description: string | null
           certificate_enabled: boolean
+          confirmation_email_send_at: string | null
           confirmation_email_timing: string
           confirmation_emails_sent_at: string | null
           contact_email: string | null
@@ -234,6 +235,7 @@ export type Database = {
           author?: string | null
           certificate_description?: string | null
           certificate_enabled?: boolean
+          confirmation_email_send_at?: string | null
           confirmation_email_timing?: string
           confirmation_emails_sent_at?: string | null
           contact_email?: string | null
@@ -266,6 +268,7 @@ export type Database = {
           author?: string | null
           certificate_description?: string | null
           certificate_enabled?: boolean
+          confirmation_email_send_at?: string | null
           confirmation_email_timing?: string
           confirmation_emails_sent_at?: string | null
           contact_email?: string | null

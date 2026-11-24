@@ -78,6 +78,7 @@ export default function AdminEditEventPage() {
                 confirmation_email_timing: isConfirmationEmailTiming(data.confirmation_email_timing)
                     ? data.confirmation_email_timing
                     : 'immediate',
+                confirmation_email_send_at: utcIsoToDatetimeLocalValue(data.confirmation_email_send_at),
                 author: data.author || '',
                 planned_month: data.planned_month || '',
                 has_food: Boolean(data.has_food),
@@ -117,6 +118,7 @@ export default function AdminEditEventPage() {
                     reg_opens: payload.reg_opens,
                     reg_deadline: payload.reg_deadline,
                     confirmation_email_timing: payload.confirmation_email_timing,
+                    confirmation_email_send_at: payload.confirmation_email_send_at,
                     author: payload.author,
                     date_unspecified: payload.date_unspecified,
                     signup_undecided: payload.signup_undecided,
