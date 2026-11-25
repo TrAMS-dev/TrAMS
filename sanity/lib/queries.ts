@@ -149,7 +149,22 @@ export const COOPERATION_PARTNERS_QUERY = defineQuery(`*[_type == "cooperationPa
 
 export const FIRST_AID_COURSE_PAGE_QUERY = defineQuery(`*[_type == "firstAidCoursePage"][0] {
   _id,
+  boxes[] {
+    _key,
+    heading,
+    text,
+    buttonLabel,
+    link
+  },
+  introHeading,
   introText,
+  introButtonLabel,
+  boxMedic {
+    heading,
+    text,
+    buttonLabel,
+    formUrl
+  },
   courses[] {
     title,
     description,
@@ -176,8 +191,11 @@ export const BOOK_KURS_PAGE_QUERY = defineQuery(`*[_type == "bookKursPage"][0] {
 export const HOME_PAGE_QUERY = defineQuery(`*[_type == "homePage"][0] {
   _id,
   videoUrl,
-  tagline
+  tagline,
+  buttons[] { _key, title, subtitle, link, icon, highlighted }
 }`)
+
+export const PAGE_HERO_QUERY = defineQuery(`*[_type == $type][0].hero { heading, text }`)
 
 export const FOR_MEDISINSTUDENTER_PAGE_QUERY = defineQuery(`*[_type == "forMedisinstudenterPage"][0] {
   _id,

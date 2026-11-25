@@ -2,13 +2,14 @@ import { defineType, defineField } from "sanity"
 
 export const markorPageType = defineType({
     name: 'markorPage',
-    title: 'Markørside',
+    title: 'Markør-siden',
     type: 'document',
     fields: [
         defineField({
             name: 'title',
             title: 'Tittel',
             type: 'string',
+            description: 'Vises i bildet øverst på siden.',
             validation: (rule) => rule.required(),
         }),
         defineField({

@@ -1,9 +1,13 @@
 import Link from 'next/link';
 import { Box, Flex, Image, Text, Button, Stack, Link as ChakraLink } from '@chakra-ui/react';
 import Navbar from '@/components/Navbar';
-import { HeartPulse, Calendar, Users } from 'lucide-react';
+import {
+  Ambulance, BookOpen, Calendar, GraduationCap, Handshake, HeartPulse, Info, Mail, MapPin, Megaphone, Stethoscope, Users,
+  type LucideIcon,
+} from 'lucide-react';
 import { client } from '@/sanity/lib/client';
 import { HOME_PAGE_QUERY } from '@/sanity/lib/queries';
+import { HOME_BUTTON_DEFAULTS, isValidHomeButtonLink, type HomeButton, type HomeButtonIcon } from '@/sanity/lib/homeButtons';
 
 import type { Metadata } from "next";
 
@@ -18,9 +22,74 @@ export const metadata: Metadata = {
     images: [{ url: "/assets/images/gruppebilde_fly.jpg", width: 1200, height: 630, alt: "TrAMS førstehjelpskurs" }],
   },
 }
+
+const BUTTON_ICONS: Record<HomeButtonIcon, LucideIcon> = {
+  users: Users,
+  calendar: Calendar,
+  heartPulse: HeartPulse,
+  stethoscope: Stethoscope,
+  ambulance: Ambulance,
+  graduationCap: GraduationCap,
+  bookOpen: BookOpen,
+  info: Info,
+  mail: Mail,
+  handshake: Handshake,
+  megaphone: Megaphone,
+  mapPin: MapPin,
+};
+
+type HomePageData = Awaited<ReturnType<typeof fetchHomePage>>;
+
+function fetchHomePage() {
+  return client.fetch(HOME_PAGE_QUERY);
+}
+
+/** The buttons from Sanity's "Knapper" list, or the standard three while that list is empty. */
+function homeButtons(data: HomePageData): (HomeButton & { key: string })[] {
+  const fromSanity = (data?.buttons ?? [])
+    .map((b) => ({ ...b, title: b.title?.trim() ?? '', link: b.link?.trim() ?? '' }))
+    .filter((b) => b.title && isValidHomeButtonLink(b.link));
+  if (fromSanity.length > 0) {
+    return fromSanity.map((b) => ({
+      key: b._key,
+      title: b.title,
+      subtitle: b.subtitle?.trim() || undefined,
+      link: b.link,
+      icon: (b.icon ?? undefined) as HomeButtonIcon | undefined,
+      highlighted: b.highlighted ?? false,
+    }));
+  }
+  return HOME_BUTTON_DEFAULTS.map((b) => ({ ...b, key: b.link }));
+}
+
+const plainButtonStyle = {
+  p: { base: 2, sm: 4, lg: 8 },
+  bg: 'whiteAlpha.200',
+  backdropFilter: 'blur(10px)',
+  border: '1px solid',
+  borderColor: 'whiteAlpha.300',
+  _hover: {
+    bg: 'whiteAlpha.300',
+    transform: 'translateY(-5px)',
+    boxShadow: '0 20px 40px rgba(0,0,0,0.4)',
+  },
+} as const;
+
+const highlightedButtonStyle = {
+  p: { base: 4, lg: 8 },
+  bg: 'var(--color-primary)',
+  boxShadow: '0 0 20px rgba(229, 62, 62, 0.4)',
+  _hover: {
+    bg: 'red.600',
+    transform: 'scale(1.05)',
+    boxShadow: '0 0 30px rgba(229, 62, 62, 0.6)',
+  },
+} as const;
+
 export default async function Home() {
-  const homePageData = await client.fetch(HOME_PAGE_QUERY);
+  const homePageData = await fetchHomePage();
   const videoUrl = homePageData?.videoUrl ?? undefined;
+  const buttons = homeButtons(homePageData);
   return (
     <Box as="section" position="relative" minH="100dvh" w="100%" overflow="hidden" bg="gray.900">
       {/* Background Video */}
@@ -115,85 +184,42 @@ export default async function Home() {
             maxW="100%"
             justify="center"
             align="center"
+            // Wrap onto a second row only when the buttons can't fit on one.
+            flexWrap={buttons.length > 3 ? { lg: 'wrap' } : undefined}
             px={{ base: 2, sm: 4 }}
             flexShrink={1}
           >
 
-            {/* Card 1: Medisinstudenter */}
-            <Link href="/om-oss" style={{ textDecoration: 'none', width: '280px', flexShrink: 0 }}>
-              <Button
-                height="auto"
-                w="100%"
-                p={{ base: 2, sm: 4, lg: 8 }}
-                bg="whiteAlpha.200"
-                backdropFilter="blur(10px)"
-                border="1px solid"
-                borderColor="whiteAlpha.300"
-                borderRadius="xl"
-                _hover={{
-                  bg: 'whiteAlpha.300',
-                  transform: 'translateY(-5px)',
-                  boxShadow: '0 20px 40px rgba(0,0,0,0.4)'
-                }}
-                transition="all 0.3s ease"
-              >
-                <Flex direction="column" align="center" gap={3}>
-                  <Users size={32} />
-                  <Text fontSize="xl" fontWeight="bold">Om Oss</Text>
-                  <Text fontSize="sm" opacity={0.8} fontWeight="normal">Hvem er TrAMS?</Text>
-                </Flex>
-              </Button>
-            </Link>
-
-            {/* Card 2: Book Kurs */}
-            <Link href="/forstehjelpskurs/" style={{ textDecoration: 'none', width: '280px', flexShrink: 0 }}>
-              <Button
-                height="auto"
-                w="100%"
-                p={{ base: 4, lg: 8 }}
-                bg="var(--color-primary)"
-                _hover={{
-                  bg: 'red.600',
-                  transform: 'scale(1.05)',
-                  boxShadow: '0 0 30px rgba(229, 62, 62, 0.6)'
-                }}
-                borderRadius="xl"
-                transition="all 0.3s ease"
-                boxShadow="0 0 20px rgba(229, 62, 62, 0.4)"
-              >
-                <Flex direction="column" align="center" gap={3}>
-                  <Calendar size={32} />
-                  <Text fontSize="xl" fontWeight="bold">Book Kurs</Text>
-                  <Text fontSize="sm" opacity={0.9} fontWeight="normal">Bestill til din bedrift</Text>
-                </Flex>
-              </Button>
-            </Link>
-
-            {/* Card 3: For Medisinstudenter */}
-            <Link href="/for-medisinstudenter" style={{ textDecoration: 'none', width: '280px', flexShrink: 0 }}>
-              <Button
-                height="auto"
-                w="100%"
-                p={{ base: 2, sm: 4, lg: 8 }}
-                bg="whiteAlpha.200"
-                backdropFilter="blur(10px)"
-                border="1px solid"
-                borderColor="whiteAlpha.300"
-                borderRadius="xl"
-                _hover={{
-                  bg: 'whiteAlpha.300',
-                  transform: 'translateY(-5px)',
-                  boxShadow: '0 20px 40px rgba(0,0,0,0.4)'
-                }}
-                transition="all 0.3s ease"
-              >
-                <Flex direction="column" align="center" gap={3}>
-                  <HeartPulse size={32} />
-                  <Text fontSize="xl" fontWeight="bold">For Medisinstudenter</Text>
-                  <Text fontSize="sm" opacity={0.8} fontWeight="normal">Se informasjon for medisinstudenter</Text>
-                </Flex>
-              </Button>
-            </Link>
+            {buttons.map((button) => {
+              const Icon = button.icon ? BUTTON_ICONS[button.icon] : undefined;
+              const external = /^https?:\/\//.test(button.link);
+              return (
+                <Link
+                  key={button.key}
+                  href={button.link}
+                  {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+                  style={{ textDecoration: 'none', width: '280px', flexShrink: 0 }}
+                >
+                  <Button
+                    height="auto"
+                    w="100%"
+                    borderRadius="xl"
+                    transition="all 0.3s ease"
+                    {...(button.highlighted ? highlightedButtonStyle : plainButtonStyle)}
+                  >
+                    <Flex direction="column" align="center" gap={3}>
+                      {Icon && <Icon size={32} />}
+                      <Text fontSize="xl" fontWeight="bold">{button.title}</Text>
+                      {button.subtitle && (
+                        <Text fontSize="sm" opacity={button.highlighted ? 0.9 : 0.8} fontWeight="normal">
+                          {button.subtitle}
+                        </Text>
+                      )}
+                    </Flex>
+                  </Button>
+                </Link>
+              );
+            })}
 
           </Stack>
         </Flex >

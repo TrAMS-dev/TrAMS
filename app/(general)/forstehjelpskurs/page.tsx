@@ -3,9 +3,11 @@ import Image from 'next/image';
 import { SectionHeading, SubsectionHeading, BodyText, CenteredText, RichText } from '@/components/Typography';
 import { client } from '@/sanity/lib/client';
 import { FIRST_AID_COURSE_PAGE_QUERY } from '@/sanity/lib/queries';
+import type { FIRST_AID_COURSE_PAGE_QUERY_RESULT } from '@/types/sanity.types';
 import { urlFor } from '@/sanity/lib/image';
 import { SanityImageSource } from "@sanity/image-url/lib/types/types";
 import HeroImage from '@/components/HeroImage';
+import { getPageHero } from '@/sanity/lib/pageHero';
 import PreloadHeroImage from '@/components/PreloadHeroImage';
 import { PageContainer } from '@/components/PageContainer';
 import { ContentCard } from '@/components/ContentCard';
@@ -28,7 +30,10 @@ export const metadata: Metadata = {
 };
 
 export default async function Forstehjelpskurs() {
-  const pageData = await client.fetch(FIRST_AID_COURSE_PAGE_QUERY);
+  const [pageData, hero] = await Promise.all([
+    client.fetch(FIRST_AID_COURSE_PAGE_QUERY),
+    getPageHero('forstehjelpskurs'),
+  ]);
 
   if (!pageData) {
     return (
@@ -38,23 +43,25 @@ export default async function Forstehjelpskurs() {
     );
   }
 
+  const boxes = getBoxes(pageData);
+
   return (
     <>
       <PreloadHeroImage imageUrl="/assets/images/markor_2.jpg" />
       {/* HERO SECTION */}
       <HeroImage
         imageUrl="/assets/images/markor_2.jpg"
-        heading="Førstehjelpskurs"
-        text="TrAMS tilbyr flere førstehjelpskurs for bedrifter i Trondheim. Lær livreddende førstehjelp i dag."
+        heading={hero.heading}
+        text={hero.text}
       />
 
       <PageContainer>
-        {/* INTRO TEXT */}
-        <ContentCard>
-          <SectionHeading mt={0}>Førstehjelpskurs for bedrifter i Trondheim</SectionHeading>
-          <BodyText>{pageData.introText}</BodyText>
-          <PrimaryLinkButton href="/forstehjelpskurs/book-kurs">Book førstehjelpskurs</PrimaryLinkButton>
-        </ContentCard>
+        {/* BOXES: side by side on desktop, stacked on mobile */}
+        <SimpleGrid columns={{ base: 1, lg: Math.min(boxes.length, 3) }} gap={8}>
+          {boxes.map(({ key, ...box }) => (
+            <CallToActionCard key={key} {...box} />
+          ))}
+        </SimpleGrid>
 
         {/* COURSES */}
         {pageData.courses?.map((course, courseIndex) => (
@@ -147,6 +154,59 @@ function CourseModule({ number, title, description, imageSrc, imageAlt, isRevers
           )}
         </Box>
       </Flex>
+    </ContentCard>
+  );
+}
+
+type PageData = NonNullable<FIRST_AID_COURSE_PAGE_QUERY_RESULT>;
+type CtaBox = { key: string, heading: string, text: string, buttonLabel: string, href: string };
+
+/**
+ * The boxes at the top of the page. Falls back to the old intro and box medic fields
+ * until their content has been moved into "boxes" in Sanity.
+ */
+function getBoxes(pageData: PageData): CtaBox[] {
+  const boxes = (pageData.boxes ?? []).filter((box) => box.heading && box.link);
+  if (boxes.length) {
+    return boxes.map((box) => ({
+      key: box._key,
+      heading: box.heading!,
+      text: box.text ?? '',
+      buttonLabel: box.buttonLabel ?? '',
+      href: box.link!,
+    }));
+  }
+
+  const legacy: CtaBox[] = [{
+    key: 'intro',
+    heading: pageData.introHeading || 'Førstehjelpskurs for bedrifter i Trondheim',
+    text: pageData.introText ?? '',
+    buttonLabel: pageData.introButtonLabel || 'Book førstehjelpskurs',
+    href: '/forstehjelpskurs/book-kurs',
+  }];
+  if (pageData.boxMedic?.heading && pageData.boxMedic.formUrl) {
+    legacy.push({
+      key: 'boxMedic',
+      heading: pageData.boxMedic.heading,
+      text: pageData.boxMedic.text ?? '',
+      buttonLabel: pageData.boxMedic.buttonLabel || 'Gå til skjema',
+      href: pageData.boxMedic.formUrl,
+    });
+  }
+  return legacy;
+}
+
+function CallToActionCard({ heading, text, buttonLabel, href }: Omit<CtaBox, 'key'>) {
+  // Links to other sites open in a new tab
+  const external = /^https?:\/\//.test(href);
+  return (
+    <ContentCard h="100%" display="flex" flexDirection="column">
+      <SectionHeading mt={0}>{heading}</SectionHeading>
+      {text && <BodyText>{text}</BodyText>}
+      {/* Pushes the button to the bottom so both cards line up side by side */}
+      <Box mt="auto">
+        <PrimaryLinkButton href={href} external={external}>{buttonLabel}</PrimaryLinkButton>
+      </Box>
     </ContentCard>
   );
 }

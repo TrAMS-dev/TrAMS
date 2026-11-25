@@ -11,6 +11,7 @@ import { cooperationPartnersType } from './cooperationPartnersType'
 import { firstAidCoursePageType } from './firstAidCoursePageType'
 import { bookKursPageType } from './bookKursPageType'
 import { homePageType } from './homePageType'
+import { eventsPageType, mediaPageType, formerBoardsPageType } from './heroOnlyPageTypes'
 import { forMedisinstudenterPageType } from './forMedisinstudenterPageType'
 import { instruktorPageType } from './instruktorPageType'
 import { aboutPageType } from './aboutPageType'
@@ -32,6 +33,9 @@ export const schemaTypes = [
     firstAidCoursePageType,
     bookKursPageType,
     homePageType,
+    eventsPageType,
+    mediaPageType,
+    formerBoardsPageType,
     forMedisinstudenterPageType,
     instruktorPageType,
     aboutPageType,
@@ -45,6 +49,9 @@ export const SingletonTypes = [
     'siteSettings',
     'certificateSettings',
     'homePage',
+    'eventsPage',
+    'mediaPage',
+    'formerBoardsPage',
     'aboutPage',
     'vedtekter',
     'firstAidCoursePage',

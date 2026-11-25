@@ -10,13 +10,13 @@ export const boardMemberType = defineType({
     fields: [
         defineField({
             name: 'name',
-            title: 'Name',
+            title: 'Navn',
             type: 'string',
             validation: (rule) => rule.required(),
         }),
         defineField({
             name: 'slug',
-            title: 'Slug',
+            title: 'Nettadresse (slug)',
             type: 'slug',
             options: {
                 source: 'name',
@@ -27,7 +27,7 @@ export const boardMemberType = defineType({
         }),
         defineField({
             name: 'role',
-            title: 'Role',
+            title: 'Verv',
             type: 'string',
             options: {
                 list: boardRoleOptions,
@@ -36,25 +36,25 @@ export const boardMemberType = defineType({
         }),
         defineField({
             name: 'email',
-            title: 'Email',
+            title: 'E-post',
             type: 'string',
             validation: (rule) => rule.email(),
         }),
         defineField({
             name: 'activeFrom',
-            title: 'Active from',
+            title: 'Aktiv fra',
             type: 'date',
             validation: (rule) => rule.required(),
         }),
         defineField({
             name: 'activeTo',
-            title: 'Active to',
+            title: 'Aktiv til',
             type: 'date',
             validation: (rule) => rule.required(),
         }),
         defineField({
             name: 'profileImage',
-            title: 'Profile Image',
+            title: 'Profilbilde',
             type: 'image',
             options: {
                 hotspot: true,
@@ -63,12 +63,12 @@ export const boardMemberType = defineType({
         }),
         defineField({
             name: 'PersonalImage',
-            title: 'Personal Image',
+            title: 'Personlig bilde',
             type: 'image',
         }),
         defineField({
             name: 'bio',
-            title: 'Biography',
+            title: 'Om meg',
             type: 'array',
             of: [{ type: 'block' }],
             validation: (rule) => rule.required(),

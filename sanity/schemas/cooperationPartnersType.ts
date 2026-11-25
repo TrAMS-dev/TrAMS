@@ -7,7 +7,7 @@ export const cooperationPartnersType = defineType({
     fields: [
         defineField({
             name: 'partners',
-            title: 'Partners',
+            title: 'Samarbeidspartnere',
             type: 'array',
             of: [
                 defineField({
@@ -16,7 +16,7 @@ export const cooperationPartnersType = defineType({
                     fields: [
                         defineField({
                             name: 'name',
-                            title: 'Name',
+                            title: 'Navn',
                             type: 'string',
                         }),
                         defineField({
@@ -29,18 +29,18 @@ export const cooperationPartnersType = defineType({
                         }),
                         defineField({
                             name: 'url',
-                            title: 'URL',
+                            title: 'Lenke',
                             type: 'url',
                         }),
                         defineField({
                             name: 'size',
-                            title: 'Size',
+                            title: 'Størrelse på logo',
                             type: 'string',
                             options: {
                                 list: [
-                                    { title: 'Small', value: 'small' },
-                                    { title: 'Medium', value: 'medium' },
-                                    { title: 'Large', value: 'large' },
+                                    { title: 'Liten', value: 'small' },
+                                    { title: 'Middels', value: 'medium' },
+                                    { title: 'Stor', value: 'large' },
                                 ],
                                 layout: 'radio'
                             },
@@ -52,7 +52,7 @@ export const cooperationPartnersType = defineType({
         }),
         defineField({
             name: 'sisterOrganizations',
-            title: 'Sister Organizations',
+            title: 'Søsterforeninger',
             type: 'array',
             of: [
                 defineField({
@@ -61,7 +61,7 @@ export const cooperationPartnersType = defineType({
                     fields: [
                         defineField({
                             name: 'name',
-                            title: 'Name',
+                            title: 'Navn',
                             type: 'string',
                         }),
                         defineField({
@@ -74,7 +74,7 @@ export const cooperationPartnersType = defineType({
                         }),
                         defineField({
                             name: 'url',
-                            title: 'URL',
+                            title: 'Lenke',
                             type: 'url',
                         }),
                     ],

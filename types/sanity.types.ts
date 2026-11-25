@@ -542,6 +542,10 @@ export type AboutPage = {
   _createdAt: string;
   _updatedAt: string;
   _rev: string;
+  hero?: {
+    heading?: string;
+    text?: string;
+  };
   aboutText: Array<{
     children?: Array<{
       marks?: Array<string>;
@@ -587,6 +591,10 @@ export type InstruktorPage = {
   _createdAt: string;
   _updatedAt: string;
   _rev: string;
+  hero?: {
+    heading?: string;
+    text?: string;
+  };
   becomeInstructorText: Array<{
     children?: Array<{
       marks?: Array<string>;
@@ -631,6 +639,10 @@ export type ForMedisinstudenterPage = {
   _createdAt: string;
   _updatedAt: string;
   _rev: string;
+  hero?: {
+    heading?: string;
+    text?: string;
+  };
   membershipSignupUrl: string;
   membershipText: Array<{
     children?: Array<{
@@ -688,6 +700,42 @@ export type ForMedisinstudenterPage = {
   }>;
 };
 
+export type FormerBoardsPage = {
+  _id: string;
+  _type: "formerBoardsPage";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  hero?: {
+    heading?: string;
+    text?: string;
+  };
+};
+
+export type MediaPage = {
+  _id: string;
+  _type: "mediaPage";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  hero?: {
+    heading?: string;
+    text?: string;
+  };
+};
+
+export type EventsPage = {
+  _id: string;
+  _type: "eventsPage";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  hero?: {
+    heading?: string;
+    text?: string;
+  };
+};
+
 export type HomePage = {
   _id: string;
   _type: "homePage";
@@ -696,6 +744,39 @@ export type HomePage = {
   _rev: string;
   videoUrl: string;
   tagline: string;
+  buttons?: Array<{
+    title: string;
+    subtitle?: string;
+    link: string;
+    icon?:
+      | "users"
+      | "calendar"
+      | "heartPulse"
+      | "stethoscope"
+      | "ambulance"
+      | "graduationCap"
+      | "bookOpen"
+      | "info"
+      | "mail"
+      | "handshake"
+      | "megaphone"
+      | "mapPin";
+    highlighted?: boolean;
+    _type: "homeButton";
+    _key: string;
+  }>;
+  aboutCard?: {
+    title?: string;
+    subtitle?: string;
+  };
+  bookCard?: {
+    title?: string;
+    subtitle?: string;
+  };
+  studentsCard?: {
+    title?: string;
+    subtitle?: string;
+  };
 };
 
 export type BookKursPage = {
@@ -704,6 +785,10 @@ export type BookKursPage = {
   _createdAt: string;
   _updatedAt: string;
   _rev: string;
+  hero?: {
+    heading?: string;
+    text?: string;
+  };
   step1Content: Array<{
     children?: Array<{
       marks?: Array<string>;
@@ -730,7 +815,27 @@ export type FirstAidCoursePage = {
   _createdAt: string;
   _updatedAt: string;
   _rev: string;
-  introText: string;
+  hero?: {
+    heading?: string;
+    text?: string;
+  };
+  boxes: Array<{
+    heading: string;
+    text: string;
+    buttonLabel: string;
+    link: string;
+    _type: "ctaBox";
+    _key: string;
+  }>;
+  introHeading?: string;
+  introText?: string;
+  introButtonLabel?: string;
+  boxMedic?: {
+    heading?: string;
+    text?: string;
+    buttonLabel?: string;
+    formUrl?: string;
+  };
   courses?: Array<{
     title: string;
     description: string;
@@ -919,6 +1024,10 @@ export type Vedtekter = {
   _createdAt: string;
   _updatedAt: string;
   _rev: string;
+  hero?: {
+    heading?: string;
+    text?: string;
+  };
   content: Array<{
     children?: Array<{
       marks?: Array<string>;
@@ -1296,6 +1405,9 @@ export type AllSanitySchemaTypes =
   | AboutPage
   | InstruktorPage
   | ForMedisinstudenterPage
+  | FormerBoardsPage
+  | MediaPage
+  | EventsPage
   | HomePage
   | BookKursPage
   | FirstAidCoursePage
@@ -1724,10 +1836,25 @@ export type COOPERATION_PARTNERS_QUERY_RESULT = {
 
 // Source: sanity/lib/queries.ts
 // Variable: FIRST_AID_COURSE_PAGE_QUERY
-// Query: *[_type == "firstAidCoursePage"][0] {  _id,  introText,  courses[] {    title,    description,    modules[] {      number,      title,      description,      imageSrc,      imageAlt,      isReversed    },    footerNote  },  otherCoursesText,  evaluationText,  evaluationFormUrl}
+// Query: *[_type == "firstAidCoursePage"][0] {  _id,  boxes[] {    _key,    heading,    text,    buttonLabel,    link  },  introHeading,  introText,  introButtonLabel,  boxMedic {    heading,    text,    buttonLabel,    formUrl  },  courses[] {    title,    description,    modules[] {      number,      title,      description,      imageSrc,      imageAlt,      isReversed    },    footerNote  },  otherCoursesText,  evaluationText,  evaluationFormUrl}
 export type FIRST_AID_COURSE_PAGE_QUERY_RESULT = {
   _id: string;
-  introText: string;
+  boxes: Array<{
+    _key: string;
+    heading: string;
+    text: string;
+    buttonLabel: string;
+    link: string;
+  }>;
+  introHeading: string | null;
+  introText: string | null;
+  introButtonLabel: string | null;
+  boxMedic: {
+    heading: string | null;
+    text: string | null;
+    buttonLabel: string | null;
+    formUrl: string | null;
+  } | null;
   courses: Array<{
     title: string;
     description: string;
@@ -1813,12 +1940,41 @@ export type BOOK_KURS_PAGE_QUERY_RESULT = {
 
 // Source: sanity/lib/queries.ts
 // Variable: HOME_PAGE_QUERY
-// Query: *[_type == "homePage"][0] {  _id,  videoUrl,  tagline}
+// Query: *[_type == "homePage"][0] {  _id,  videoUrl,  tagline,  buttons[] { _key, title, subtitle, link, icon, highlighted }}
 export type HOME_PAGE_QUERY_RESULT = {
   _id: string;
   videoUrl: string;
   tagline: string;
+  buttons: Array<{
+    _key: string;
+    title: string;
+    subtitle: string | null;
+    link: string;
+    icon:
+      | "ambulance"
+      | "bookOpen"
+      | "calendar"
+      | "graduationCap"
+      | "handshake"
+      | "heartPulse"
+      | "info"
+      | "mail"
+      | "mapPin"
+      | "megaphone"
+      | "stethoscope"
+      | "users"
+      | null;
+    highlighted: boolean | null;
+  }> | null;
 } | null;
+
+// Source: sanity/lib/queries.ts
+// Variable: PAGE_HERO_QUERY
+// Query: *[_type == $type][0].hero { heading, text }
+export type PAGE_HERO_QUERY_RESULT = null | {
+  heading: string | null;
+  text: string | null;
+};
 
 // Source: sanity/lib/queries.ts
 // Variable: FOR_MEDISINSTUDENTER_PAGE_QUERY
@@ -2130,9 +2286,10 @@ declare global {
     '*[_type == "akuttCalling"][0] {\n  _id,\n  title,\n  content,\n  gallery,\n  link\n}': AKUTTKALLING_QUERY_RESULT;
     '*[_type == "markorPage"][0] {\n  _id,\n  title,\n  content,\n  gallery,\n  link\n}\n': MARKOR_PAGE_QUERY_RESULT;
     '*[_type == "cooperationPartners"][0] {\n  _id,\n  partners[] {\n    _key,\n    name,\n    logo,\n    url,\n    size\n  },\n  sisterOrganizations[] {\n    _key,\n    name,\n    logo,\n    url\n  }\n}': COOPERATION_PARTNERS_QUERY_RESULT;
-    '*[_type == "firstAidCoursePage"][0] {\n  _id,\n  introText,\n  courses[] {\n    title,\n    description,\n    modules[] {\n      number,\n      title,\n      description,\n      imageSrc,\n      imageAlt,\n      isReversed\n    },\n    footerNote\n  },\n  otherCoursesText,\n  evaluationText,\n  evaluationFormUrl\n}': FIRST_AID_COURSE_PAGE_QUERY_RESULT;
+    '*[_type == "firstAidCoursePage"][0] {\n  _id,\n  boxes[] {\n    _key,\n    heading,\n    text,\n    buttonLabel,\n    link\n  },\n  introHeading,\n  introText,\n  introButtonLabel,\n  boxMedic {\n    heading,\n    text,\n    buttonLabel,\n    formUrl\n  },\n  courses[] {\n    title,\n    description,\n    modules[] {\n      number,\n      title,\n      description,\n      imageSrc,\n      imageAlt,\n      isReversed\n    },\n    footerNote\n  },\n  otherCoursesText,\n  evaluationText,\n  evaluationFormUrl\n}': FIRST_AID_COURSE_PAGE_QUERY_RESULT;
     '*[_type == "bookKursPage"][0] {\n  _id,\n  step1Content\n}': BOOK_KURS_PAGE_QUERY_RESULT;
-    '*[_type == "homePage"][0] {\n  _id,\n  videoUrl,\n  tagline\n}': HOME_PAGE_QUERY_RESULT;
+    '*[_type == "homePage"][0] {\n  _id,\n  videoUrl,\n  tagline,\n  buttons[] { _key, title, subtitle, link, icon, highlighted }\n}': HOME_PAGE_QUERY_RESULT;
+    "*[_type == $type][0].hero { heading, text }": PAGE_HERO_QUERY_RESULT;
     '*[_type == "forMedisinstudenterPage"][0] {\n  _id,\n  membershipSignupUrl,\n  membershipText,\n  offersText,\n  committeesText\n}': FOR_MEDISINSTUDENTER_PAGE_QUERY_RESULT;
     '*[_type == "instruktorPage"][0] {\n  _id,\n  becomeInstructorText,\n  skillInstructorText\n}': INSTRUKTOR_PAGE_QUERY_RESULT;
     '*[_type == "aboutPage"][0] {\n  _id,\n  aboutText,\n  partnerCtaTitle,\n  partnerCtaText\n}': ABOUT_PAGE_QUERY_RESULT;

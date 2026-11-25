@@ -14,7 +14,7 @@ export const committeeType = defineType({
         }),
         defineField({
             name: 'slug',
-            title: 'Slug',
+            title: 'Nettadresse (slug)',
             type: 'slug',
             options: {
                 source: 'name',

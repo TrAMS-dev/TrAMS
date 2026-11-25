@@ -2,7 +2,7 @@ import { defineField, defineType } from 'sanity'
 
 export const mediaItemType = defineType({
     name: 'mediaItem',
-    title: 'TrAMS i Media',
+    title: 'Mediesak',
     type: 'document',
     fields: [
         defineField({
@@ -20,7 +20,7 @@ export const mediaItemType = defineType({
         }),
         defineField({
             name: 'thumbnail',
-            title: 'Thumbnail/Bilde',
+            title: 'Bilde',
             type: 'image',
             options: {
                 hotspot: true,

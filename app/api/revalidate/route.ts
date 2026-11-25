@@ -91,6 +91,18 @@ export async function POST(req: NextRequest) {
         revalidatePath('/arrangementer/[slug]', 'page')
         break
 
+      case 'eventsPage':
+        revalidatePath('/arrangementer')
+        break
+
+      case 'mediaPage':
+        revalidatePath('/om-oss/trams-i-media')
+        break
+
+      case 'formerBoardsPage':
+        revalidatePath('/om-oss/styret/tidligere-styrer', 'layout')
+        break
+
       case 'siteSettings':
         // Footer is on every page
         revalidatePath('/', 'layout')
