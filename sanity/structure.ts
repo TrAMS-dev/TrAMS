@@ -96,7 +96,7 @@ export const structure: StructureResolver = (S) => {
       list('instruktorLink', 'Instruktørlenker', LinkIcon, [{ field: 'rank', direction: 'asc' }]),
     ]),
 
-    page('eventsPage', 'Arrangementer-siden', CalendarIcon),
+    page('eventsPage', 'Arrangementer', CalendarIcon),
 
     S.divider(),
 

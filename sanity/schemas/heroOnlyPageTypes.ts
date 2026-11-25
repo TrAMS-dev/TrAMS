@@ -13,6 +13,6 @@ function heroOnlyPage(name: string, title: string, key: PageHeroKey) {
     })
 }
 
-export const eventsPageType = heroOnlyPage('eventsPage', 'Arrangementer-siden', 'arrangementer')
+export const eventsPageType = heroOnlyPage('eventsPage', 'Arrangementer', 'arrangementer')
 export const mediaPageType = heroOnlyPage('mediaPage', 'TrAMS i media-siden', 'tramsIMedia')
 export const formerBoardsPageType = heroOnlyPage('formerBoardsPage', 'Tidligere styrer-siden', 'tidligereStyrer')
