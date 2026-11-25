@@ -25,9 +25,14 @@ export default defineConfig({
   dataset,
   schema: {
     types: schemaTypes,
-    templates: (templates) => templates.filter(({ schemaType }) => !singletons.has(schemaType)),
   },
   document: {
+    // Hide them from the global "+ Create" menu, but keep their templates so a page
+    // that doesn't exist yet opens with its default text filled in.
+    newDocumentOptions: (options, { creationContext }) =>
+      creationContext.type === 'global'
+        ? options.filter(({ templateId }) => !singletons.has(templateId))
+        : options,
     actions: (actions, { schemaType }) =>
       singletons.has(schemaType)
         ? actions.filter(({ action }) => action && singletonActions.has(action))
