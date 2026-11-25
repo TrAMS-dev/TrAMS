@@ -1,6 +1,7 @@
 
 import BookKursForm from '@/components/BookKursForm';
 import HeroImage from '@/components/HeroImage';
+import { getPageHero } from '@/sanity/lib/pageHero';
 import PreloadHeroImage from '@/components/PreloadHeroImage';
 import { PageContainer } from '@/components/PageContainer';
 import type { Metadata } from "next";
@@ -16,14 +17,15 @@ export const metadata: Metadata = {
     },
 };
 
-export default function BookKursPage() {
+export default async function BookKursPage() {
+    const hero = await getPageHero('bookKurs');
     return (
         <>
             <PreloadHeroImage imageUrl="/assets/images/markor_2.jpg" />
             <HeroImage
                 imageUrl="/assets/images/markor_2.jpg"
-                heading="Book kurs"
-                text="Bestill førstehjelpskurs med TrAMS for din bedrift eller organisasjon."
+                heading={hero.heading}
+                text={hero.text}
             />
             <PageContainer narrow>
                 <BookKursForm />

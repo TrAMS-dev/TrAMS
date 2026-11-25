@@ -1,10 +1,12 @@
 import { defineField, defineType } from 'sanity'
+import { heroField } from './heroField'
 
 export const bookKursPageType = defineType({
     name: 'bookKursPage',
-    title: 'Book Kurs Side',
+    title: 'Book kurs-siden',
     type: 'document',
     fields: [
+        heroField('bookKurs'),
         defineField({
             name: 'step1Content',
             title: 'Steg 1: Priser og Informasjon',
@@ -17,7 +19,7 @@ export const bookKursPageType = defineType({
     preview: {
         prepare() {
             return {
-                title: 'Book Kurs Side',
+                title: 'Book kurs-siden',
             }
         },
     },

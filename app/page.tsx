@@ -4,6 +4,7 @@ import Navbar from '@/components/Navbar';
 import { HeartPulse, Calendar, Users } from 'lucide-react';
 import { client } from '@/sanity/lib/client';
 import { HOME_PAGE_QUERY } from '@/sanity/lib/queries';
+import { HOME_CARD_DEFAULTS } from '@/sanity/lib/pageHeroDefaults';
 
 import type { Metadata } from "next";
 
@@ -21,6 +22,13 @@ export const metadata: Metadata = {
 export default async function Home() {
   const homePageData = await client.fetch(HOME_PAGE_QUERY);
   const videoUrl = homePageData?.videoUrl ?? undefined;
+  const card = (key: keyof typeof HOME_CARD_DEFAULTS) => ({
+    title: homePageData?.[key]?.title?.trim() || HOME_CARD_DEFAULTS[key].title,
+    subtitle: homePageData?.[key]?.subtitle?.trim() || HOME_CARD_DEFAULTS[key].subtitle,
+  });
+  const aboutCard = card('aboutCard');
+  const bookCard = card('bookCard');
+  const studentsCard = card('studentsCard');
   return (
     <Box as="section" position="relative" minH="100dvh" w="100%" overflow="hidden" bg="gray.900">
       {/* Background Video */}
@@ -139,8 +147,8 @@ export default async function Home() {
               >
                 <Flex direction="column" align="center" gap={3}>
                   <Users size={32} />
-                  <Text fontSize="xl" fontWeight="bold">Om Oss</Text>
-                  <Text fontSize="sm" opacity={0.8} fontWeight="normal">Hvem er TrAMS?</Text>
+                  <Text fontSize="xl" fontWeight="bold">{aboutCard.title}</Text>
+                  <Text fontSize="sm" opacity={0.8} fontWeight="normal">{aboutCard.subtitle}</Text>
                 </Flex>
               </Button>
             </Link>
@@ -163,8 +171,8 @@ export default async function Home() {
               >
                 <Flex direction="column" align="center" gap={3}>
                   <Calendar size={32} />
-                  <Text fontSize="xl" fontWeight="bold">Book Kurs</Text>
-                  <Text fontSize="sm" opacity={0.9} fontWeight="normal">Bestill til din bedrift</Text>
+                  <Text fontSize="xl" fontWeight="bold">{bookCard.title}</Text>
+                  <Text fontSize="sm" opacity={0.9} fontWeight="normal">{bookCard.subtitle}</Text>
                 </Flex>
               </Button>
             </Link>
@@ -189,8 +197,8 @@ export default async function Home() {
               >
                 <Flex direction="column" align="center" gap={3}>
                   <HeartPulse size={32} />
-                  <Text fontSize="xl" fontWeight="bold">For Medisinstudenter</Text>
-                  <Text fontSize="sm" opacity={0.8} fontWeight="normal">Se informasjon for medisinstudenter</Text>
+                  <Text fontSize="xl" fontWeight="bold">{studentsCard.title}</Text>
+                  <Text fontSize="sm" opacity={0.8} fontWeight="normal">{studentsCard.subtitle}</Text>
                 </Flex>
               </Button>
             </Link>

@@ -1,10 +1,12 @@
 import { defineField, defineType } from 'sanity'
+import { heroField } from './heroField'
 
 export const aboutPageType = defineType({
     name: 'aboutPage',
-    title: 'Om oss side',
+    title: 'Om oss-siden',
     type: 'document',
     fields: [
+        heroField('omOss'),
         defineField({
             name: 'aboutText',
             title: 'Om TrAMS – tekst',
@@ -29,7 +31,7 @@ export const aboutPageType = defineType({
     preview: {
         prepare() {
             return {
-                title: 'Om oss side',
+                title: 'Om oss-siden',
             }
         },
     },
