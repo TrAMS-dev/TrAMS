@@ -5467,6 +5467,121 @@
         },
         "optional": false
       },
+      "buttons": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "array",
+          "of": {
+            "type": "object",
+            "attributes": {
+              "title": {
+                "type": "objectAttribute",
+                "value": {
+                  "type": "string"
+                },
+                "optional": false
+              },
+              "subtitle": {
+                "type": "objectAttribute",
+                "value": {
+                  "type": "string"
+                },
+                "optional": true
+              },
+              "link": {
+                "type": "objectAttribute",
+                "value": {
+                  "type": "string"
+                },
+                "optional": false
+              },
+              "icon": {
+                "type": "objectAttribute",
+                "value": {
+                  "type": "union",
+                  "of": [
+                    {
+                      "type": "string",
+                      "value": "users"
+                    },
+                    {
+                      "type": "string",
+                      "value": "calendar"
+                    },
+                    {
+                      "type": "string",
+                      "value": "heartPulse"
+                    },
+                    {
+                      "type": "string",
+                      "value": "stethoscope"
+                    },
+                    {
+                      "type": "string",
+                      "value": "ambulance"
+                    },
+                    {
+                      "type": "string",
+                      "value": "graduationCap"
+                    },
+                    {
+                      "type": "string",
+                      "value": "bookOpen"
+                    },
+                    {
+                      "type": "string",
+                      "value": "info"
+                    },
+                    {
+                      "type": "string",
+                      "value": "mail"
+                    },
+                    {
+                      "type": "string",
+                      "value": "handshake"
+                    },
+                    {
+                      "type": "string",
+                      "value": "megaphone"
+                    },
+                    {
+                      "type": "string",
+                      "value": "mapPin"
+                    }
+                  ]
+                },
+                "optional": true
+              },
+              "highlighted": {
+                "type": "objectAttribute",
+                "value": {
+                  "type": "boolean"
+                },
+                "optional": true
+              },
+              "_type": {
+                "type": "objectAttribute",
+                "value": {
+                  "type": "string",
+                  "value": "homeButton"
+                }
+              }
+            },
+            "rest": {
+              "type": "object",
+              "attributes": {
+                "_key": {
+                  "type": "objectAttribute",
+                  "value": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "optional": true
+      },
       "aboutCard": {
         "type": "objectAttribute",
         "value": {

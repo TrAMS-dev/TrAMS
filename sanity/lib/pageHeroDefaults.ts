@@ -53,9 +53,3 @@ export function heroWithDefaults(hero: HeroData, key: PageHeroKey): { heading: s
         text: hero?.text?.trim() || PAGE_HERO_DEFAULTS[key].text,
     }
 }
-
-export const HOME_CARD_DEFAULTS = {
-    aboutCard: { title: 'Om Oss', subtitle: 'Hvem er TrAMS?' },
-    bookCard: { title: 'Book Kurs', subtitle: 'Bestill til din bedrift' },
-    studentsCard: { title: 'For Medisinstudenter', subtitle: 'Se informasjon for medisinstudenter' },
-} as const

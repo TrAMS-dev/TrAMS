@@ -192,9 +192,7 @@ export const HOME_PAGE_QUERY = defineQuery(`*[_type == "homePage"][0] {
   _id,
   videoUrl,
   tagline,
-  aboutCard { title, subtitle },
-  bookCard { title, subtitle },
-  studentsCard { title, subtitle }
+  buttons[] { _key, title, subtitle, link, icon, highlighted }
 }`)
 
 export const PAGE_HERO_QUERY = defineQuery(`*[_type == $type][0].hero { heading, text }`)
