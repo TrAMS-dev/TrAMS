@@ -1,6 +1,7 @@
 import { PageContainer } from "@/components/PageContainer";
 import EarilerMembersSection from "@/components/EarilerMembersSection";
 import HeroImage from "@/components/HeroImage";
+import { getPageHero } from '@/sanity/lib/pageHero';
 import PreloadHeroImage from "@/components/PreloadHeroImage";
 
 
@@ -9,7 +10,8 @@ export const metadata = {
     description: "Oversikt over tidligere styremedlemmer og styrer i TrAMS gjennom årene.",
 };
 
-export default function TidligereStyrerPage() {
+export default async function TidligereStyrerPage() {
+    const hero = await getPageHero('tidligereStyrer');
 
 
     return (
@@ -17,8 +19,8 @@ export default function TidligereStyrerPage() {
             <PreloadHeroImage imageUrl="/assets/images/gruppebilde.jpg" />
             <HeroImage
                 imageUrl="/assets/images/gruppebilde.jpg"
-                heading="Tidligere styrer"
-                text="Oversikt over tidligere styremedlemmer i TrAMS gjennom årene"
+                heading={hero.heading}
+                text={hero.text}
             />
             <PageContainer>
                 <EarilerMembersSection />

@@ -4,6 +4,7 @@ import { SectionHeading, RichText } from '@/components/Typography';
 import CommiteeCards from '@/components/CommiteeCards';
 import CourseCards from '@/components/CourseCards';
 import HeroImage from '@/components/HeroImage';
+import { getPageHero } from '@/sanity/lib/pageHero';
 import PreloadHeroImage from '@/components/PreloadHeroImage';
 import LatestEventCards from '@/components/LatestEventCards';
 import { createClient } from '@/utils/supabase/server';
@@ -28,9 +29,10 @@ export const metadata: Metadata = {
 
 export default async function ForMedisinstudenter() {
   const supabase = await createClient();
-  const [{ data: events, error }, pageData] = await Promise.all([
+  const [{ data: events, error }, pageData, hero] = await Promise.all([
     supabase.from('Events').select('*'),
     client.fetch(FOR_MEDISINSTUDENTER_PAGE_QUERY),
+    getPageHero('forMedisinstudenter'),
   ]);
   const membershipSignupUrl =
     pageData?.membershipSignupUrl?.trim() || FALLBACK_MEMBERSHIP_SIGNUP_URL;
@@ -44,8 +46,8 @@ export default async function ForMedisinstudenter() {
       {/* HERO */}
       <HeroImage
         imageUrl="/assets/images/cbrn.jpg"
-        heading="For Medisinstudenter"
-        text="Her kan du lese mer om medlemskap i TrAMS, våre kurs og aktiviteter som er spesielt rettet mot medisinstudenter."
+        heading={hero.heading}
+        text={hero.text}
       />
 
       {/* UPCOMING EVENTS */}

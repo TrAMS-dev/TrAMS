@@ -1,10 +1,12 @@
 import { defineField, defineType } from 'sanity'
+import { heroField } from './heroField'
 
 export const vedtekterType = defineType({
     name: 'vedtekter',
     title: 'Vedtekter',
     type: 'document',
     fields: [
+        heroField('vedtekter'),
         defineField({
             name: 'content',
             title: 'Innhold',

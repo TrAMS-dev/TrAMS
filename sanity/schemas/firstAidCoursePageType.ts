@@ -1,15 +1,73 @@
-import { defineField, defineType } from 'sanity'
+import { defineArrayMember, defineField, defineType } from 'sanity'
+import { heroField } from './heroField'
 
 export const firstAidCoursePageType = defineType({
     name: 'firstAidCoursePage',
-    title: 'Førstehjelpskurs Side',
+    title: 'Førstehjelpskurs-siden',
     type: 'document',
     fields: [
+        heroField('forstehjelpskurs'),
         defineField({
-            name: 'introText',
-            title: 'Introduksjonstekst',
-            type: 'text',
-            validation: (rule) => rule.required(),
+            name: 'boxes',
+            title: 'Bokser øverst på siden',
+            description: 'Vises side om side på PC og under hverandre på mobil. Dra for å endre rekkefølgen.',
+            type: 'array',
+            of: [
+                defineArrayMember({
+                    type: 'object',
+                    name: 'ctaBox',
+                    title: 'Boks',
+                    fields: [
+                        defineField({
+                            name: 'heading',
+                            title: 'Overskrift',
+                            type: 'string',
+                            validation: (rule) => rule.required(),
+                        }),
+                        defineField({
+                            name: 'text',
+                            title: 'Tekst',
+                            type: 'text',
+                            validation: (rule) => rule.required(),
+                        }),
+                        defineField({
+                            name: 'buttonLabel',
+                            title: 'Knappetekst',
+                            type: 'string',
+                            validation: (rule) => rule.required(),
+                        }),
+                        defineField({
+                            name: 'link',
+                            title: 'Lenke',
+                            type: 'url',
+                            description:
+                                'Hvor knappen går. En side på nettstedet skrives som /forstehjelpskurs/book-kurs. Lenker til andre nettsider (f.eks. Google Forms) åpnes i ny fane.',
+                            validation: (rule) =>
+                                rule.required().uri({ allowRelative: true, scheme: ['http', 'https', 'mailto'] }),
+                        }),
+                    ],
+                    preview: {
+                        select: { title: 'heading', subtitle: 'link' },
+                    },
+                }),
+            ],
+            validation: (rule) => rule.required().min(1),
+        }),
+        // Old box fields, replaced by "boxes". Hidden once "boxes" has content; remove after the content is moved.
+        ...(['introHeading', 'introText', 'introButtonLabel'] as const).map((name) =>
+            defineField({
+                name,
+                type: name === 'introText' ? 'text' : 'string',
+                hidden: ({ document }) => Boolean((document?.boxes as unknown[] | undefined)?.length),
+                readOnly: true,
+            })
+        ),
+        defineField({
+            name: 'boxMedic',
+            type: 'object',
+            hidden: ({ document }) => Boolean((document?.boxes as unknown[] | undefined)?.length),
+            readOnly: true,
+            fields: ['heading', 'text', 'buttonLabel', 'formUrl'].map((name) => defineField({ name, type: 'string' })),
         }),
         defineField({
             name: 'courses',
@@ -141,7 +199,7 @@ export const firstAidCoursePageType = defineType({
     preview: {
         prepare() {
             return {
-                title: 'Førstehjelpskurs Side',
+                title: 'Førstehjelpskurs-siden',
             }
         },
     },

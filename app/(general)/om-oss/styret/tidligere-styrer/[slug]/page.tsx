@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import { PageContainer } from '@/components/PageContainer'
 import BoardMemberProfile from '@/components/BoardMemberProfile'
 import HeroImage from '@/components/HeroImage'
+import { getPageHero } from '@/sanity/lib/pageHero'
 import PreloadHeroImage from '@/components/PreloadHeroImage'
 import { getBoardMemberBySlug, getAllBoardMembers } from '@/utils/sanity/boardMembers'
 import { translateRole } from '@/utils/sanity/translateRole'
@@ -38,6 +39,7 @@ export default async function BoardMemberPage({ params }: { params: Promise<{ sl
         notFound()
     }
 
+    const hero = await getPageHero('tidligereStyrer')
     const period = `${boardMember.activeFrom?.split('-')[0].slice(2)}/${boardMember.activeTo?.split('-')[0].slice(2)}`
 
     return (
@@ -45,7 +47,7 @@ export default async function BoardMemberPage({ params }: { params: Promise<{ sl
             <PreloadHeroImage imageUrl="/assets/images/gruppebilde.jpg" />
             <HeroImage
                 imageUrl="/assets/images/gruppebilde.jpg"
-                heading="Tidligere styrer"
+                heading={hero.heading}
                 text={`Styret ${period}`}
             />
             <PageContainer>

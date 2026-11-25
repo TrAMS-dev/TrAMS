@@ -1,5 +1,6 @@
 import EventCalendar from "@/components/EventCalendar";
 import HeroImage from "@/components/HeroImage";
+import { getPageHero } from '@/sanity/lib/pageHero';
 import PreloadHeroImage from "@/components/PreloadHeroImage";
 import { PageContainer } from "@/components/PageContainer";
 import { createClient } from '@/utils/supabase/server';
@@ -11,6 +12,7 @@ export const metadata = {
 
 export default async function Arrangementer() {
     const supabase = await createClient();
+    const hero = await getPageHero('arrangementer');
 
     // Fetch events from Supabase
     const { data: events, error } = await supabase
@@ -31,8 +33,8 @@ export default async function Arrangementer() {
             {/* HERO */}
             <HeroImage
                 imageUrl="/assets/images/kirurgi.jpg"
-                heading="Arrangementer"
-                text="Her kan du se alle våre arrangementer for å se hva som er planlagt."
+                heading={hero.heading}
+                text={hero.text}
             />
 
             <PageContainer>

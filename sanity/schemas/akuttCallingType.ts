@@ -2,13 +2,14 @@ import { defineType, defineField } from "sanity"
 
 export const akuttCallingType = defineType({
     name: 'akuttCalling',
-    title: 'Akuttcalling',
+    title: 'Akuttcalling-siden',
     type: 'document',
     fields: [
         defineField({
             name: 'title',
             title: 'Tittel',
             type: 'string',
+            description: 'Vises i bildet øverst på siden.',
             validation: (rule) => rule.required(),
         }),
         defineField({

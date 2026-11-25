@@ -1,10 +1,12 @@
 import { defineField, defineType } from 'sanity'
+import { heroField } from './heroField'
 
 export const forMedisinstudenterPageType = defineType({
     name: 'forMedisinstudenterPage',
-    title: 'For medisinstudenter side',
+    title: 'For medisinstudenter-siden',
     type: 'document',
     fields: [
+        heroField('forMedisinstudenter'),
         defineField({
             name: 'membershipSignupUrl',
             title: 'Lenke til medlemskapsskjema',
@@ -37,7 +39,7 @@ export const forMedisinstudenterPageType = defineType({
     preview: {
         prepare() {
             return {
-                title: 'For medisinstudenter side',
+                title: 'For medisinstudenter-siden',
             }
         },
     },

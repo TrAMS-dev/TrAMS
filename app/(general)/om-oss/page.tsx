@@ -7,6 +7,7 @@ import { PartnersSection } from "@/components/CooperationPartners";
 import { ABOUT_PAGE_QUERY, COOPERATION_PARTNERS_QUERY } from "@/sanity/lib/queries";
 import { CooperationPartners } from "@/types/sanity.types";
 import HeroImage from "@/components/HeroImage";
+import { getPageHero } from '@/sanity/lib/pageHero';
 import PreloadHeroImage from "@/components/PreloadHeroImage";
 import { PageContainer } from "@/components/PageContainer";
 import { ContentCard } from "@/components/ContentCard";
@@ -44,15 +45,18 @@ export default async function OmOss() {
         console.error('Error fetching cooperation partners:', error);
     }
 
-    const aboutPage = await client.fetch(ABOUT_PAGE_QUERY);
+    const [aboutPage, hero] = await Promise.all([
+        client.fetch(ABOUT_PAGE_QUERY),
+        getPageHero('omOss'),
+    ]);
 
     return (
         <>
             <PreloadHeroImage imageUrl="/assets/images/gruppebilde.jpg" />
             <HeroImage
                 imageUrl="/assets/images/gruppebilde.jpg"
-                heading="TrAMS"
-                text="Trondheim Akuttmedisinske Studentforening"
+                heading={hero.heading}
+                text={hero.text}
             />
 
             <PageContainer id='about'>

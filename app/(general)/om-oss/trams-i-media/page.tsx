@@ -1,6 +1,7 @@
 import { Box } from '@chakra-ui/react';
 import MediaGrid from '@/components/MediaGrid';
 import HeroImage from '@/components/HeroImage';
+import { getPageHero } from '@/sanity/lib/pageHero';
 import PreloadHeroImage from '@/components/PreloadHeroImage';
 
 export const metadata = {
@@ -8,7 +9,8 @@ export const metadata = {
     description: "Se oversikt over medieomtale og nyhetsartikler om TrAMS og våre aktiviteter.",
 };
 
-export default function TramsIMedia() {
+export default async function TramsIMedia() {
+    const hero = await getPageHero('tramsIMedia');
 
     return (
         <>
@@ -16,8 +18,8 @@ export default function TramsIMedia() {
             {/* Hero Section */}
             <HeroImage
                 imageUrl="/assets/images/gruppebilde_2.jpg"
-                heading="TrAMS i media"
-                text="Se hva vi har gjort og hvordan vi har blitt omtalt i media"
+                heading={hero.heading}
+                text={hero.text}
             />
 
             <MediaGrid />
